@@ -1,26 +1,138 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    --radius: 0.5rem;
+
+    /* Magic UI Variables */
+    --magic-primary: 130, 80, 255;
+    --magic-primary-light: 150, 100, 255;
+    --magic-secondary: 255, 80, 180;
+    --magic-accent: 80, 210, 255;
+    --magic-card-rgb: 255, 255, 255;
+    --magic-card-border: 230, 230, 250;
+    --magic-card-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+
+    /* Magic UI Variables */
+    --magic-primary: 130, 80, 255;
+    --magic-primary-light: 150, 100, 255;
+    --magic-secondary: 255, 80, 180;
+    --magic-accent: 80, 210, 255;
+    --magic-card-rgb: 30, 30, 60;
+    --magic-card-border: 50, 50, 80;
+    --magic-card-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    line-height: 1.2;
+  }
+}
+
+@layer components {
+  .magic-card {
+    @apply rounded-xl border p-6 transition-all duration-300 hover:shadow-lg;
+    background-color: rgb(var(--magic-card-rgb));
+    border-color: rgba(var(--magic-card-border), 0.2);
+    box-shadow: var(--magic-card-shadow);
+  }
+
+  .magic-button-primary {
+    @apply rounded-full px-6 py-3 font-medium text-white transition-all duration-300 hover:scale-105 hover:shadow-lg;
+    background: linear-gradient(135deg, rgb(var(--magic-primary)), rgb(var(--magic-primary-light)));
+    box-shadow: 0 4px 15px rgba(var(--magic-primary), 0.3);
+  }
+
+  .magic-button-secondary {
+    @apply rounded-full border px-6 py-3 font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg;
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border-color: rgba(var(--magic-card-border), 0.2);
+    color: rgb(var(--foreground-rgb));
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  }
+
+  .magic-gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, rgb(var(--magic-primary)), rgb(var(--magic-secondary)));
+  }
+
+  .magic-icon-container {
+    @apply flex h-16 w-16 items-center justify-center rounded-full;
+    background: linear-gradient(135deg, rgba(var(--magic-primary), 0.1), rgba(var(--magic-accent), 0.1));
+    box-shadow: 0 4px 15px rgba(var(--magic-primary), 0.1);
+  }
+
+  .magic-section {
+    @apply py-16 md:py-24;
+  }
+
+  .magic-container {
+    @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .magic-navbar {
+    @apply sticky top-0 z-50 w-full backdrop-blur-lg;
+    background-color: rgba(var(--background-start-rgb), 0.8);
+    border-bottom: 1px solid rgba(var(--magic-card-border), 0.2);
+  }
+
+  .magic-footer {
+    @apply w-full;
+    background-color: rgba(var(--background-end-rgb), 0.8);
+    border-top: 1px solid rgba(var(--magic-card-border), 0.2);
+  }
 }
