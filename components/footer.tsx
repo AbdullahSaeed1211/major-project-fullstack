@@ -6,7 +6,7 @@ export function Footer() {
       <div className="magic-container">
         <div className="flex flex-col items-center justify-between space-y-4 md:flex-row md:space-y-0">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            © {new Date().getFullYear()} <span className="magic-gradient-text font-semibold">Brain AI</span>. All rights reserved.
+            © {new Date().getFullYear()} <span className="magic-gradient-text font-semibold">Brainwise</span>. All rights reserved.
           </p>
           <div className="flex space-x-6">
             <Link

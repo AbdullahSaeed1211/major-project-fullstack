@@ -2,8 +2,8 @@ import { SignIn } from "@clerk/nextjs";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Sign In | Brain AI",
-  description: "Sign in to your Brain AI account",
+  title: "Sign In | Brainwise",
+  description: "Sign in to your Brainwise account",
 };
 
 export default function SignInPage() {

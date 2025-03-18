@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export const metadata: Metadata = {
-  title: "Register | Brain AI",
-  description: "Create a new Brain AI account",
+  title: "Register | Brainwise",
+  description: "Create a new Brainwise account",
 };
 
 export default function RegisterPage() {

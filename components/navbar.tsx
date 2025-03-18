@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./theme-toggle";
 import { SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
+import { Brain } from "lucide-react";
 
 const navItems = [
   { name: "Home", href: "/" },
@@ -40,7 +41,10 @@ export function Navbar() {
               <path d="M12 12v3" />
               <path d="M10 12h4" />
             </svg>
-            <span className="font-bold">Brain AI</span>
+            <div className="flex items-center gap-2">
+              <Brain className="h-6 w-6" />
+              <span className="font-bold">Brainwise</span>
+            </div>
           </Link>
         </div>
         <nav className="hidden md:flex items-center gap-6">

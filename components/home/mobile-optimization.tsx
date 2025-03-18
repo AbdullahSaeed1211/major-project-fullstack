@@ -1,8 +1,6 @@
 "use client";
 
 import React from "react";
-import { useMediaQuery } from "@/hooks/use-media-query";
-import { cn } from "@/lib/utils";
 import { 
   Brain, 
   Activity, 
@@ -18,7 +16,6 @@ import { useState } from "react";
 import Link from "next/link";
 
 export function MobileHeroSection() {
-  const isMobile = useMediaQuery("(max-width: 768px)");
   const [menuOpen, setMenuOpen] = useState(false);
   
   return (
@@ -27,7 +24,7 @@ export function MobileHeroSection() {
       <header className="sticky top-0 z-50 backdrop-blur-lg bg-background/90 border-b px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Brain className="h-5 w-5 text-primary" />
-          <span className="font-semibold text-lg">Brain AI</span>
+          <span className="font-semibold text-lg">Brainwise</span>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="sm" className="hidden sm:flex">

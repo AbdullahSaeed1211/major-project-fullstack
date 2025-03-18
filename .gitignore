@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.ml-stuff
+
+# ML development files
+ml-stuff/

@@ -4,7 +4,7 @@ import { UserProfile } from "@/components/user-profile";
 import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
-  title: "User Profile | Brain AI",
+  title: "User Profile | Brainwise",
   description: "View and manage your brain health profile",
 };
 

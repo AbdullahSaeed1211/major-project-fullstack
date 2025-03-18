@@ -6,38 +6,38 @@ const testimonials = [
   {
     name: "Dr. Sarah Johnson",
     role: "Neurologist",
-    body: "Brain AI has revolutionized how I explain stroke risk factors to my patients. The visual representation of risk factors makes complex medical concepts accessible.",
-    img: "https://avatar.vercel.sh/sarah",
+    img: "/testimonials/doctor1.jpg",
+    body: "Brainwise has revolutionized how I explain stroke risk factors to my patients. The visual representation of risk factors makes complex medical concepts accessible.",
   },
   {
-    name: "Michael Chen",
+    name: "Michael Davis",
     role: "Stroke Survivor",
-    body: "After my stroke, I was determined to understand my risk factors better. Brain AI helped me visualize exactly what I needed to focus on for recovery.",
-    img: "https://avatar.vercel.sh/michael",
+    img: "/testimonials/user1.jpg",
+    body: "After my stroke, I was determined to understand my risk factors better. Brainwise helped me visualize exactly what I needed to focus on for recovery.",
   },
   {
-    name: "Prof. David Williams",
-    role: "Medical Researcher",
-    body: "The accuracy of Brain AI's stroke prediction model is impressive. It aligns well with clinical standards while being accessible to patients.",
-    img: "https://avatar.vercel.sh/david",
+    name: "Dr. Thomas Chen",
+    role: "Research Scientist",
+    img: "/testimonials/doctor2.jpg",
+    body: "The accuracy of Brainwise's stroke prediction model is impressive. It aligns well with clinical standards while being accessible to patients.",
   },
   {
-    name: "Emma Rodriguez",
-    role: "Healthcare Administrator",
-    body: "We've implemented Brain AI in our preventive care program. The engagement from patients has increased dramatically with these visual tools.",
-    img: "https://avatar.vercel.sh/emma",
+    name: "Dr. Rebecca Martinez",
+    role: "Hospital Director",
+    img: "/testimonials/doctor3.jpg",
+    body: "We've implemented Brainwise in our preventive care program. The engagement from patients has increased dramatically with these visual tools.",
   },
   {
-    name: "James Wilson",
-    role: "Family Caregiver",
-    body: "Caring for my father after his stroke was challenging. Brain AI helped our family understand his condition and recovery journey.",
-    img: "https://avatar.vercel.sh/james",
+    name: "Jane Wilson",
+    role: "Caregiver",
+    img: "/testimonials/user2.jpg",
+    body: "Caring for my father after his stroke was challenging. Brainwise helped our family understand his condition and recovery journey.",
   },
   {
-    name: "Dr. Lisa Zhang",
-    role: "Preventive Medicine",
-    body: "I recommend Brain AI to patients at risk of stroke. The personalized recommendations have helped many take preventive measures seriously.",
-    img: "https://avatar.vercel.sh/lisa",
+    name: "Dr. Kevin Walker",
+    role: "Primary Care Physician",
+    img: "/testimonials/doctor4.jpg",
+    body: "I recommend Brainwise to patients at risk of stroke. The personalized recommendations have helped many take preventive measures seriously.",
   },
 ];
 
@@ -96,7 +96,7 @@ export function Testimonials() {
               Trusted by Healthcare Professionals
             </h2>
             <p className="max-w-[700px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-              See how Brain AI is making a difference in stroke prevention and brain health management.
+              See how Brainwise is making a difference in stroke prevention and brain health management.
             </p>
           </div>
         </div>

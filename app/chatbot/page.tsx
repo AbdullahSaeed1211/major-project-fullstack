@@ -1,7 +1,7 @@
 import { Chatbot } from "@/components/chatbot";
 
 export const metadata = {
-  title: "Brain Health Chatbot | Brain AI",
+  title: "Brain Health Chatbot | Brainwise",
   description: "Chat with our AI assistant about brain health, neurological conditions, and cognitive wellness.",
 };
 

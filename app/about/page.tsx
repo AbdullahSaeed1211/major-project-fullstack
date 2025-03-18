@@ -1,13 +1,14 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "About | Brain AI",
-  description: "Learn more about Brain AI and our mission to improve brain health.",
+  title: "About | Brainwise",
+  description: "Learn more about Brainwise and our mission to improve brain health.",
 };
 
 export default function AboutPage() {
   return (
-    <div className="container py-10">
+    <div className="container max-w-4xl py-12">
+      <h1 className="mb-8 text-4xl font-bold">About Brainwise</h1>
       <div className="mx-auto max-w-4xl space-y-8">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
@@ -18,34 +19,25 @@ export default function AboutPage() {
           </p>
         </div>
 
-        <div className="space-y-6">
-          <section className="space-y-3">
-            <h2 className="text-2xl font-bold">Our Mission</h2>
-            <p>
-              Brain AI was founded with a simple yet powerful mission: to leverage artificial intelligence to improve brain health outcomes worldwide. By making advanced diagnostic tools accessible to everyone, we aim to reduce the global burden of stroke and other neurological conditions.
-            </p>
-          </section>
+        <div className="prose dark:prose-invert max-w-none space-y-6">
+          <p className="lead">
+            Brainwise was founded with a simple yet powerful mission: to leverage artificial intelligence to improve brain health outcomes worldwide. By making advanced diagnostic tools accessible to everyone, we aim to empower individuals to take control of their neurological wellbeing.
+          </p>
 
-          <section className="space-y-3">
-            <h2 className="text-2xl font-bold">The Technology</h2>
-            <p>
-              Our platform uses state-of-the-art machine learning models trained on extensive medical datasets. These models can predict stroke risk based on health factors and detect potential tumors in MRI scans with high accuracy. All processing happens directly in your browser, ensuring your health data remains private.
-            </p>
-          </section>
+          <h2>Our Mission</h2>
+          <p>
+            Our mission is to democratize access to brain health information and provide reliable tools for monitoring and improving neurological wellbeing. We believe that prevention and early detection are critical to addressing neurological disorders.
+          </p>
 
-          <section className="space-y-3">
-            <h2 className="text-2xl font-bold">The Team</h2>
-            <p>
-              Brain AI was developed by a multidisciplinary team of medical professionals, data scientists, and software engineers passionate about improving healthcare through technology. Our team combines expertise in neurology, machine learning, and user experience design to create tools that are both powerful and easy to use.
-            </p>
-          </section>
+          <h2>Our Team</h2>
+          <p>
+            Brainwise was developed by a multidisciplinary team of medical professionals, data scientists, and software engineers passionate about improving healthcare through technology. Our team combines expertise in neurology, radiology, machine learning, and user experience design.
+          </p>
 
-          <section className="space-y-3">
-            <h2 className="text-2xl font-bold">Disclaimer</h2>
-            <p>
-              Brain AI is designed to be an educational and screening tool, not a replacement for professional medical advice. Always consult with a qualified healthcare provider for diagnosis and treatment of any medical condition.
-            </p>
-          </section>
+          <h2>Important Note</h2>
+          <p>
+            Brainwise is designed to be an educational and screening tool, not a replacement for professional medical advice. Always consult with a qualified healthcare provider for diagnosis and treatment of any medical condition.
+          </p>
         </div>
 
         <div className="flex justify-center pt-6">

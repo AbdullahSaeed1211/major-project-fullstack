@@ -11,7 +11,7 @@ export function TestimonialsSection() {
             Trusted by Health Professionals & Users
           </h2>
           <p className="text-xl text-muted-foreground">
-            See what medical experts and everyday users are saying about Brain AI.
+            See what medical experts and everyday users are saying about Brainwise.
           </p>
         </div>
         <Testimonials />

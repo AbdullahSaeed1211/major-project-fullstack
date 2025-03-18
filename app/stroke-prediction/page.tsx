@@ -1,7 +1,7 @@
 import { StrokeForm } from "@/components/stroke-form";
 
 export const metadata = {
-  title: "Stroke Prediction | Brain AI",
+  title: "Stroke Prediction | Brainwise",
   description: "Predict the likelihood of a stroke based on various health factors.",
 };
 

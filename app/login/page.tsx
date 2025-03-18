@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export const metadata: Metadata = {
-  title: "Login | Brain AI",
-  description: "Login to your Brain AI account",
+  title: "Login | Brainwise",
+  description: "Login to your Brainwise account",
 };
 
 export default function LoginPage() {

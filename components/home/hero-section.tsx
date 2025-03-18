@@ -21,7 +21,7 @@ export function HeroSection() {
               <span className="bg-primary/20 text-primary rounded-full p-1 mr-2">
                 <Brain className="h-3.5 w-3.5" />
               </span>
-              <span>Brain AI — Complete Brain Health Toolkit</span>
+              <span>Brainwise — Complete Brain Health Toolkit</span>
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
               Train, Assess & <span className="magic-gradient-text">Optimize</span> Your Brain Health

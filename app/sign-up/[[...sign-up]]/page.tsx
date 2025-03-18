@@ -2,8 +2,8 @@ import { SignUp } from "@clerk/nextjs";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Sign Up | Brain AI",
-  description: "Create a new Brain AI account",
+  title: "Sign Up | Brainwise",
+  description: "Create a new Brainwise account",
 };
 
 export default function SignUpPage() {

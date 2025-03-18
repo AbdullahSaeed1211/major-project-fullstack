@@ -8,7 +8,7 @@ import { Inter } from "next/font/google";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Brain-AI: Stroke Risk & Brain Health Platform",
+  title: "Brainwise: Stroke Risk & Brain Health Platform",
   description: "A comprehensive platform for stroke risk assessment and brain health optimization",
 };
 
@@ -33,7 +33,7 @@ export default function RootLayout({
               <footer className="border-t py-6 md:py-0">
                 <div className="container flex flex-col items-center justify-between gap-4 md:h-16 md:flex-row">
                   <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
-                    © 2025 Brain AI. All rights reserved.
+                    © 2025 Brainwise. All rights reserved.
                   </p>
                 </div>
               </footer>

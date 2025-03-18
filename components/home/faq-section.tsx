@@ -6,11 +6,11 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 export function FaqSection() {
   const faqs = [
     {
-      question: "How can Brain AI help improve my cognitive health?",
+      question: "How can Brainwise help improve my cognitive health?",
       answer: "Our toolkit provides scientifically-designed exercises that target different cognitive domains including memory, attention, processing speed, and problem-solving. Regular use can help maintain and potentially improve cognitive function over time."
     },
     {
-      question: "Is Brain AI suitable for all ages?",
+      question: "Is Brainwise suitable for all ages?",
       answer: "Yes! Our brain health tools are designed for adults of all ages. Whether you're in your 20s looking to optimize brain performance or in your 60s focused on maintaining cognitive health, our exercises adapt to different skill levels."
     },
     {
@@ -18,7 +18,7 @@ export function FaqSection() {
       answer: "For optimal results, we recommend using our brain training tools 3-5 times per week, for about 15-20 minutes per session. Consistency is more important than duration for building cognitive resilience."
     },
     {
-      question: "Can Brain AI help with stroke prevention?",
+      question: "Can Brainwise help with stroke prevention?",
       answer: "While no tool can guarantee stroke prevention, our risk assessment can help identify modifiable risk factors. Combined with our educational resources, this knowledge empowers you to make lifestyle changes that may reduce your risk."
     },
     {
@@ -36,7 +36,7 @@ export function FaqSection() {
             <span>Frequently Asked Questions</span>
           </div>
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
-            Common Questions About Brain AI
+            Common Questions About Brainwise
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Everything you need to know about our brain health platform and how it can benefit you.

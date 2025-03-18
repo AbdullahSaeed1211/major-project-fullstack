@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -21,7 +20,7 @@ export function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hello! I'm your Brain AI assistant. How can I help you with brain health today?",
+      content: "Hello! I'm your Brainwise assistant. How can I help you with brain health today?",
       timestamp: new Date(),
     },
   ]);
@@ -100,9 +99,9 @@ export function Chatbot() {
       <CardHeader className="pb-4">
         <CardTitle className="text-xl flex items-center gap-2">
           <Avatar className="h-8 w-8">
-            <AvatarImage src="/brain-ai-logo.png" alt="Brain AI" />
+            <AvatarImage src="/brain-ai-logo.png" alt="Brainwise" />
             <AvatarFallback className="bg-gradient-to-r from-[rgb(var(--magic-primary))] to-[rgb(var(--magic-secondary))] text-white">
-              AI
+              BW
             </AvatarFallback>
           </Avatar>
           Brain Health Assistant
@@ -122,9 +121,9 @@ export function Chatbot() {
                 <div className="flex items-start gap-2 max-w-[80%]">
                   {message.role === "assistant" && (
                     <Avatar className="h-8 w-8 mt-1">
-                      <AvatarImage src="/brain-ai-logo.png" alt="Brain AI" />
+                      <AvatarImage src="/brain-ai-logo.png" alt="Brainwise" />
                       <AvatarFallback className="bg-gradient-to-r from-[rgb(var(--magic-primary))] to-[rgb(var(--magic-secondary))] text-white">
-                        AI
+                        BW
                       </AvatarFallback>
                     </Avatar>
                   )}
@@ -160,9 +159,9 @@ export function Chatbot() {
               <div className="flex justify-start">
                 <div className="flex items-start gap-2 max-w-[80%]">
                   <Avatar className="h-8 w-8 mt-1">
-                    <AvatarImage src="/brain-ai-logo.png" alt="Brain AI" />
+                    <AvatarImage src="/brain-ai-logo.png" alt="Brainwise" />
                     <AvatarFallback className="bg-gradient-to-r from-[rgb(var(--magic-primary))] to-[rgb(var(--magic-secondary))] text-white">
-                      AI
+                      BW
                     </AvatarFallback>
                   </Avatar>
                   
