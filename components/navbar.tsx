@@ -9,15 +9,14 @@ import { SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
 const navItems = [
   { name: "Home", href: "/" },
   { name: "Dashboard", href: "/dashboard" },
+  { name: "Tools", href: "/tools" },
   { name: "Stroke Prediction", href: "/stroke-prediction" },
-  { name: "Tumor Detection", href: "/tumor-detection" },
-  { name: "Alzheimer's Detection", href: "/alzheimers-detection" },
   { name: "Chatbot", href: "/chatbot" },
 ];
 
 export function Navbar() {
   const pathname = usePathname();
-  const { isSignedIn, user } = useUser();
+  const { isSignedIn } = useUser();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -72,14 +71,7 @@ export function Navbar() {
               >
                 Profile
               </Link>
-              <UserButton 
-                afterSignOutUrl="/"
-                appearance={{
-                  elements: {
-                    userButtonAvatarBox: "w-8 h-8",
-                  }
-                }}
-              />
+              <UserButton afterSignOutUrl="/" />
             </>
           ) : (
             <>

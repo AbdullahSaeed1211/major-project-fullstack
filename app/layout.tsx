@@ -8,8 +8,8 @@ import { Inter } from "next/font/google";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Brain AI - Brain Health Assistant",
-  description: "AI-powered brain health analysis and prediction",
+  title: "Brain-AI: Stroke Risk & Brain Health Platform",
+  description: "A comprehensive platform for stroke risk assessment and brain health optimization",
 };
 
 export default function RootLayout({

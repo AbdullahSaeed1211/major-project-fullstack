@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { predictStroke, type StrokeInput } from "@/lib/stroke-model";
+import { Button } from "@/components/ui/button";
 
 interface FormData {
   gender: string;
@@ -94,7 +95,7 @@ export function StrokeForm() {
 
   return (
     <div className="magic-card">
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {/* Gender */}
@@ -255,7 +256,6 @@ export function StrokeForm() {
                 type="number"
                 min="50"
                 max="300"
-                step="0.1"
                 value={formData.avgGlucoseLevel}
                 onChange={handleChange}
                 className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-50 dark:placeholder:text-gray-400 dark:focus-visible:ring-gray-600"
@@ -284,7 +284,7 @@ export function StrokeForm() {
             </div>
 
             {/* Smoking Status */}
-            <div className="space-y-2">
+            <div className="space-y-2 sm:col-span-2">
               <label
                 htmlFor="smokingStatus"
                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -300,81 +300,122 @@ export function StrokeForm() {
               >
                 <option value="never smoked">Never Smoked</option>
                 <option value="formerly smoked">Formerly Smoked</option>
-                <option value="smokes">Currently Smokes</option>
-                <option value="Unknown">Unknown</option>
+                <option value="smokes">Current Smoker</option>
+                <option value="unknown">Unknown</option>
               </select>
             </div>
           </div>
 
-          <button
+          <Button
             type="submit"
+            className="w-full"
             disabled={isLoading}
-            className="magic-button-primary w-full"
           >
-            {isLoading ? "Predicting..." : "Predict Stroke Risk"}
-          </button>
+            {isLoading ? "Analyzing..." : "Predict Stroke Risk"}
+          </Button>
         </form>
 
         {result && (
-          <div className="mt-8 magic-card">
-            <h3 className="text-xl font-bold">Prediction Result</h3>
-            <div className="mt-4 space-y-2">
-              <p className="text-lg">
-                Stroke Risk:{" "}
-                <span
-                  className={cn(
-                    "font-bold",
-                    result.prediction === "Likely"
-                      ? "text-[rgb(var(--magic-secondary))]"
-                      : "text-[rgb(var(--magic-accent))]"
-                  )}
-                >
-                  {result.prediction}
-                </span>
-              </p>
-              <p className="text-gray-600 dark:text-gray-300">
-                Probability: {(result.probability * 100).toFixed(2)}%
-              </p>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
-                <div
-                  className={cn(
-                    "h-full",
-                    result.prediction === "Likely"
-                      ? "bg-gradient-to-r from-[rgb(var(--magic-primary))] to-[rgb(var(--magic-secondary))]"
-                      : "bg-gradient-to-r from-[rgb(var(--magic-accent))] to-[rgb(var(--magic-primary))]"
-                  )}
-                  style={{ width: `${result.probability * 100}%` }}
-                />
+          <div className="mt-6 rounded-lg bg-card p-4 shadow-sm">
+            <h3 className="text-lg font-medium text-card-foreground mb-2">Result</h3>
+            
+            <div className="space-y-3">
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm font-medium">Risk Level:</span>
+                  <span
+                    className={cn(
+                      "rounded-full px-2 py-0.5 text-xs font-medium",
+                      result.prediction === "Very Low Risk"
+                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                        : result.prediction === "Low Risk"
+                        ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+                        : result.prediction === "Moderate Risk"
+                        ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+                        : result.prediction === "High Risk"
+                        ? "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300"
+                        : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                    )}
+                  >
+                    {result.prediction}
+                  </span>
+                </div>
+                
+                <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                  <div
+                    className={cn(
+                      "h-2.5 rounded-full",
+                      result.prediction === "Very Low Risk"
+                        ? "bg-green-500"
+                        : result.prediction === "Low Risk"
+                        ? "bg-blue-500"
+                        : result.prediction === "Moderate Risk"
+                        ? "bg-yellow-500"
+                        : result.prediction === "High Risk"
+                        ? "bg-orange-500"
+                        : "bg-red-500"
+                    )}
+                    style={{ width: `${result.probability * 100}%` }}
+                  ></div>
+                </div>
+                
+                <p className="text-xs text-muted-foreground mt-1">
+                  Estimated probability: {(result.probability * 100).toFixed(1)}%
+                </p>
               </div>
-              <div className="mt-6 rounded-lg bg-gray-50 p-4 dark:bg-gray-800/50">
-                <h4 className="mb-2 font-medium">Risk Factors Analysis</h4>
-                <ul className="space-y-1 text-sm">
+              
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium">Risk Factors:</h4>
+                <ul className="text-sm text-muted-foreground space-y-1">
                   {formData.hypertension === 1 && (
-                    <li className="text-[rgb(var(--magic-secondary))]">• Hypertension increases stroke risk by up to 4-6 times</li>
+                    <li className="flex items-center">
+                      <span className="h-1.5 w-1.5 rounded-full bg-red-500 mr-2"></span>
+                      Hypertension
+                    </li>
                   )}
                   {formData.heartDisease === 1 && (
-                    <li className="text-[rgb(var(--magic-secondary))]">• Heart disease increases stroke risk by up to 3 times</li>
+                    <li className="flex items-center">
+                      <span className="h-1.5 w-1.5 rounded-full bg-red-500 mr-2"></span>
+                      Heart Disease
+                    </li>
                   )}
                   {formData.age > 65 && (
-                    <li className="text-[rgb(var(--magic-secondary))]">• Age over 65 significantly increases stroke risk</li>
+                    <li className="flex items-center">
+                      <span className="h-1.5 w-1.5 rounded-full bg-red-500 mr-2"></span>
+                      Age over 65
+                    </li>
                   )}
                   {formData.smokingStatus === "smokes" && (
-                    <li className="text-[rgb(var(--magic-secondary))]">• Smoking doubles the risk of stroke</li>
+                    <li className="flex items-center">
+                      <span className="h-1.5 w-1.5 rounded-full bg-red-500 mr-2"></span>
+                      Current Smoker
+                    </li>
                   )}
                   {formData.avgGlucoseLevel > 140 && (
-                    <li className="text-[rgb(var(--magic-secondary))]">• High blood glucose levels increase stroke risk</li>
+                    <li className="flex items-center">
+                      <span className="h-1.5 w-1.5 rounded-full bg-red-500 mr-2"></span>
+                      High Glucose Level
+                    </li>
                   )}
                   {formData.bmi > 30 && (
-                    <li className="text-[rgb(var(--magic-secondary))]">• Obesity (BMI {`>`} 30) increases stroke risk</li>
+                    <li className="flex items-center">
+                      <span className="h-1.5 w-1.5 rounded-full bg-red-500 mr-2"></span>
+                      High BMI
+                    </li>
                   )}
                   {hasNoRiskFactors() && (
-                    <li className="text-[rgb(var(--magic-accent))]">• No major risk factors identified</li>
+                    <li className="flex items-center text-gray-500">
+                      No major risk factors identified
+                    </li>
                   )}
                 </ul>
               </div>
-              <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                Note: This prediction is based on a simplified model and should not replace professional medical advice.
-              </p>
+              
+              <div className="text-sm">
+                <p className="text-muted-foreground italic">
+                  This is a screening tool and not a medical diagnosis. Please consult a healthcare professional for proper evaluation.
+                </p>
+              </div>
             </div>
           </div>
         )}
