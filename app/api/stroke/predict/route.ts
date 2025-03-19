@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth, createErrorResponse } from "@/lib/auth";
 import { mapFormToModelInput, predictStroke } from "@/lib/stroke-model";
-import connectToDatabase from "@/lib/mongodb";
+import db from "@/lib/mongodb";
 import Assessment from "@/lib/models/Assessment";
+
+// Flag to indicate ML model is under construction
+const ML_MODEL_UNDER_CONSTRUCTION = true;
 
 export const POST = withAuth(async (request: NextRequest, userId: string) => {
   console.log("🔍 [Stroke Prediction] Processing new prediction request");
@@ -37,39 +40,69 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
     
     console.log(`🩺 [Stroke Prediction] Risk factors identified: ${riskFactors.join(', ') || 'None'}`);
     
-    // Use the model to get prediction
-    const prediction = predictStroke(modelInput);
-    console.log(`📊 [Stroke Prediction] Result: ${prediction.prediction} (${prediction.probability.toFixed(2)})`);
+    let prediction;
     
-    // Save assessment
-    try {
-      await connectToDatabase();
-      await Assessment.create({
-        userId,
-        type: 'stroke',
-        result: `${prediction.prediction} (${(prediction.probability * 100).toFixed(2)}%)`,
-        risk: prediction.prediction === 'Likely' ? 'high' : 'low',
-        data: { 
-          input: modelInput, 
-          result: prediction,
-          riskFactors 
-        },
-      });
-      console.log(`💾 [Stroke Prediction] Assessment saved for user: ${userId}`);
-    } catch (dbError) {
-      console.error("Database error:", dbError);
-      // Continue despite DB error - don't fail the request
+    if (ML_MODEL_UNDER_CONSTRUCTION) {
+      console.log("⚠️ [Stroke Prediction] Using placeholder model - ML integration pending");
+      // Determine prediction based on risk factors count
+      const riskCount = riskFactors.length;
+      
+      // Simple placeholder logic
+      if (riskCount === 0) {
+        prediction = { prediction: "Very Low Risk", probability: 0.05 };
+      } else if (riskCount === 1) {
+        prediction = { prediction: "Low Risk", probability: 0.15 };
+      } else if (riskCount === 2) {
+        prediction = { prediction: "Moderate Risk", probability: 0.30 };
+      } else if (riskCount === 3) {
+        prediction = { prediction: "High Risk", probability: 0.60 };
+      } else {
+        prediction = { prediction: "Very High Risk", probability: 0.80 };
+      }
+    } else {
+      // Predict stroke risk using the actual model
+      console.log("🧠 [Stroke Prediction] Running prediction model");
+      prediction = await predictStroke(modelInput);
     }
     
-    // Return the prediction result
+    console.log(`🔮 [Stroke Prediction] Prediction result: ${prediction.prediction}, Probability: ${prediction.probability}`);
+    
+    // Save the assessment result
+    await db.connect();
+    
+    await Assessment.create({
+      userId,
+      type: 'stroke-risk',
+      result: prediction.prediction,
+      risk: getRiskLevel(prediction.probability),
+      data: {
+        ...modelInput,
+        riskFactors,
+        modelStatus: ML_MODEL_UNDER_CONSTRUCTION ? 'placeholder' : 'production'
+      },
+      date: new Date()
+    });
+    
+    console.log("✅ [Stroke Prediction] Assessment saved to database");
+    
     return NextResponse.json({
-      prediction: prediction.prediction,
-      probability: prediction.probability,
-      riskFactors: riskFactors,
+      ...prediction,
+      riskFactors,
+      modelStatus: ML_MODEL_UNDER_CONSTRUCTION ? 'under_construction' : 'production'
     });
     
   } catch (error) {
     console.error("❌ [Stroke Prediction] Error:", error);
-    return createErrorResponse("Internal server error", 500);
+    return createErrorResponse(
+      "Failed to process stroke risk assessment", 
+      500
+    );
   }
 });
+
+// Helper function to convert probability to risk level
+function getRiskLevel(probability: number): string {
+  if (probability < 0.1) return 'low';
+  if (probability < 0.3) return 'moderate';
+  return 'high';
+}

@@ -1,52 +1,83 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-import connectToDatabase from "@/lib/mongodb";
-import {HealthMetric} from "@/lib/models/HealthMetric"; // You need to create this model
+import db from "@/lib/mongodb";
+import { withAuth, createErrorResponse } from "@/lib/auth";
+import mongoose, { Model, Document } from "mongoose";
 
-export async function GET() {
+// Define interface for HealthMetric document
+interface IHealthMetric extends Document {
+  userId: string;
+  name: string;
+  value: string | number;
+  unit: string;
+  status: string;
+  date: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Helper to get the HealthMetric model dynamically
+const getHealthMetricModel = async (): Promise<Model<IHealthMetric>> => {
+  await db.connect();
   try {
-    const session = await auth();
-    const userId = session.userId;
+    return mongoose.model<IHealthMetric>('HealthMetric');
+  } catch {
+    // If model doesn't exist yet, create it with a simple schema
+    const HealthMetricSchema = new mongoose.Schema({
+      userId: String,
+      name: String,
+      value: mongoose.Schema.Types.Mixed,
+      unit: String,
+      status: String,
+      date: Date
+    }, { timestamps: true });
     
-    if (!userId) {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-    }
+    return mongoose.model<IHealthMetric>('HealthMetric', HealthMetricSchema);
+  }
+};
+
+export const GET = withAuth(async (req: NextRequest, userId: string) => {
+  try {
+    const url = new URL(req.url);
+    const page = parseInt(url.searchParams.get("page") || "1");
+    const limit = parseInt(url.searchParams.get("limit") || "10");
     
-    await connectToDatabase();
+    await db.connect();
+    const HealthMetric = await getHealthMetricModel();
     
+    const total = await HealthMetric.countDocuments({ userId });
     const metrics = await HealthMetric.find({ userId })
       .sort({ date: -1 })
-      .limit(10);
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .select("-__v");
     
-    return NextResponse.json({ metrics });
+    return NextResponse.json({
+      status: "success",
+      data: metrics,
+      pagination: {
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit),
+      },
+    });
     
   } catch (error) {
     console.error("Error retrieving health metrics:", error);
-    return NextResponse.json(
-      { error: "Failed to retrieve health metrics" },
-      { status: 500 }
-    );
+    return createErrorResponse("Failed to retrieve health metrics", 500);
   }
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, userId: string) => {
   try {
-    const session = await auth();
-    const userId = session.userId;
-    
-    if (!userId) {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-    }
-    
-    const body = await request.json();
+    const body = await req.json();
     
     if (!body.name || !body.value || !body.unit) {
-      return NextResponse.json({ 
-        error: "Missing required fields: name, value, unit" 
-      }, { status: 400 });
+      return createErrorResponse("Missing required fields: name, value, unit", 400);
     }
     
-    await connectToDatabase();
+    await db.connect();
+    const HealthMetric = await getHealthMetricModel();
     
     // Determine status based on metric type and value
     let status = "normal";
@@ -70,13 +101,13 @@ export async function POST(request: NextRequest) {
       date: new Date(),
     });
     
-    return NextResponse.json({ metric });
+    return NextResponse.json({
+      status: "success",
+      data: metric,
+    });
     
   } catch (error) {
     console.error("Error saving health metric:", error);
-    return NextResponse.json(
-      { error: "Failed to save health metric" },
-      { status: 500 }
-    );
+    return createErrorResponse("Failed to save health metric", 500);
   }
-} 
+}); 

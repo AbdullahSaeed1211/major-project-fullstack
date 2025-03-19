@@ -1,55 +1,75 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withAuth, createErrorResponse } from "@/lib/auth";
-import connectToDatabase from "@/lib/mongodb";
+import db from "@/lib/mongodb";
 import Assessment from "@/lib/models/Assessment";
+import { withAuth, createErrorResponse } from "@/lib/auth";
 
-export const GET = withAuth(async (request: NextRequest, userId: string) => {
+interface AssessmentQuery {
+  userId: string;
+  type?: string;
+}
+
+export const GET = withAuth(async (req: NextRequest, userId: string) => {
   try {
-    const url = new URL(request.url);
+    const url = new URL(req.url);
     const type = url.searchParams.get("type");
+    const page = parseInt(url.searchParams.get("page") || "1");
     const limit = parseInt(url.searchParams.get("limit") || "10");
-    
-    await connectToDatabase();
-    
-    const query = { userId };
+
+    await db.connect();
+
+    const query: AssessmentQuery = { userId };
     if (type) {
-      Object.assign(query, { type });
+      query.type = type;
     }
-    
+
+    const total = await Assessment.countDocuments(query);
     const assessments = await Assessment.find(query)
-      .sort({ date: -1 })
-      .limit(limit);
-    
-    return NextResponse.json({ assessments });
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .select("-__v");
+
+    return NextResponse.json({
+      status: "success",
+      data: assessments,
+      pagination: {
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit),
+      },
+    });
   } catch (error) {
     console.error("Error fetching assessments:", error);
-    return createErrorResponse("Internal server error", 500);
+    return createErrorResponse("Failed to fetch assessments", 500);
   }
 });
 
-export const POST = withAuth(async (request: NextRequest, userId: string) => {
+export const POST = withAuth(async (req: NextRequest, userId: string) => {
   try {
-    const body = await request.json();
-    const { type, result, risk, data } = body;
-    
-    if (!type || !result || !risk) {
+    const body = await req.json();
+
+    if (!body.type || !body.data) {
       return createErrorResponse("Missing required fields", 400);
     }
-    
-    await connectToDatabase();
-    
+
+    await db.connect();
+
     const assessment = await Assessment.create({
       userId,
-      type,
-      result,
-      risk,
-      data: data || {},
-      date: new Date()
+      type: body.type,
+      data: body.data,
+      result: body.result || "Unknown",
+      risk: body.risk || "moderate",
+      createdAt: new Date(),
     });
-    
-    return NextResponse.json({ assessment });
+
+    return NextResponse.json({
+      status: "success",
+      data: assessment,
+    });
   } catch (error) {
     console.error("Error creating assessment:", error);
-    return createErrorResponse("Internal server error", 500);
+    return createErrorResponse("Failed to create assessment", 500);
   }
 }); 

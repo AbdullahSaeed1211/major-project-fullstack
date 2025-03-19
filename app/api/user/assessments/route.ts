@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth, createErrorResponse } from "@/lib/auth";
-import connectToDatabase from "@/lib/mongodb";
+import db from "@/lib/mongodb";
 import Assessment from "@/lib/models/Assessment";
 
 export const GET = withAuth(async (request: NextRequest, userId: string) => {
   try {
-    await connectToDatabase();
+    await db.connect();
     
     // Get query parameters
     const url = new URL(request.url);

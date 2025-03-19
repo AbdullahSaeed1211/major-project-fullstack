@@ -1,23 +1,39 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 export function BrainScanUpload() {
   const { toast } = useToast();
+  const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [status, setStatus] = useState<"idle" | "uploading" | "processing" | "complete" | "failed">("idle");
   const [progress, setProgress] = useState(0);
-  const [status, setStatus] = useState<'idle' | 'uploading' | 'processing' | 'completed' | 'failed'>('idle');
-  const [progressMessage, setProgressMessage] = useState('');
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [webhookUrl, setWebhookUrl] = useState(''); // Used for future webhook integration
-  const [assessmentId, setAssessmentId] = useState<string | null>(null);
+  const [progressMessage, setProgressMessage] = useState("");
+  const [assessmentId, setAssessmentId] = useState<string>("");
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  useEffect(() => {
+    // Display notification about ML model construction status
+    toast({
+      title: "Brain Scan Analysis (Beta)",
+      description: "ML model integration is under development. Results are simulated for demonstration purposes.",
+      duration: 6000,
+    });
+  }, [toast]);
+
   const handleFileChange = (selectedFile: File | null) => {
     setFile(selectedFile);
     setStatus('idle');
     setProgress(0);
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0] || null;
+    handleFileChange(selectedFile);
+  };
+
+  const handleClickUpload = () => {
+    inputRef.current?.click();
   };
 
   // Handle upload
@@ -33,9 +49,6 @@ export function BrainScanUpload() {
       // Create form data
       const formData = new FormData();
       formData.append('file', file);
-      if (webhookUrl) {
-        formData.append('webhookUrl', webhookUrl);
-      }
       
       // Upload the file to API
       const response = await fetch('/api/brain-scan/analyze', {
@@ -76,8 +89,20 @@ export function BrainScanUpload() {
   // Render the component with UI that uses all the variables
   return (
     <div className="flex flex-col gap-4 p-4 border rounded-lg">
+      {/* Hidden file input */}
+      <input
+        type="file"
+        ref={inputRef}
+        onChange={handleFileInputChange}
+        className="hidden"
+        accept="image/jpeg,image/png,application/dicom"
+      />
+      
       {/* File upload area with input that uses handleFileChange */}
-      <div className="border-dashed border-2 p-6 rounded-lg text-center">
+      <div 
+        className="border-dashed border-2 p-6 rounded-lg text-center cursor-pointer"
+        onClick={handleClickUpload}
+      >
         {file ? (
           <div>
             <p className="font-medium">{file.name}</p>

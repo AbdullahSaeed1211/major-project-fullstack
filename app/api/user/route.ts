@@ -1,22 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
+import db from "@/lib/mongodb";
 import { withAuth, createErrorResponse } from "@/lib/auth";
-import connectToDatabase from "@/lib/mongodb";
 import User from "@/lib/models/User";
 
-export const GET = withAuth(async (request: NextRequest, userId: string) => {
+export const GET = withAuth(async (req: NextRequest, userId: string) => {
   try {
-    await connectToDatabase();
+    await db.connect();
     
-    const user = await User.findOne({ clerkId: userId });
+    const user = await User.findOne({ clerkId: userId }).select("-__v");
     
     if (!user) {
       return createErrorResponse("User not found", 404);
     }
     
     return NextResponse.json({ user });
-  } catch (error) {
-    console.error("Error fetching user:", error);
-    return createErrorResponse("Internal server error", 500);
+  } catch  {
+    return createErrorResponse("Failed to fetch user data", 500);
   }
 });
 
@@ -29,7 +28,7 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
       return createErrorResponse("Missing required fields", 400);
     }
     
-    await connectToDatabase();
+    await db.connect();
     
     // Check if user already exists
     let user = await User.findOne({ clerkId: userId });
@@ -57,5 +56,41 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
   } catch (error) {
     console.error("Error creating/updating user:", error);
     return createErrorResponse("Internal server error", 500);
+  }
+});
+
+export const PATCH = withAuth(async (req: NextRequest, userId: string) => {
+  try {
+    const updates = await req.json();
+    
+    // Validate the updates
+    const allowedFields = ["name", "email", "preferences", "healthProfile"];
+    
+    // Create a new object with only the allowed fields
+    const sanitizedUpdates = Object.entries(updates).reduce(
+      (acc, [key, value]) => {
+        if (allowedFields.includes(key)) {
+          acc[key] = value;
+        }
+        return acc;
+      },
+      {} as Record<string, unknown>
+    );
+    
+    await db.connect();
+    
+    const updatedUser = await User.findOneAndUpdate(
+      { clerkId: userId },
+      { $set: sanitizedUpdates },
+      { new: true }
+    ).select("-__v");
+    
+    if (!updatedUser) {
+      return createErrorResponse("User not found", 404);
+    }
+    
+    return NextResponse.json({ user: updatedUser });
+  } catch {
+    return createErrorResponse("Failed to update user data", 500);
   }
 }); 

@@ -1,9 +1,8 @@
-"use client";
-
-import React, { useState } from "react";
-import { Button } from "@/app/_components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/app/_components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/_components/ui/tabs";
+'use client'
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Brain, 
   Clock, 
@@ -11,7 +10,7 @@ import {
   ChevronLeft,
 } from "lucide-react";
 
-import { MemoryGame } from "@/app/_components/features/memory-game";
+import { MemoryGame } from "@/components/memory-game";
 
 type Tool = {
   id: string;

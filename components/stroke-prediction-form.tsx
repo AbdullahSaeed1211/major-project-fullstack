@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 interface FormData {
   gender: string;
@@ -50,6 +51,16 @@ export function StrokePredictionForm() {
 
   const [result, setResult] = useState<PredictionResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    // Display notification about ML model construction status
+    toast({
+      title: "Stroke Prediction (Beta)",
+      description: "ML model integration is under development. Results are simulated based on risk factors.",
+      duration: 6000,
+    });
+  }, [toast]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>

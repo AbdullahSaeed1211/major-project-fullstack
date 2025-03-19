@@ -44,7 +44,7 @@ function getDifficultyColor(difficulty: string) {
 }
 
 export function ActivityHistory() {
-  const { gameResults, isLoading } = useGameResults();
+  const { results, isLoading } = useGameResults();
   const [expanded, setExpanded] = useState(false);
   
   if (isLoading) {
@@ -57,7 +57,7 @@ export function ActivityHistory() {
     );
   }
   
-  if (!gameResults.length) {
+  if (!results.length) {
     return (
       <Card>
         <CardContent className="pt-6 flex flex-col items-center text-center py-12">
@@ -72,7 +72,7 @@ export function ActivityHistory() {
   }
   
   // Sort by most recent
-  const sortedResults = [...gameResults].sort((a, b) => 
+  const sortedResults = [...results].sort((a, b) => 
     new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
   );
   

@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Brain, Medal, Target, CalendarDays, Trophy, Share2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Brain, Medal, Target, CalendarDays, Trophy } from "lucide-react";
 import { useGameResults } from "@/hooks/use-game-results";
 
 interface Achievement {
@@ -17,19 +16,19 @@ interface Achievement {
 }
 
 export function AchievementsPanel() {
-  const { gameResults, isLoading } = useGameResults();
+  const { results, isLoading } = useGameResults();
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   
   useEffect(() => {
-    if (!gameResults.length) return;
+    if (!results.length) return;
     
     // Calculate achievements based on game results
-    const memoryGames = gameResults.filter(result => result.gameType === "memory-game");
-    const reactionTests = gameResults.filter(result => result.gameType === "reaction-test");
+    const memoryGames = results.filter(result => result.gameType === "memory-game");
+    const reactionTests = results.filter(result => result.gameType === "reaction-test");
     
     // Get unique dates to calculate streaks
     const uniqueDates = new Set(
-      gameResults.map(result => 
+      results.map(result => 
         new Date(result.completedAt).toISOString().split("T")[0]
       )
     );
@@ -77,7 +76,7 @@ export function AchievementsPanel() {
     ];
     
     setAchievements(calculatedAchievements);
-  }, [gameResults]);
+  }, [results]);
   
   if (isLoading) {
     return (
@@ -144,7 +143,7 @@ export function AchievementsPanel() {
           <div className="flex items-center justify-center py-6">
             <div className="text-center">
               <div className="text-6xl font-bold text-primary">
-                {new Set(gameResults.map(r => 
+                {new Set(results.map(r => 
                   new Date(r.completedAt).toISOString().split("T")[0]
                 )).size}
               </div>

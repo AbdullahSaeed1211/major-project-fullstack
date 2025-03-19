@@ -18,6 +18,14 @@ export interface PredictionResult {
   probability: number;
 }
 
+/**
+ * NOTE: This is a placeholder model that simulates a stroke prediction model.
+ * It will be replaced with a real machine learning model in the future.
+ * The coefficients are based on medical research but simplified for demonstration.
+ * 
+ * TODO: Replace with real ML model from Google Cloud buckets/services.
+ */
+
 // Encoding maps for categorical variables
 const genderEncoding: Record<string, number[]> = {
   'male': [1, 0, 0],
@@ -57,7 +65,7 @@ const normalization = {
   bmi: { mean: 28.89, std: 7.85 }
 };
 
-// Model coefficients (refined based on medical research)
+// Model coefficients (placeholder values based on medical research)
 // These values are more realistic based on stroke risk factors
 const coefficients = [
   0.048,  // age (age is a significant risk factor)
@@ -109,7 +117,9 @@ function preprocessInput(input: StrokeInput): number[] {
 }
 
 /**
- * Predicts stroke likelihood using a refined logistic regression model
+ * Predicts stroke likelihood using a placeholder logistic regression model
+ * This is not a real ML model and will be replaced in the future
+ * 
  * @param input The stroke input data
  * @returns The prediction result
  */

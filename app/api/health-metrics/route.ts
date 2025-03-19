@@ -1,36 +1,58 @@
 import { NextRequest, NextResponse } from "next/server";
+import db from "@/lib/mongodb";
 import { withAuth, createErrorResponse } from "@/lib/auth";
-import connectToDatabase from "@/lib/mongodb";
 import { HealthMetric } from "@/lib/models/HealthMetric";
 
 interface MetricQuery {
   userId: string;
-  name?: string;
+  date?: {
+    $gte?: Date;
+    $lte?: Date;
+  };
 }
 
 // Get metrics for the authenticated user
 export const GET = withAuth(async (request: NextRequest, userId: string) => {
   try {
     const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get("page") || "1");
     const limit = parseInt(url.searchParams.get("limit") || "10");
-    const type = url.searchParams.get("type");
+    const skip = (page - 1) * limit;
     
-    await connectToDatabase();
+    const startDate = url.searchParams.get("startDate");
+    const endDate = url.searchParams.get("endDate");
     
+    await db.connect();
+    
+    // Build query
     const query: MetricQuery = { userId };
-    if (type) query.name = type;
+    if (startDate || endDate) {
+      query.date = {};
+      if (startDate) query.date.$gte = new Date(startDate);
+      if (endDate) query.date.$lte = new Date(endDate);
+    }
     
-    const metrics = await HealthMetric.find(query)
-      .sort({ date: -1 })
-      .limit(limit);
+    const [metrics, total] = await Promise.all([
+      HealthMetric.find(query)
+        .sort({ date: -1 })
+        .skip(skip)
+        .limit(limit),
+      HealthMetric.countDocuments(query)
+    ]);
     
-    return NextResponse.json({ metrics });
-  } catch (error) {
-    return createErrorResponse("Failed to fetch health metrics", {
-      status: 500,
-      code: "health_metrics_fetch_error",
-      details: error instanceof Error ? error.message : undefined
+    return NextResponse.json({
+      metrics,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
     });
+    
+  } catch (error) {
+    console.error("Error fetching health metrics:", error);
+    return createErrorResponse("Internal server error", 500);
   }
 });
 
@@ -38,45 +60,18 @@ export const GET = withAuth(async (request: NextRequest, userId: string) => {
 export const POST = withAuth(async (request: NextRequest, userId: string) => {
   try {
     const body = await request.json();
-    const { name, value, unit } = body;
     
-    if (!name || value === undefined || !unit) {
-      return createErrorResponse("Missing required fields", {
-        status: 400,
-        code: "invalid_request"
-      });
-    }
+    await db.connect();
     
-    await connectToDatabase();
-    
-    // Determine status based on metric type and value
-    let status = "normal";
-    if (name === "Blood Pressure") {
-      status = Number(value) > 140 ? "warning" : 
-              Number(value) > 160 ? "critical" : "normal";
-    } else if (name === "Glucose") {
-      status = Number(value) > 100 ? "warning" : 
-              Number(value) > 140 ? "critical" : "normal";
-    } else if (name === "BMI") {
-      status = Number(value) > 25 ? "warning" : 
-              Number(value) > 30 ? "critical" : "normal";
-    }
-    
-    const metric = await HealthMetric.create({
+    const healthMetric = await HealthMetric.create({
       userId,
-      name,
-      value,
-      unit,
-      status: body.status || status,
-      date: new Date()
+      ...body,
+      date: body.date ? new Date(body.date) : new Date()
     });
     
-    return NextResponse.json({ metric });
+    return NextResponse.json({ healthMetric });
   } catch (error) {
-    return createErrorResponse("Failed to create health metric", {
-      status: 500, 
-      code: "health_metric_creation_error",
-      details: error instanceof Error ? error.message : undefined
-    });
+    console.error("Error creating health metric:", error);
+    return createErrorResponse("Internal server error", 500);
   }
 }); 

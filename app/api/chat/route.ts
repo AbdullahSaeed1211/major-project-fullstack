@@ -1,8 +1,7 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import db from "@/lib/mongodb";
 import { withAuth, createErrorResponse } from "@/lib/auth";
-import connectToDatabase from "@/lib/mongodb";
-import ChatHistory from "@/lib/models/ChatHistory";
 import mongoose from "mongoose";
 
 // Add type declaration for global ChatHistory
@@ -13,36 +12,21 @@ declare global {
 
 // Define chat message interface
 interface ChatMessage {
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
 }
 
 // Function to generate the prompt based on the provided context and question
-const generatePrompt = (context: string, question: string) => {
-  const instructions = `
-    You are an expert in neurology and brain health. Provide accurate, evidence-based information about brain conditions, 
-    cognitive health, and neurological disorders. Your responses should be informative, supportive, and educational.
-    
-    Important guidelines:
-    - Provide factual, medically accurate information about brain health
-    - Explain complex neurological concepts in simple, understandable terms
-    - Do not diagnose specific conditions or provide personalized medical advice
-    - Recommend consulting healthcare professionals for specific medical concerns
-    - Cite general medical consensus where appropriate
-    - Focus on educational content about brain health, prevention, and general information
-    - Provide emotional support and encouragement for brain health concerns
-    - Suggest general lifestyle factors that support brain health (exercise, diet, sleep, etc.)
-    
-    If you don't know the answer, simply state "I don't know."
-    If the question is outside the scope of brain health, politely redirect to brain-related topics.
-    If asked about emergency situations, advise seeking immediate medical attention.
-  `;
+function generatePrompt(context: string, query: string): string {
+  return `You are a brain health expert providing educational information about neurological health. Please provide helpful information about brain health, but remember you are not giving medical advice.
 
-  const contextSection = `Previous conversation:\n${context}\n\n`;
-  const questionSection = `User question: ${question}\n`;
+Previous conversation:
+${context}
 
-  return `${instructions}${contextSection}${questionSection}Response:`;
-};
+User's new question: ${query}
+
+Please respond in a helpful, educational way without providing specific medical advice. Focus on brain health facts, research, and general guidance.`;
+}
 
 export const POST = withAuth(async (req: NextRequest, userId: string) => {
   try {
@@ -74,22 +58,20 @@ export const POST = withAuth(async (req: NextRequest, userId: string) => {
 
     // Save chat history
     try {
-      await connectToDatabase();
+      await db.connect();
       
       // Check if ChatHistory model exists, if not create it
-      if (typeof ChatHistory === 'undefined') {
-        const ChatHistorySchema = new mongoose.Schema({
-          userId: String,
-          message: String,
-          response: String,
-          timestamp: Date
-        });
-        
-        global.ChatHistory = mongoose.models.ChatHistory || 
-          mongoose.model('ChatHistory', ChatHistorySchema);
-      }
+      const ChatHistorySchema = new mongoose.Schema({
+        userId: String,
+        message: String,
+        response: String,
+        timestamp: Date
+      });
       
-      await global.ChatHistory.create({
+      const ChatHistory = mongoose.models.ChatHistory || 
+        mongoose.model('ChatHistory', ChatHistorySchema);
+      
+      await ChatHistory.create({
         userId,
         message,
         response: text,
@@ -106,13 +88,7 @@ export const POST = withAuth(async (req: NextRequest, userId: string) => {
     });
 
   } catch (error) {
-    console.error('Error generating content:', error);
-
-    let errorMessage = "Failed to generate response";
-    if (error instanceof Error) {
-      errorMessage = error.message;
-    }
-
-    return createErrorResponse(errorMessage, 500);
+    console.error("Chat API error:", error);
+    return createErrorResponse("Failed to generate response", 500);
   }
 }); 

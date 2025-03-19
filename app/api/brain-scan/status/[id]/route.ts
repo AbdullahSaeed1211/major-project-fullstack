@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { protectApiRoute, createErrorResponse } from "@/lib/auth";
-import connectToDatabase from "@/lib/mongodb";
+import db from "@/lib/mongodb";
 import Assessment from "@/lib/models/Assessment";
+
+// Flag to indicate ML model is under construction
+const ML_MODEL_UNDER_CONSTRUCTION = true;
 
 export async function GET(
   request: NextRequest,
@@ -17,7 +20,7 @@ export async function GET(
         return createErrorResponse("Assessment ID is required", 400);
       }
       
-      await connectToDatabase();
+      await db.connect();
       
       const assessment = await Assessment.findById(assessmentId);
       
@@ -30,10 +33,13 @@ export async function GET(
         return createErrorResponse("Unauthorized", 403);
       }
       
-      // Return the current status
+      // Return the current status with construction info if appropriate
       return NextResponse.json({
         status: assessment.data.status || "unknown",
         result: assessment.data.status === "completed" ? assessment.data.result : null,
+        modelStatus: ML_MODEL_UNDER_CONSTRUCTION ? "under_construction" : "production",
+        note: ML_MODEL_UNDER_CONSTRUCTION && assessment.data.status !== "completed" ? 
+          "ML model integration pending. Status updates will be simulated." : undefined
       });
       
     } catch (error) {

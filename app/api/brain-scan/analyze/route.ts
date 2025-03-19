@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth, createErrorResponse } from "@/lib/auth";
-import connectToDatabase from "@/lib/mongodb";
-import AssessmentModel from "@/lib/models/Assessment";
+import db from "@/lib/mongodb";
+import Assessment from "@/lib/models/Assessment";
 import { writeFile } from "fs/promises";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
+
+// Flag to indicate ML model is under construction
+const ML_MODEL_UNDER_CONSTRUCTION = true;
 
 export const config = {
   api: {
@@ -38,34 +41,64 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
     const buffer = Buffer.from(await file.arrayBuffer());
     await writeFile(filePath, buffer);
     
-    // In a real implementation, you would:
-    // 1. Process the image with your ML model or send to an external API
-    // 2. Store the results
+    console.log(`📁 [Brain Scan] File saved at: ${filePath}`);
     
     // For now, creating a placeholder for the assessment
-    await connectToDatabase();
-    const assessment = await AssessmentModel.create({
+    await db.connect();
+    
+    const assessmentData = {
       userId,
       type: 'tumor',
-      result: 'Pending analysis',
-      risk: 'moderate', // Initial risk level until processing completes
+      result: ML_MODEL_UNDER_CONSTRUCTION ? 'Pending ML integration' : 'Pending analysis',
+      risk: 'moderate',
       data: { 
         filePath,
         status: 'processing',
-        submitted: new Date()
+        submitted: new Date(),
+        modelStatus: ML_MODEL_UNDER_CONSTRUCTION ? 'under_construction' : 'pending'
       },
       date: new Date(),
-    });
+    };
     
-    // Here you would typically:
-    // 1. Send the job to a queue for background processing
-    // 2. Return a job ID for status polling
+    const assessment = await Assessment.create(assessmentData);
     
-    // For now, return the assessment ID
+    console.log("✅ [Brain Scan] Assessment record created");
+    
+    if (ML_MODEL_UNDER_CONSTRUCTION) {
+      console.log("⚠️ [Brain Scan] ML model under construction - using placeholder");
+      
+      // Simulating a scheduled analysis completion in a real system
+      // In production, this would be handled by a background worker
+      setTimeout(async () => {
+        try {
+          await db.connect();
+          
+          // Simulate analysis results with placeholder data
+          await Assessment.findByIdAndUpdate(assessment._id, {
+            result: "No anomalies detected (simulated)",
+            risk: "low",
+            "data.status": "completed",
+            "data.result": {
+              conclusion: "No anomalies detected (simulated)",
+              confidence: 0.87,
+              processingTime: "00:12:34",
+              note: "This is placeholder data. Real ML analysis pending implementation."
+            }
+          });
+          
+          console.log(`✅ [Brain Scan] Simulated analysis completed for ${assessment._id}`);
+        } catch (err) {
+          console.error("❌ [Brain Scan] Error in simulated analysis:", err);
+        }
+      }, 30000); // Simulate 30 second processing time
+    }
+    
     return NextResponse.json({
       message: "Scan uploaded successfully and queued for analysis",
       assessmentId: assessment._id,
-      status: "processing"
+      status: "processing",
+      modelStatus: ML_MODEL_UNDER_CONSTRUCTION ? "under_construction" : "production",
+      estimatedTime: ML_MODEL_UNDER_CONSTRUCTION ? "30 seconds (simulated)" : "5-10 minutes"
     });
     
   } catch (error) {
