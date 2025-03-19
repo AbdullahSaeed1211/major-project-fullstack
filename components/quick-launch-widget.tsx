@@ -22,40 +22,40 @@ interface QuickAction {
   color: string;
 }
 
+const quickActions: QuickAction[] = [
+  {
+    id: "memory-game",
+    name: "Memory Game",
+    path: "/tools/memory-game",
+    icon: <Trophy className="h-5 w-5" />,
+    color: "bg-indigo-500 hover:bg-indigo-600"
+  },
+  {
+    id: "meditation",
+    name: "Meditation",
+    path: "/tools/meditation-timer",
+    icon: <Clock className="h-5 w-5" />,
+    color: "bg-purple-500 hover:bg-purple-600"
+  },
+  {
+    id: "cognitive-assessment",
+    name: "Cognitive Test",
+    path: "/tools/cognitive-assessment",
+    icon: <Target className="h-5 w-5" />,
+    color: "bg-blue-500 hover:bg-blue-600"
+  },
+  {
+    id: "mood-tracker",
+    name: "Mood Tracker",
+    path: "/tools/mood-tracker",
+    icon: <SmileIcon className="h-5 w-5" />,
+    color: "bg-green-500 hover:bg-green-600"
+  }
+];
+
 export function QuickLaunchWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [recentTools, setRecentTools] = useState<QuickAction[]>([]);
-  
-  const quickActions: QuickAction[] = [
-    {
-      id: "memory-game",
-      name: "Memory Game",
-      path: "/tools/memory-game",
-      icon: <Trophy className="h-5 w-5" />,
-      color: "bg-indigo-500 hover:bg-indigo-600"
-    },
-    {
-      id: "meditation",
-      name: "Meditation",
-      path: "/tools/meditation-timer",
-      icon: <Clock className="h-5 w-5" />,
-      color: "bg-purple-500 hover:bg-purple-600"
-    },
-    {
-      id: "cognitive-assessment",
-      name: "Cognitive Test",
-      path: "/tools/cognitive-assessment",
-      icon: <Target className="h-5 w-5" />,
-      color: "bg-blue-500 hover:bg-blue-600"
-    },
-    {
-      id: "mood-tracker",
-      name: "Mood Tracker",
-      path: "/tools/mood-tracker",
-      icon: <SmileIcon className="h-5 w-5" />,
-      color: "bg-green-500 hover:bg-green-600"
-    }
-  ];
   
   // Load recently used tools from localStorage on component mount
   useEffect(() => {

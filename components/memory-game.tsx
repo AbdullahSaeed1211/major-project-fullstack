@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -41,13 +41,18 @@ export function MemoryGame() {
   const [isGameComplete, setIsGameComplete] = useState(false);
   const [feedback, setFeedback] = useState("");
 
-  // Initialize the game when difficulty changes
-  useEffect(() => {
-    initializeGame();
-  }, [difficulty]);
+  // Shuffle an array using Fisher-Yates algorithm
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
+  };
 
   // Initialize the game
-  const initializeGame = () => {
+  const initializeGame = useCallback(() => {
     const cardCount = difficulty === "easy" ? 12 : difficulty === "medium" ? 16 : 24;
     const iconCount = cardCount / 2;
     const selectedIcons = CARD_ICONS.slice(0, iconCount);
@@ -73,17 +78,12 @@ export function MemoryGame() {
       endTime: null,
     });
     setFeedback("");
-  };
+  }, [difficulty]);
 
-  // Shuffle an array using Fisher-Yates algorithm
-  const shuffleArray = <T,>(array: T[]): T[] => {
-    const newArray = [...array];
-    for (let i = newArray.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-    }
-    return newArray;
-  };
+  // Initialize the game when difficulty changes
+  useEffect(() => {
+    initializeGame();
+  }, [initializeGame]);
 
   // Handle card click
   const handleCardClick = (id: number) => {
