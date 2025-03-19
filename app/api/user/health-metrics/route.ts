@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuth } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import connectToDatabase from "@/lib/mongodb";
 import {HealthMetric} from "@/lib/models/HealthMetric"; // You need to create this model
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    // @ts-expect-error Clerk types don't properly support the request parameter
-    const auth = getAuth({ request });
-    const userId = auth.userId;
+    const session = await auth();
+    const userId = session.userId;
     
     if (!userId) {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
@@ -32,9 +31,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // @ts-expect-error Clerk types don't properly support the request parameter
-    const auth = getAuth({ request });
-    const userId = auth.userId;
+    const session = await auth();
+    const userId = session.userId;
     
     if (!userId) {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });

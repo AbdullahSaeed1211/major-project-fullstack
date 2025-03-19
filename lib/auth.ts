@@ -1,62 +1,73 @@
 /**
  * Standardized authentication helpers for Clerk
  */
-import { getAuth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { auth } from '@clerk/nextjs/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * Handles authentication for route handlers in App Router
- * @param request The NextRequest object
  * @returns The authenticated userId or throws a 401 response
  */
-export async function requireAuth(request: NextRequest) {
+export async function requireAuth() {
+  const session = await auth();
+  if (!session.userId) {
+    throw new Error('Unauthorized');
+  }
+  return session.userId;
+}
+
+/**
+ * Protected route handler wrapper with improved type safety for Next.js 15
+ */
+export async function protectApiRoute(handler: (userId: string) => Promise<NextResponse>) {
   try {
-    // @ts-expect-error Clerk types don't properly support the request parameter
-    const { userId } = getAuth({ request });
-    
-    if (!userId) {
-      throw new Error("Authentication required");
+    const session = await auth();
+    if (!session.userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    
-    return userId;
+    return handler(session.userId);
   } catch (error) {
-    console.error("Authentication error:", error);
-    return null;
+    console.error('Auth error:', error);
+    return NextResponse.json(
+      { error: 'Authentication failed' },
+      { status: 401 }
+    );
   }
 }
 
-/**
- * Protected route handler wrapper
- * @param handler The route handler function to protect
- * @returns A wrapped handler that checks for authentication
- */
-export function withAuth<T = unknown>(
-  handler: (
-    request: NextRequest,
-    userId: string,
-    context?: T
-  ) => Promise<NextResponse>
-) {
-  return async (request: NextRequest, context?: T) => {
-    const userId = await requireAuth(request);
-    
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      );
-    }
-    
-    return handler(request, userId, context);
+// Add compatibility function for existing code using withAuth pattern
+export function withAuth(handler: (request: NextRequest, userId: string) => Promise<NextResponse>) {
+  return async (request: NextRequest) => {
+    return protectApiRoute((userId) => handler(request, userId));
   };
 }
 
-/**
- * Standard error response creator
- */
-export function createErrorResponse(message: string, status: number = 500) {
-  return NextResponse.json(
-    { error: message },
-    { status }
-  );
+interface ErrorOptions {
+  status?: number;
+  code?: string;
+  details?: unknown;
+}
+
+// Enhanced createErrorResponse that handles both formats
+export function createErrorResponse(
+  message: string,
+  statusOrOptions: number | ErrorOptions = 500
+) {
+  if (typeof statusOrOptions === 'number') {
+    return NextResponse.json(
+      { error: message },
+      { status: statusOrOptions }
+    );
+  } else {
+    const { status = 500, code, details } = statusOrOptions;
+    const errorObj: Record<string, unknown> = { message };
+    
+    if (code) errorObj.code = code;
+    if (details !== undefined) errorObj.details = details;
+    
+    return NextResponse.json(
+      { error: errorObj },
+      { status }
+    );
+  }
 } 
