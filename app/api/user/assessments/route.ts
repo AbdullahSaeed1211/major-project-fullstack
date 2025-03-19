@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
-import { connectToDatabase } from "@/lib/database";
-import { Assessment } from "@/lib/models/Assessment";
+import connectToDatabase from "@/lib/mongodb";
+import Assessment from "@/lib/models/Assessment";
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,7 +20,12 @@ export async function GET(request: NextRequest) {
     const type = url.searchParams.get("type"); // Optional filter by type
     
     // Build query
-    const query: any = { userId };
+    interface AssessmentQuery {
+      userId: string;
+      type?: string;
+    }
+    
+    const query: AssessmentQuery = { userId };
     if (type) {
       query.type = type;
     }
