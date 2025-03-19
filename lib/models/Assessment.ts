@@ -5,7 +5,7 @@ export interface IAssessment extends Document {
   type: 'stroke' | 'tumor' | 'alzheimers';
   result: string;
   risk: 'low' | 'moderate' | 'high';
-  data: Record<string, any>;
+  data: Record<string, string | number | boolean | null>;
   date: Date;
   createdAt: Date;
   updatedAt: Date;
