@@ -57,7 +57,7 @@ export function StrokeForm() {
     
     try {
       // Add a small delay to simulate processing
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise<void>((resolve) => setTimeout(resolve, 1000));
       
       // Use our model to predict stroke risk
       const modelInput: StrokeInput = {

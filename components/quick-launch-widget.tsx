@@ -18,7 +18,7 @@ interface QuickAction {
   id: string;
   name: string;
   path: string;
-  icon: JSX.Element;
+  icon: React.ReactElement;
   color: string;
 }
 

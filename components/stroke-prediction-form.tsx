@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { predictStroke, mapFormToModelInput } from "@/lib/stroke-model";
+import { predictStroke } from "@/lib/stroke-model";
 
 interface FormData {
   gender: string;
@@ -20,6 +20,19 @@ interface FormData {
 interface PredictionResult {
   prediction: string;
   probability: number;
+}
+
+interface StrokeInput {
+  gender: string;
+  age: number;
+  hypertension: number;
+  heartDisease: number;
+  everMarried: string;
+  workType: string;
+  residenceType: string;
+  avgGlucoseLevel: number;
+  bmi: number;
+  smokingStatus: string;
 }
 
 export function StrokePredictionForm() {
@@ -56,15 +69,26 @@ export function StrokePredictionForm() {
     
     try {
       // Add a small delay to simulate processing
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise<void>((resolve) => setTimeout(resolve, 1000));
       
       // Use our model to predict stroke risk
-      const modelInput = mapFormToModelInput(formData);
+      const modelInput: StrokeInput = {
+        gender: formData.gender,
+        age: formData.age,
+        hypertension: formData.hypertension,
+        heartDisease: formData.heartDisease,
+        everMarried: formData.everMarried,
+        workType: formData.workType,
+        residenceType: formData.residenceType,
+        avgGlucoseLevel: formData.avgGlucoseLevel,
+        bmi: formData.bmi,
+        smokingStatus: formData.smokingStatus
+      };
       const prediction = predictStroke(modelInput);
       
       setResult(prediction);
     } catch (error) {
-      console.error("Error making prediction:", error);
+      console.error("Error making prediction:", error instanceof Error ? error.message : String(error));
     } finally {
       setIsLoading(false);
     }
@@ -343,7 +367,7 @@ export function StrokePredictionForm() {
                     <li className="text-[rgb(var(--secondary))]">• High blood glucose levels increase stroke risk</li>
                   )}
                   {formData.bmi > 30 && (
-                    <li className="text-[rgb(var(--secondary))]">• Obesity (BMI > 30) increases stroke risk</li>
+                    <li className="text-[rgb(var(--secondary))]">• Obesity (BMI {'>'} 30) increases stroke risk</li>
                   )}
                   {Object.values(formData).every(val => 
                     (val !== 1 && 

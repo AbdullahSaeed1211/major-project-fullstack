@@ -263,7 +263,7 @@ export function ReactionTest() {
       <div className="flex flex-col gap-2">
         <h2 className="text-2xl font-bold">Reaction Time Test</h2>
         <p className="text-muted-foreground">
-          Test your brain's processing speed and reflex time.
+          Test your brain&apos;s processing speed and reflex time.
         </p>
       </div>
       

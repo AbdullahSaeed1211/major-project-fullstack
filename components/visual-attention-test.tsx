@@ -251,7 +251,7 @@ export function VisualAttentionTest() {
                 <div className="space-y-4">
                   <p>
                     This test measures your visual attention and processing speed. 
-                    You'll need to quickly scan and identify target symbols among distractors.
+                    You&apos;ll need to quickly scan and identify target symbols among distractors.
                   </p>
                   
                   <div className="flex items-center justify-center gap-2 p-4 border rounded-md">

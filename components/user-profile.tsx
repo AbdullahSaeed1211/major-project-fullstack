@@ -37,7 +37,7 @@ interface Assessment {
 }
 
 export function UserProfile({ user }: UserProfileProps) {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [, setActiveTab] = useState("overview");
   
   // Mock data - in a real app, this would come from an API
   const mockUser = user || {

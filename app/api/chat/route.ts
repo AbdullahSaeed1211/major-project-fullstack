@@ -3,6 +3,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
 import connectToDatabase from "@/lib/mongodb";
 import ChatHistory from "@/lib/models/ChatHistory";
+import mongoose from "mongoose";
+
+// Add type declaration for global ChatHistory
+declare global {
+  // eslint-disable-next-line no-var
+  var ChatHistory: typeof mongoose.Model;
+}
+
+// Define chat message interface
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
 
 // Function to generate the prompt based on the provided context and question
 const generatePrompt = (context: string, question: string) => {
@@ -33,7 +46,9 @@ const generatePrompt = (context: string, question: string) => {
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId } = getAuth(req);
+    // @ts-expect-error Clerk types don't properly support the request parameter
+    const auth = getAuth({ request: req });
+    const userId = auth.userId;
     const reqBody = await req.json();
     const { history, message } = reqBody;
 
@@ -53,7 +68,7 @@ export async function POST(req: NextRequest) {
       systemInstruction: "You are a brain health assistant providing educational information about neurological health.",
     });
 
-    const context = history.map((msg: any) => `${msg.role === "assistant" ? "Assistant" : "User"}: ${msg.content}`).join('\n');
+    const context = history.map((msg: ChatMessage) => `${msg.role === "assistant" ? "Assistant" : "User"}: ${msg.content}`).join('\n');
     const prompt = generatePrompt(context, message);
 
     const result = await model.generateContent(prompt);
@@ -67,7 +82,6 @@ export async function POST(req: NextRequest) {
         
         // Check if ChatHistory model exists, if not create it
         if (typeof ChatHistory === 'undefined') {
-          const mongoose = require('mongoose');
           const ChatHistorySchema = new mongoose.Schema({
             userId: String,
             message: String,
