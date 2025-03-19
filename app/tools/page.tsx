@@ -1,27 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/app/_components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/app/_components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/_components/ui/tabs";
 import { 
   Brain, 
   Clock, 
-  FileText, 
-  Calculator, 
-  Grid, 
-  ChevronLeft, 
   Target,
-  CalculatorIcon,
-  Shuffle 
+  ChevronLeft,
 } from "lucide-react";
 
-import { MemoryGame } from "@/components/memory-game";
-import { ReactionTest } from "@/components/reaction-test";
-import { BrainHealthSurvey } from "@/components/brain-health-survey";
-import { StrokeArticles } from "@/components/stroke-articles";
-import { StrokeRiskCalculator } from "@/components/stroke-risk-calculator";
-import { VisualAttentionTest } from "@/components/visual-attention-test";
-import { MentalMathChallenge } from "@/components/mental-math-challenge";
+import { MemoryGame } from "@/app/_components/features/memory-game";
 
 type Tool = {
   id: string;
@@ -29,10 +19,14 @@ type Tool = {
   description: string;
   icon: React.ReactNode;
   component: React.ReactNode;
+  category: "training" | "assessment" | "tracking" | "education";
+  duration: string;
+  benefits: string[];
 };
 
 export default function ToolsPage() {
   const [activeTool, setActiveTool] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string>("all");
 
   const toolsData: Tool[] = [
     {
@@ -40,161 +34,123 @@ export default function ToolsPage() {
       title: "Memory Game",
       description: "Test and improve your memory with this card matching game",
       icon: <Brain className="h-8 w-8 text-primary" />,
-      component: <MemoryGame />
+      component: <MemoryGame />,
+      category: "training",
+      duration: "3-5 minutes",
+      benefits: ["Improves short-term memory", "Enhances pattern recognition", "Builds visual recall abilities"]
     },
     {
       id: "reaction-test",
       title: "Reaction Time Test",
       description: "Measure how quickly you can respond to visual stimuli",
       icon: <Clock className="h-8 w-8 text-primary" />,
-      component: <ReactionTest />
+      component: <div className="p-8 border rounded-lg">Coming soon</div>,
+      category: "training",
+      duration: "2 minutes",
+      benefits: ["Measures neural processing speed", "Helps track cognitive alertness", "Trains hand-eye coordination"]
     },
     {
       id: "visual-attention",
       title: "Visual Attention Test",
       description: "Test your ability to find specific symbols among distractors",
       icon: <Target className="h-8 w-8 text-primary" />,
-      component: <VisualAttentionTest />
+      component: <div className="p-8 border rounded-lg">Coming soon</div>,
+      category: "training",
+      duration: "3 minutes",
+      benefits: ["Builds selective attention", "Improves visual processing", "Enhances focus abilities"]
     },
-    {
-      id: "mental-math",
-      title: "Mental Math Challenge",
-      description: "Improve your cognitive processing with arithmetic exercises",
-      icon: <CalculatorIcon className="h-8 w-8 text-primary" />,
-      component: <MentalMathChallenge />
-    },
-    {
-      id: "word-scramble",
-      title: "Word Scramble",
-      description: "Test your vocabulary and language processing skills",
-      icon: <Shuffle className="h-8 w-8 text-primary" />,
-      component: <div className="p-4 border rounded-md text-center">
-        <h3 className="text-lg font-medium mb-2">Coming Soon!</h3>
-        <p>We&apos;re putting the finishing touches on this brain-boosting game!</p>
-      </div>
-    },
-    {
-      id: "brain-health-survey",
-      title: "Brain Health Survey",
-      description: "Assess your brain health habits and get personalized recommendations",
-      icon: <FileText className="h-8 w-8 text-primary" />,
-      component: <BrainHealthSurvey />
-    },
-    {
-      id: "stroke-articles",
-      title: "Stroke Education",
-      description: "Learn about stroke prevention, signs, and treatment",
-      icon: <FileText className="h-8 w-8 text-primary" />,
-      component: <StrokeArticles />
-    },
-    {
-      id: "stroke-risk-calculator",
-      title: "Stroke Risk Calculator",
-      description: "Calculate your personal stroke risk based on health factors",
-      icon: <Calculator className="h-8 w-8 text-primary" />,
-      component: <StrokeRiskCalculator />
-    }
   ];
+
+  const filteredTools = activeCategory === "all" 
+    ? toolsData 
+    : toolsData.filter(tool => tool.category === activeCategory);
 
   const handleToolSelect = (toolId: string) => {
     setActiveTool(toolId);
-    // Scroll to top when a tool is selected
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleBackToTools = () => {
     setActiveTool(null);
-    // Scroll to top when returning to tools grid
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Find the active tool object
-  const activeToolObj = toolsData.find(tool => tool.id === activeTool);
-
   return (
-    <div className="container mx-auto py-8 px-4 md:px-6">
+    <div className="container max-w-7xl py-8">
       {activeTool ? (
         <div className="space-y-6">
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleBackToTools} 
-              className="mb-4"
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Back to Tools
-            </Button>
-            <h1 className="text-2xl font-bold">{activeToolObj?.title}</h1>
-          </div>
+          <Button 
+            variant="ghost" 
+            onClick={handleBackToTools}
+            className="mb-4 flex items-center gap-2"
+          >
+            <ChevronLeft className="h-4 w-4" /> Back to Tools
+          </Button>
           
-          {activeToolObj?.component}
+          {toolsData.find(tool => tool.id === activeTool)?.component}
         </div>
       ) : (
         <div className="space-y-8">
-          <div className="text-center max-w-3xl mx-auto space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight">Brain Health Toolkit</h1>
+          <div className="text-center space-y-2 max-w-3xl mx-auto">
+            <h1 className="text-3xl font-bold tracking-tight">Cognitive Tools</h1>
             <p className="text-muted-foreground">
-              Explore our collection of tools designed to help monitor, assess, and improve your brain health.
+              Our comprehensive suite of tools to assess, train, and track your brain health
             </p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {toolsData.map((tool) => (
-              <Card key={tool.id} className="flex flex-col overflow-hidden border transition-all hover:shadow-md">
-                <CardHeader className="p-6 pb-3 flex flex-row items-center gap-4">
-                  <div className="bg-primary/10 p-3 rounded-lg">
-                    {tool.icon}
-                  </div>
-                  <div>
-                    <CardTitle className="text-xl">{tool.title}</CardTitle>
-                  </div>
-                </CardHeader>
-                <div className="px-6 py-3 flex-1">
-                  <p className="text-muted-foreground">{tool.description}</p>
-                </div>
-                <CardFooter className="p-6 pt-3">
-                  <Button 
-                    className="w-full" 
-                    onClick={() => handleToolSelect(tool.id)}
-                  >
-                    Launch Tool
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-          
-          <div className="bg-muted p-6 rounded-lg max-w-3xl mx-auto mt-12">
-            <div className="flex items-start gap-4">
-              <Grid className="h-10 w-10 text-primary mt-1" />
-              <div className="space-y-3">
-                <h2 className="text-xl font-semibold">Why Use These Tools?</h2>
-                <p className="text-muted-foreground">
-                  Regular brain exercises and health monitoring can help maintain cognitive function 
-                  and potentially reduce your risk of stroke and other neurological conditions.
-                </p>
-                <ul className="space-y-2 text-muted-foreground">
-                  <li className="flex items-center gap-2">
-                    <div className="h-1.5 w-1.5 rounded-full bg-primary"></div>
-                    <span>Improve memory and cognitive processing speed</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <div className="h-1.5 w-1.5 rounded-full bg-primary"></div>
-                    <span>Monitor your brain health and track progress over time</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <div className="h-1.5 w-1.5 rounded-full bg-primary"></div>
-                    <span>Learn about stroke risk factors and prevention strategies</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <div className="h-1.5 w-1.5 rounded-full bg-primary"></div>
-                    <span>Get personalized recommendations for improving brain health</span>
-                  </li>
-                </ul>
-              </div>
+          <Tabs defaultValue="all" value={activeCategory} onValueChange={setActiveCategory}>
+            <div className="flex justify-center">
+              <TabsList className="mb-6">
+                <TabsTrigger value="all">All Tools</TabsTrigger>
+                <TabsTrigger value="training">Training</TabsTrigger>
+                <TabsTrigger value="assessment">Assessment</TabsTrigger>
+                <TabsTrigger value="tracking">Tracking</TabsTrigger>
+                <TabsTrigger value="education">Education</TabsTrigger>
+              </TabsList>
             </div>
-          </div>
+            
+            <TabsContent value={activeCategory} className="mt-0">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredTools.map((tool) => (
+                  <Card key={tool.id} className="overflow-hidden transition-all hover:shadow-md">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="p-2 rounded-md bg-primary/10">
+                          {tool.icon}
+                        </div>
+                        <div className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-md">
+                          {tool.duration}
+                        </div>
+                      </div>
+                      <CardTitle className="text-xl mt-4">{tool.title}</CardTitle>
+                      <CardDescription>{tool.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="pb-3">
+                      <div className="space-y-1.5">
+                        <p className="text-sm font-medium">Benefits:</p>
+                        <ul className="text-sm text-muted-foreground space-y-1">
+                          {tool.benefits.map((benefit, index) => (
+                            <li key={index} className="flex items-start gap-2">
+                              <div className="rounded-full bg-primary/10 p-1 mt-0.5">
+                                <Brain className="h-3 w-3 text-primary" />
+                              </div>
+                              <span>{benefit}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </CardContent>
+                    <CardFooter>
+                      <Button 
+                        className="w-full" 
+                        onClick={() => handleToolSelect(tool.id)}
+                      >
+                        Start {tool.title}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       )}
     </div>

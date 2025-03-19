@@ -1,202 +1,266 @@
+import React from "react";
 import Link from "next/link";
-import { currentUser } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  BookOpen,
-  Dumbbell,
-  BadgeInfo
-} from "lucide-react";
-import { ProgressSystem } from "@/components/progress-system";
-import { BrainHealthVisualization } from "@/components/brain-health-visualization";
-import { QuickLaunchWidget } from "@/components/quick-launch-widget";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ActivityHistory } from "@/components/activity-history";
+import { CognitiveScoreCard } from "@/components/cognitive-score-card";
+import { Brain, Activity, FileText, Zap, Clock } from "lucide-react";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "Dashboard | Brainwise",
-  description: "Your brain health analytics dashboard",
+export const metadata: Metadata = {
+  title: "Brain Health Dashboard | Brainwise",
+  description: "Track your brain health metrics, view cognitive scores, and get personalized training recommendations.",
+  robots: {
+    index: false,  // Don't index the dashboard as it contains personal data
+    follow: true
+  }
 };
 
-export default async function DashboardPage() {
-  const user = await currentUser();
-  
-  if (!user) {
-    redirect("/sign-in");
-  }
-  
+export default function DashboardPage() {
   return (
-    <div className="flex flex-col gap-8">
-      <section className="magic-section relative">
-        <div className="absolute inset-0 -z-10 bg-[length:20px_20px] bg-center [background-image:linear-gradient(rgba(var(--magic-primary),0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(var(--magic-primary),0.1)_1px,transparent_1px)]"></div>
-        <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-gradient-to-br from-[rgba(var(--magic-primary),0.3)] to-[rgba(var(--magic-accent),0.3)] blur-3xl"></div>
+    <div className="container mx-auto py-8">
+      <div className="flex flex-col gap-2 mb-8">
+        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <p className="text-muted-foreground">
+          Track your brain health, view your progress, and manage your cognitive training.
+        </p>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="col-span-2">
+          <Tabs defaultValue="overview" className="w-full">
+            <TabsList className="grid grid-cols-3 mb-8">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="activities">Activities</TabsTrigger>
+              <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="overview" className="space-y-6">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <Card className="col-span-1">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-sm font-medium">Overall Brain Health</CardTitle>
+                    <Brain className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">85%</div>
+                    <p className="text-xs text-muted-foreground">
+                      +2% from last assessment
+                    </p>
+                  </CardContent>
+                </Card>
+                
+                <Card className="col-span-1">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-sm font-medium">Weekly Activity</CardTitle>
+                    <Activity className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">6 sessions</div>
+                    <p className="text-xs text-muted-foreground">
+                      3 hours total training
+                    </p>
+                  </CardContent>
+                </Card>
+                
+                <Card className="col-span-1">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-sm font-medium">Next Assessment</CardTitle>
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">3 days</div>
+                    <p className="text-xs text-muted-foreground">
+                      Comprehensive analysis
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="grid gap-6 md:grid-cols-2">
+                <ActivityHistory />
+                <CognitiveScoreCard />
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="activities" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Training Plan</CardTitle>
+                  <CardDescription>
+                    Your personalized cognitive training schedule
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center pb-2 border-b">
+                      <div className="font-medium">Memory Training</div>
+                      <div className="text-sm text-muted-foreground">Today</div>
+                    </div>
+                    <div className="flex justify-between items-center pb-2 border-b">
+                      <div className="font-medium">Attention Exercises</div>
+                      <div className="text-sm text-muted-foreground">Tomorrow</div>
+                    </div>
+                    <div className="flex justify-between items-center pb-2 border-b">
+                      <div className="font-medium">Processing Speed</div>
+                      <div className="text-sm text-muted-foreground">In 2 days</div>
+                    </div>
+                    <div className="flex justify-between items-center pb-2 border-b">
+                      <div className="font-medium">Executive Function</div>
+                      <div className="text-sm text-muted-foreground">In 3 days</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recommended Games</CardTitle>
+                  <CardDescription>
+                    Games selected to match your training needs
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Link href="/cognitive-games?tab=memory" className="block">
+                      <div className="rounded-lg border p-3 hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Brain className="h-5 w-5 text-primary" />
+                          <span className="font-medium">Memory Cards</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Test and improve your short-term memory
+                        </p>
+                      </div>
+                    </Link>
+                    
+                    <Link href="/cognitive-games?tab=concentration" className="block">
+                      <div className="rounded-lg border p-3 hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Zap className="h-5 w-5 text-primary" />
+                          <span className="font-medium">Concentration</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Strengthen your focus and attention span
+                        </p>
+                      </div>
+                    </Link>
+                    
+                    <Link href="/cognitive-games?tab=reaction" className="block">
+                      <div className="rounded-lg border p-3 hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Clock className="h-5 w-5 text-primary" />
+                          <span className="font-medium">Reaction Time</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Improve your processing speed and reaction time
+                        </p>
+                      </div>
+                    </Link>
+                    
+                    <Link href="/cognitive-games" className="block">
+                      <div className="rounded-lg border p-3 hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Activity className="h-5 w-5 text-primary" />
+                          <span className="font-medium">View All Games</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Explore all available cognitive games
+                        </p>
+                      </div>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="recommendations" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Brain Health Recommendations</CardTitle>
+                  <CardDescription>
+                    Personalized suggestions to improve your cognitive health
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="rounded-lg bg-muted p-4">
+                      <h3 className="font-medium mb-1">Increase memory training frequency</h3>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Based on your recent assessment, more frequent memory exercises would be beneficial.
+                      </p>
+                      <div className="text-sm">
+                        <Button variant="outline" size="sm">Schedule Training</Button>
+                      </div>
+                    </div>
+                    
+                    <div className="rounded-lg bg-muted p-4">
+                      <h3 className="font-medium mb-1">Try the new concentration exercises</h3>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Your attention scores could benefit from our focused concentration activities.
+                      </p>
+                      <div className="text-sm">
+                        <Button variant="outline" size="sm">View Exercises</Button>
+                      </div>
+                    </div>
+                    
+                    <div className="rounded-lg bg-muted p-4">
+                      <h3 className="font-medium mb-1">Complete your cognitive assessment</h3>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        It&apos;s been 30 days since your last full assessment. A new one is recommended.
+                      </p>
+                      <div className="text-sm">
+                        <Button variant="outline" size="sm">Start Assessment</Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
         
-        <div className="magic-container relative">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              <span className="magic-gradient-text">Brain Health</span> Dashboard
-            </h1>
-            
-            <div className="space-x-2">
-              <Button size="sm" variant="outline" className="border-primary/50 text-primary hover:bg-primary/10" asChild>
-                <Link href="/profile">My Profile</Link>
-              </Button>
-              <Button size="sm" variant="ghost" className="text-muted-foreground" asChild>
-                <Link href="/tools">All Tools</Link>
-              </Button>
-            </div>
-          </div>
-          
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {/* Summary Cards */}
-            <Card className="backdrop-blur-sm bg-card/80 hover:shadow-md transition-shadow">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Stroke Risk</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">Low</div>
-                <p className="text-xs text-muted-foreground">Based on your latest assessment</p>
-              </CardContent>
-              <CardFooter>
-                <Link href="/stroke-prediction" className="text-xs text-primary hover:underline">
-                  Update Assessment
-                </Link>
-              </CardFooter>
-            </Card>
-            
-            <Card className="backdrop-blur-sm bg-card/80 hover:shadow-md transition-shadow">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Cognitive Health</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">Very Good</div>
-                <p className="text-xs text-muted-foreground">Based on your assessment results</p>
-              </CardContent>
-              <CardFooter>
-                <Link href="/tools/cognitive-assessment" className="text-xs text-primary hover:underline">
-                  View Assessment
-                </Link>
-              </CardFooter>
-            </Card>
-            
-            <Card className="backdrop-blur-sm bg-card/80 hover:shadow-md transition-shadow">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Brain Training</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">2 Sessions</div>
-                <p className="text-xs text-muted-foreground">This week</p>
-              </CardContent>
-              <CardFooter>
-                <Link href="/tools" className="text-xs text-primary hover:underline">
-                  Train Now
-                </Link>
-              </CardFooter>
-            </Card>
-            
-            <Card className="backdrop-blur-sm bg-card/80 hover:shadow-md transition-shadow">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Health Score</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">85/100</div>
-                <p className="text-xs text-muted-foreground">Overall brain health score</p>
-              </CardContent>
-              <CardFooter>
-                <Link href="/tools" className="text-xs text-primary hover:underline">
-                  View Details
-                </Link>
-              </CardFooter>
-            </Card>
-          </div>
-        </div>
-      </section>
-      
-      <section className="magic-section relative">
-        <div className="absolute -left-40 h-60 w-60 rounded-full bg-gradient-to-br from-[rgba(var(--magic-secondary),0.1)] to-[rgba(var(--magic-primary),0.1)] blur-2xl"></div>
-        
-        <div className="magic-container relative">
-          {/* Progress System */}
-          <ProgressSystem />
-        </div>
-      </section>
-      
-      <section className="magic-section relative">
-        <div className="absolute -right-40 h-60 w-60 rounded-full bg-gradient-to-br from-[rgba(var(--magic-accent),0.1)] to-[rgba(var(--magic-primary),0.1)] blur-2xl"></div>
-        
-        <div className="magic-container relative">
-          {/* Brain Health Visualization */}
-          <BrainHealthVisualization />
-        </div>
-      </section>
-      
-      <section className="magic-section">
-        <div className="magic-container">
-          <h2 className="text-2xl font-bold mb-6">Recommended for You</h2>
-          
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="mb-2">
-                  <BookOpen className="h-8 w-8 text-[rgb(var(--magic-primary))]" />
-                </div>
-                <CardTitle>Understanding Stroke Risk Factors</CardTitle>
-                <CardDescription>
-                  Learn about the key risk factors that contribute to stroke risk
-                </CardDescription>
-              </CardHeader>
-              <CardFooter>
-                <Button variant="ghost" className="w-full" asChild>
-                  <Link href="#">Read Article</Link>
+        <div className="col-span-1">
+          <Card className="h-full">
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+              <CardDescription>Start your brain training</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Link href="/cognitive-games">
+                <Button className="w-full justify-start" variant="outline">
+                  <Brain className="mr-2 h-4 w-4" />
+                  Play Cognitive Games
                 </Button>
-              </CardFooter>
-            </Card>
-            
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="mb-2">
-                  <Dumbbell className="h-8 w-8 text-[rgb(var(--magic-secondary))]" />
-                </div>
-                <CardTitle>Brain Exercises for Memory</CardTitle>
-                <CardDescription>
-                  Simple daily exercises to strengthen your memory
-                </CardDescription>
-              </CardHeader>
-              <CardFooter>
-                <Button variant="ghost" className="w-full" asChild>
-                  <Link href="#">View Exercises</Link>
+              </Link>
+              
+              <Link href="/stroke-prediction">
+                <Button className="w-full justify-start" variant="outline">
+                  <Activity className="mr-2 h-4 w-4" />
+                  Stroke Risk Assessment
                 </Button>
-              </CardFooter>
-            </Card>
-            
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="mb-2">
-                  <BadgeInfo className="h-8 w-8 text-[rgb(var(--magic-accent))]" />
-                </div>
-                <CardTitle>Brain Health Tips</CardTitle>
-                <CardDescription>
-                  Daily habits to maintain optimal brain function
-                </CardDescription>
-              </CardHeader>
-              <CardFooter>
-                <Button variant="ghost" className="w-full" asChild>
-                  <Link href="#">Get Tips</Link>
+              </Link>
+              
+              <Link href="/chatbot">
+                <Button className="w-full justify-start" variant="outline">
+                  <FileText className="mr-2 h-4 w-4" />
+                  Ask Brain Health Questions
                 </Button>
-              </CardFooter>
-            </Card>
-          </div>
+              </Link>
+              
+              <div className="pt-4 border-t">
+                <h3 className="text-sm font-medium mb-3">Daily Tips</h3>
+                <div className="space-y-2 text-sm text-muted-foreground">
+                  <p>Regular physical exercise increases cerebral blood flow.</p>
+                  <p>Maintaining social connections helps preserve cognitive function.</p>
+                  <p>Sleep is essential for memory consolidation and brain health.</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </section>
-      
-      {/* Quick Launch Widget */}
-      <QuickLaunchWidget />
+      </div>
     </div>
   );
 } 
