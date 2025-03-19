@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
-import { connectToDatabase } from "@/lib/database";
-import { HealthMetric } from "@/lib/models/HealthMetric"; // You need to create this model
+import connectToDatabase from "@/lib/mongodb";
+import {HealthMetric} from "@/lib/models/HealthMetric"; // You need to create this model
 
 export async function GET(request: NextRequest) {
   try {

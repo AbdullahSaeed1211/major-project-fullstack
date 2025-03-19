@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { predictStroke } from "@/lib/stroke-model";
 
 interface FormData {
   gender: string;
@@ -22,18 +21,18 @@ interface PredictionResult {
   probability: number;
 }
 
-interface StrokeInput {
-  gender: string;
-  age: number;
-  hypertension: number;
-  heartDisease: number;
-  everMarried: string;
-  workType: string;
-  residenceType: string;
-  avgGlucoseLevel: number;
-  bmi: number;
-  smokingStatus: string;
-}
+// interface StrokeInput {
+//   gender: string;
+//   age: number;
+//   hypertension: number;
+//   heartDisease: number;
+//   everMarried: string;
+//   workType: string;
+//   residenceType: string;
+//   avgGlucoseLevel: number;
+//   bmi: number;
+//   smokingStatus: string;
+// }
 
 export function StrokePredictionForm() {
   const [formData, setFormData] = useState<FormData>({

@@ -1,24 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuth } from "@clerk/nextjs/server";
+import { withAuth, createErrorResponse } from "@/lib/auth";
 import { mapFormToModelInput, predictStroke } from "@/lib/stroke-model";
-import { connectToDatabase } from "@/lib/database";
-import { Assessment } from "@/lib/models/Assessment";
+import connectToDatabase from "@/lib/mongodb";
+import Assessment from "@/lib/models/Assessment";
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, userId: string) => {
   console.log("🔍 [Stroke Prediction] Processing new prediction request");
+  console.log(`👤 [Stroke Prediction] Authenticated user: ${userId}`);
   
   try {
-    // Get user ID if authenticated
-    // @ts-expect-error Clerk types don't properly support the request parameter
-    const auth = getAuth({ request });
-    const userId = auth.userId;
-    
-    if (userId) {
-      console.log(`👤 [Stroke Prediction] Authenticated user: ${userId}`);
-    } else {
-      console.log("👤 [Stroke Prediction] Anonymous user request");
-    }
-    
     // Parse request body
     const body = await request.json();
     console.log(`📄 [Stroke Prediction] Received data with ${Object.keys(body).length} fields`);
@@ -29,10 +19,7 @@ export async function POST(request: NextRequest) {
     
     if (missingFields.length > 0) {
       console.error(`❌ [Stroke Prediction] Missing required fields: ${missingFields.join(', ')}`);
-      return NextResponse.json(
-        { error: `Missing required fields: ${missingFields.join(', ')}` },
-        { status: 400 }
-      );
+      return createErrorResponse(`Missing required fields: ${missingFields.join(', ')}`, 400);
     }
     
     // Convert form data to model input format
@@ -54,26 +41,24 @@ export async function POST(request: NextRequest) {
     const prediction = predictStroke(modelInput);
     console.log(`📊 [Stroke Prediction] Result: ${prediction.prediction} (${prediction.probability.toFixed(2)})`);
     
-    // Save assessment if user is authenticated
-    if (userId) {
-      try {
-        await connectToDatabase();
-        await Assessment.create({
-          userId: userId,
-          type: 'stroke',
-          result: `${prediction.prediction} (${(prediction.probability * 100).toFixed(2)}%)`,
-          risk: prediction.prediction === 'Likely' ? 'high' : 'low',
-          data: { 
-            input: modelInput, 
-            result: prediction,
-            riskFactors 
-          },
-        });
-        console.log(`💾 [Stroke Prediction] Assessment saved for user: ${userId}`);
-      } catch (dbError) {
-        console.error("Database error:", dbError);
-        // Continue despite DB error - don't fail the request
-      }
+    // Save assessment
+    try {
+      await connectToDatabase();
+      await Assessment.create({
+        userId,
+        type: 'stroke',
+        result: `${prediction.prediction} (${(prediction.probability * 100).toFixed(2)}%)`,
+        risk: prediction.prediction === 'Likely' ? 'high' : 'low',
+        data: { 
+          input: modelInput, 
+          result: prediction,
+          riskFactors 
+        },
+      });
+      console.log(`💾 [Stroke Prediction] Assessment saved for user: ${userId}`);
+    } catch (dbError) {
+      console.error("Database error:", dbError);
+      // Continue despite DB error - don't fail the request
     }
     
     // Return the prediction result
@@ -85,9 +70,6 @@ export async function POST(request: NextRequest) {
     
   } catch (error) {
     console.error("❌ [Stroke Prediction] Error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return createErrorResponse("Internal server error", 500);
   }
-} 
+});

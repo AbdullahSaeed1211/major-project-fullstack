@@ -13,10 +13,22 @@ if (!MONGODB_URI) {
  * in development. This prevents connections growing exponentially
  * during API Route usage.
  */
-let cached = global.mongoose;
 
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
+// Define types for the global mongoose cache
+type MongooseConnection = {
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
+};
+
+// Use type assertion to avoid TypeScript error
+const globalWithMongoose = global as unknown as {
+  mongoose?: MongooseConnection;
+};
+
+const cached = globalWithMongoose.mongoose || { conn: null, promise: null };
+
+if (!globalWithMongoose.mongoose) {
+  globalWithMongoose.mongoose = cached;
 }
 
 async function connectToDatabase() {

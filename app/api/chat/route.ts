@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
-import { getAuth } from "@clerk/nextjs/server";
+import { withAuth, createErrorResponse } from "@/lib/auth";
 import connectToDatabase from "@/lib/mongodb";
 import ChatHistory from "@/lib/models/ChatHistory";
 import mongoose from "mongoose";
@@ -44,22 +44,19 @@ const generatePrompt = (context: string, question: string) => {
   return `${instructions}${contextSection}${questionSection}Response:`;
 };
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, userId: string) => {
   try {
-    // @ts-expect-error Clerk types don't properly support the request parameter
-    const auth = getAuth({ request: req });
-    const userId = auth.userId;
     const reqBody = await req.json();
     const { history, message } = reqBody;
 
     if (!Array.isArray(history) || typeof message !== 'string') {
-      return NextResponse.json({ error: "Invalid input data" }, { status: 400 });
+      return createErrorResponse("Invalid input data", 400);
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       console.error('GEMINI_API_KEY is not set');
-      return NextResponse.json({ error: "API configuration error" }, { status: 500 });
+      return createErrorResponse("API configuration error", 500);
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
@@ -75,34 +72,32 @@ export async function POST(req: NextRequest) {
     const response = result.response;
     const text = await response.text();
 
-    // If user is authenticated, save chat history
-    if (userId) {
-      try {
-        await connectToDatabase();
-        
-        // Check if ChatHistory model exists, if not create it
-        if (typeof ChatHistory === 'undefined') {
-          const ChatHistorySchema = new mongoose.Schema({
-            userId: String,
-            message: String,
-            response: String,
-            timestamp: Date
-          });
-          
-          global.ChatHistory = mongoose.models.ChatHistory || 
-            mongoose.model('ChatHistory', ChatHistorySchema);
-        }
-        
-        await global.ChatHistory.create({
-          userId,
-          message,
-          response: text,
-          timestamp: new Date()
+    // Save chat history
+    try {
+      await connectToDatabase();
+      
+      // Check if ChatHistory model exists, if not create it
+      if (typeof ChatHistory === 'undefined') {
+        const ChatHistorySchema = new mongoose.Schema({
+          userId: String,
+          message: String,
+          response: String,
+          timestamp: Date
         });
-      } catch (dbError) {
-        console.error("Error saving chat history:", dbError);
-        // Continue even if saving history fails
+        
+        global.ChatHistory = mongoose.models.ChatHistory || 
+          mongoose.model('ChatHistory', ChatHistorySchema);
       }
+      
+      await global.ChatHistory.create({
+        userId,
+        message,
+        response: text,
+        timestamp: new Date()
+      });
+    } catch (dbError) {
+      console.error("Error saving chat history:", dbError);
+      // Continue even if saving history fails
     }
 
     return NextResponse.json({
@@ -118,9 +113,6 @@ export async function POST(req: NextRequest) {
       errorMessage = error.message;
     }
 
-    return NextResponse.json({
-      status: "error",
-      message: errorMessage,
-    }, { status: 500 });
+    return createErrorResponse(errorMessage, 500);
   }
-} 
+}); 

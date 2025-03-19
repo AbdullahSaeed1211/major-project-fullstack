@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +15,7 @@ type Message = {
 };
 
 export function Chatbot() {
-  const { isSignedIn, user } = useUser();
+  const { isSignedIn, user } = useAuth();
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -145,9 +145,9 @@ export function Chatbot() {
                   
                   {message.role === "user" && (
                     <Avatar className="h-8 w-8 mt-1">
-                      <AvatarImage src={user?.imageUrl} alt={user?.firstName || "User"} />
+                      <AvatarImage src={user?.image} alt={user?.name || "User"} />
                       <AvatarFallback className="bg-primary text-primary-foreground">
-                        {user?.firstName?.[0] || "U"}
+                        {user?.name?.[0] || "U"}
                       </AvatarFallback>
                     </Avatar>
                   )}

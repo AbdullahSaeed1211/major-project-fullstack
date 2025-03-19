@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuth } from "@clerk/nextjs/server";
-import { connectToDatabase } from "@/lib/database";
-import { Assessment } from "@/lib/models/Assessment";
+import { withAuth, createErrorResponse } from "@/lib/auth";
+import connectToDatabase from "@/lib/mongodb";
+import AssessmentModel from "@/lib/models/Assessment";
 import { writeFile } from "fs/promises";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
@@ -12,31 +12,20 @@ export const config = {
   },
 };
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, userId: string) => {
   try {
-    // @ts-expect-error Clerk types don't properly support the request parameter
-    const auth = getAuth({ request });
-    const userId = auth.userId;
-    
-    // Check if authenticated
-    if (!userId) {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-    }
-    
     // Handle file upload (we need a multipart parser here)
     const formData = await request.formData();
     const file = formData.get("file") as File;
     
     if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+      return createErrorResponse("No file provided", 400);
     }
     
     // Validate file type
     const validTypes = ["image/jpeg", "image/png", "application/dicom"];
     if (!validTypes.includes(file.type)) {
-      return NextResponse.json({ 
-        error: "Invalid file type. Supported formats: JPEG, PNG, DICOM" 
-      }, { status: 400 });
+      return createErrorResponse("Invalid file type. Supported formats: JPEG, PNG, DICOM", 400);
     }
     
     // Create a unique filename
@@ -55,7 +44,7 @@ export async function POST(request: NextRequest) {
     
     // For now, creating a placeholder for the assessment
     await connectToDatabase();
-    const assessment = await Assessment.create({
+    const assessment = await AssessmentModel.create({
       userId,
       type: 'tumor',
       result: 'Pending analysis',
@@ -81,9 +70,6 @@ export async function POST(request: NextRequest) {
     
   } catch (error) {
     console.error("Brain scan upload error:", error);
-    return NextResponse.json(
-      { error: "Failed to process brain scan" },
-      { status: 500 }
-    );
+    return createErrorResponse("Failed to process brain scan", 500);
   }
-} 
+}); 

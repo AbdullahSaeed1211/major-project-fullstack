@@ -2,12 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface UserProfileProps {
   user?: {
@@ -39,21 +37,17 @@ interface Assessment {
 
 export function UserProfile({ user }: UserProfileProps) {
   const { toast } = useToast();
-  const [, setActiveTab] = useState("overview");
   const [healthMetrics, setHealthMetrics] = useState<HealthMetric[]>([]);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [isLoading, setIsLoading] = useState({
     metrics: true,
     assessments: true
   });
-  
-  // No user, show sign-in prompt
-  if (!user) {
-    return <div className="p-8 text-center">Please sign in to view your profile</div>;
-  }
-  
+
   // Fetch health metrics
   useEffect(() => {
+    if (!user) return; // Skip fetching if no user
+    
     async function fetchHealthMetrics() {
       try {
         const response = await fetch('/api/user/health-metrics');
@@ -76,10 +70,12 @@ export function UserProfile({ user }: UserProfileProps) {
     }
     
     fetchHealthMetrics();
-  }, [toast]);
+  }, [toast, user]);
   
   // Fetch assessments
   useEffect(() => {
+    if (!user) return; // Skip fetching if no user
+    
     async function fetchAssessments() {
       try {
         const response = await fetch('/api/user/assessments');
@@ -102,7 +98,12 @@ export function UserProfile({ user }: UserProfileProps) {
     }
     
     fetchAssessments();
-  }, [toast]);
+  }, [toast, user]);
+
+  // No user, show sign-in prompt
+  if (!user) {
+    return <div className="p-8 text-center">Please sign in to view your profile</div>;
+  }
   
   return (
     <div className="space-y-8">
@@ -145,7 +146,7 @@ export function UserProfile({ user }: UserProfileProps) {
         </CardContent>
       </Card>
       
-      <Tabs defaultValue="overview" className="w-full" onValueChange={setActiveTab}>
+      <Tabs defaultValue="overview" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="assessments">Assessments</TabsTrigger>
@@ -155,19 +156,19 @@ export function UserProfile({ user }: UserProfileProps) {
         <TabsContent value="overview" className="space-y-4 pt-4">
           <div className="text-center p-8">
             <p>Loading overview data...</p>
-              </div>
+          </div>
         </TabsContent>
         
         <TabsContent value="assessments" className="space-y-4 pt-4">
           <div className="text-center p-8">
-            <p>Loading assessment data...</p>
-              </div>
+            <p>{isLoading.assessments ? "Loading assessment data..." : `${assessments.length} assessments found`}</p>
+          </div>
         </TabsContent>
         
         <TabsContent value="metrics" className="space-y-4 pt-4">
           <div className="text-center p-8">
-            <p>Loading health metrics...</p>
-              </div>
+            <p>{isLoading.metrics ? "Loading health metrics..." : `${healthMetrics.length} metrics found`}</p>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

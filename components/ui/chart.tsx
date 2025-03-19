@@ -28,6 +28,7 @@ export type ChartConfig = Record<string, ChartConfigItem>
 
 interface ChartContainerProps extends React.HTMLAttributes<HTMLDivElement> {
   config?: ChartConfig
+  children: React.ReactNode
 }
 
 export function ChartContainer({
@@ -69,7 +70,7 @@ export function ChartContainer({
   return (
     <div ref={containerRef} className={cn("w-full", className)} {...props}>
       <ResponsiveContainer width="100%" height="100%">
-        {children}
+        {children as React.ReactElement}
       </ResponsiveContainer>
     </div>
   )
@@ -88,6 +89,7 @@ type TooltipPayload = {
   dataKey: string;
   name: string;
   value: number | string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload?: Record<string, any>;
   fill: string;
 }
@@ -121,7 +123,7 @@ export function ChartTooltipContent({
         return (
           <React.Fragment key={`item-${index}`}>
             {!hideLabel && label ? (
-              <div className="mb-1 text-sm font-medium">{label}</div>
+              <div className="mb-1 text-sm font-medium">{label as React.ReactNode}</div>
             ) : null}
             <div className="flex items-center">
               {!hideIndicator ? (
@@ -142,7 +144,7 @@ export function ChartTooltipContent({
                 </div>
               ) : null}
               <div className="flex w-full items-center justify-between gap-2">
-                <div className="font-medium">{name}</div>
+                <div className="font-medium">{name as React.ReactNode}</div>
                 <div>{typeof value === "number" ? value.toLocaleString() : value}</div>
               </div>
             </div>
@@ -153,17 +155,16 @@ export function ChartTooltipContent({
   )
 }
 
-export function ChartTooltip({
-  content,
-  ...props
-}: TooltipProps<any, any>) {
-  return <Tooltip content={content} {...props} />
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function ChartTooltip(props: TooltipProps<any, any>) {
+  return <Tooltip {...props} />
 }
 
 type LegendPayload = {
   value: string;
   dataKey: string;
   color: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload?: Record<string, any>;
 }
 
@@ -200,14 +201,7 @@ export function ChartLegendContent({
   )
 }
 
-export function ChartLegend({
-  content,
-  ...props
-}: LegendProps) {
-  return (
-    <Legend
-      content={content}
-      {...props}
-    />
-  )
+export function ChartLegend(props: LegendProps) {
+  // @ts-expect-error - Recharts has incompatible types for Legend
+  return <Legend {...props} />
 } 
