@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
-import { mapFormToModelInput, predictStroke } from "@/lib/ml/stroke-model";
+import { mapFormToModelInput, predictStroke } from "@/lib/stroke-model";
 
 export async function POST(request: NextRequest) {
   console.log("🔍 [Stroke Prediction] Processing new prediction request");
