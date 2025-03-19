@@ -13,19 +13,5 @@
     "NEXT_TELEMETRY_DISABLED": "1",
     "NODE_ENV": "production"
   },
-  "regions": ["lhr1"],
-  "functions": {
-    "app/api/ml/detect/route.ts": {
-      "memory": 3008,
-      "maxDuration": 5
-    },
-    "app/api/ml/status/*/route.ts": {
-      "memory": 1024,
-      "maxDuration": 5
-    },
-    "app/api/ml/queue/route.ts": {
-      "memory": 1024,
-      "maxDuration": 10
-    }
-  }
+  "regions": ["lhr1"]
 } 

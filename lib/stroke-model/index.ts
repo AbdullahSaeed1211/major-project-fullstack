@@ -72,7 +72,8 @@ const coefficients = [
   0.31, -0.15, 0.42, 0.0  // smokingStatus (formerly smoked, never smoked, smokes, unknown)
 ];
 
-const intercept = -4.2;  // Lower intercept to reflect base stroke rarity
+// Lower intercept to reflect base stroke rarity
+const intercept = -5.6;  // Add a negative value to reflect the rarity of strokes
 
 /**
  * Preprocesses the input data for the model

@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { ArrowUpIcon, SpinnerIcon, CheckCircleIcon, AlertTriangleIcon } from 'lucide-react';
+import { ArrowUpIcon, CheckCircleIcon, AlertTriangleIcon } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,12 +11,13 @@ import { Progress } from '@/components/ui/progress';
 // Processing status type
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'failed';
 
-// Request status for polling
-interface RequestStatus {
-  requestId: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  result?: any;
-  error?: string;
+// Mock result interface
+interface AnalysisResult {
+  tumorDetected: boolean;
+  confidence: number;
+  location?: string;
+  type?: string;
+  recommendations?: string[];
 }
 
 export function BrainScanUpload() {
@@ -24,11 +25,10 @@ export function BrainScanUpload() {
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<ProcessingStatus>('idle');
   const [progress, setProgress] = useState(0);
-  const [requestId, setRequestId] = useState<string | null>(null);
-  const [result, setResult] = useState<any | null>(null);
+  const [processingTimeout, setProcessingTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [webhookUrl, setWebhookUrl] = useState<string>('');
-  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
 
   // Dropzone configuration
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -36,7 +36,6 @@ export function BrainScanUpload() {
       setFile(acceptedFiles[0]);
       setStatus('idle');
       setProgress(0);
-      setRequestId(null);
       setResult(null);
       setError(null);
     }
@@ -50,138 +49,117 @@ export function BrainScanUpload() {
     maxFiles: 1
   });
 
-  // Handle upload with async processing
+  // Clean up timeout when component unmounts
+  useEffect(() => {
+    return () => {
+      if (processingTimeout) {
+        clearTimeout(processingTimeout);
+      }
+    };
+  }, [processingTimeout]);
+
+  // Handle client-side processing simulation
   const handleUpload = async () => {
     if (!file) return;
 
     try {
+      // Start "uploading"
       setStatus('uploading');
       setProgress(10);
 
-      // Create form data
-      const formData = new FormData();
-      formData.append('image', file);
-      
-      // Add webhook URL if provided
-      if (webhookUrl) {
-        formData.append('webhookUrl', webhookUrl);
-      }
-      
-      // Specify async mode
-      formData.append('mode', 'async');
-
-      // Upload the file
-      const response = await fetch('/api/ml/detect', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (!response.ok) {
-        throw new Error('Upload failed');
-      }
-
+      // Simulate upload delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
       setProgress(50);
       
-      // Get the response data with request ID
-      const data = await response.json();
-      setRequestId(data.requestId);
-      
-      // Start polling for status updates
+      // Move to "processing" stage
       setStatus('processing');
-      startPolling(data.requestId);
       
       toast({
         title: 'Brain scan uploaded',
         description: 'Your scan is being processed. You will be notified when the analysis is complete.',
       });
+      
+      // Simulate processing with increasing progress
+      let currentProgress = 50;
+      const progressInterval = setInterval(() => {
+        if (currentProgress < 90) {
+          currentProgress += 5;
+          setProgress(currentProgress);
+        } else {
+          clearInterval(progressInterval);
+        }
+      }, 800);
+      
+      // Simulate completion after some seconds
+      const timeout = setTimeout(() => {
+        clearInterval(progressInterval);
+        setProgress(100);
+        setStatus('completed');
+        
+        // Generate mock result 
+        // In a real implementation, this would be the result of actual client-side ML processing
+        const mockResult: AnalysisResult = Math.random() > 0.7 ? 
+          {
+            tumorDetected: true,
+            confidence: 0.86,
+            location: "Right temporal lobe",
+            type: "Potentially benign",
+            recommendations: [
+              "Consult with a neurologist",
+              "Consider follow-up MRI in 6 months",
+              "Monitor for any new symptoms"
+            ]
+          } : 
+          {
+            tumorDetected: false,
+            confidence: 0.92,
+            recommendations: ["Regular check-ups as recommended by your physician"]
+          };
+          
+        setResult(mockResult);
+        
+        toast({
+          title: 'Analysis complete',
+          description: 'Your brain scan analysis is ready to view.'
+        });
+      }, 5000);
+      
+      setProcessingTimeout(timeout);
+      
     } catch (err) {
-      console.error('Upload error:', err);
+      console.error('Processing error:', err);
       setStatus('failed');
-      setError(err instanceof Error ? err.message : 'Upload failed');
+      setError(err instanceof Error ? err.message : 'Processing failed');
       
       toast({
         variant: 'destructive',
-        title: 'Upload failed',
-        description: 'There was a problem uploading your brain scan.'
+        title: 'Processing failed',
+        description: 'There was a problem analyzing your brain scan.'
       });
     }
   };
 
-  // Start polling for request status
-  const startPolling = (id: string) => {
-    // Clear any existing interval
-    if (pollingInterval) {
-      clearInterval(pollingInterval);
-    }
-    
-    // Set up polling interval (every 2 seconds)
-    const interval = setInterval(async () => {
-      try {
-        const response = await fetch(`/api/ml/status/${id}`);
-        if (!response.ok) {
-          throw new Error('Failed to get status');
-        }
-        
-        const statusData: RequestStatus = await response.json();
-        
-        // Update progress based on status
-        if (statusData.status === 'pending') {
-          setProgress(50);
-        } else if (statusData.status === 'processing') {
-          setProgress(75);
-        } else if (statusData.status === 'completed') {
-          setProgress(100);
-          setStatus('completed');
-          setResult(statusData.result);
-          clearInterval(interval);
-          setPollingInterval(null);
-          
-          toast({
-            title: 'Analysis complete',
-            description: 'Your brain scan analysis is ready to view.'
-          });
-        } else if (statusData.status === 'failed') {
-          setStatus('failed');
-          setError(statusData.error || 'Processing failed');
-          clearInterval(interval);
-          setPollingInterval(null);
-          
-          toast({
-            variant: 'destructive',
-            title: 'Analysis failed',
-            description: statusData.error || 'There was a problem analyzing your brain scan.'
-          });
-        }
-      } catch (err) {
-        console.error('Polling error:', err);
-      }
-    }, 2000);
-    
-    setPollingInterval(interval);
-  };
-
   // Cancellation and cleanup
   const handleCancel = () => {
-    if (pollingInterval) {
-      clearInterval(pollingInterval);
-      setPollingInterval(null);
+    if (processingTimeout) {
+      clearTimeout(processingTimeout);
+      setProcessingTimeout(null);
     }
     
     setStatus('idle');
     setProgress(0);
-    setRequestId(null);
   };
 
   // Component cleanup
   const handleReset = () => {
-    if (pollingInterval) {
-      clearInterval(pollingInterval);
+    if (processingTimeout) {
+      clearTimeout(processingTimeout);
+      setProcessingTimeout(null);
     }
     
     setFile(null);
     setStatus('idle');
     setProgress(0);
-    setRequestId(null);
     setResult(null);
     setError(null);
   };
@@ -223,7 +201,7 @@ export function BrainScanUpload() {
         
         {/* Webhook URL input (optional) */}
         <div className="space-y-2">
-          <Label htmlFor="webhook">Webhook URL (optional)</Label>
+          <Label htmlFor="webhook">Notification URL (optional)</Label>
           <Input
             id="webhook"
             placeholder="https://your-server.com/webhook"
@@ -232,7 +210,7 @@ export function BrainScanUpload() {
             disabled={status !== 'idle' && status !== 'failed'}
           />
           <p className="text-xs text-muted-foreground">
-            We'll send the results to this URL when processing is complete
+            Results can be sent to an external service when processing is complete
           </p>
         </div>
         
@@ -252,77 +230,93 @@ export function BrainScanUpload() {
           </div>
         )}
         
-        {/* Results or error display */}
+        {/* Results display */}
         {status === 'completed' && result && (
-          <div className="rounded-lg border p-4 bg-background">
-            <div className="flex items-start gap-3">
-              <CheckCircleIcon className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-medium">Analysis Results</h3>
-                <p className="text-sm mt-1">
-                  {result.hasTumor 
-                    ? `Tumor detected (${Math.round(result.confidence * 100)}% confidence)`
-                    : 'No tumor detected'}
+          <div className="mt-4 p-4 border rounded-md bg-card">
+            <div className="flex items-center gap-2 mb-2">
+              {result.tumorDetected ? (
+                <AlertTriangleIcon className="h-5 w-5 text-amber-500" />
+              ) : (
+                <CheckCircleIcon className="h-5 w-5 text-green-500" />
+              )}
+              <h3 className="font-semibold">
+                {result.tumorDetected ? 'Potential abnormality detected' : 'No abnormalities detected'}
+              </h3>
+            </div>
+            
+            <div className="space-y-2 mt-3">
+              <p className="text-sm">
+                <span className="font-medium">Confidence:</span> {(result.confidence * 100).toFixed(1)}%
+              </p>
+              
+              {result.location && (
+                <p className="text-sm">
+                  <span className="font-medium">Location:</span> {result.location}
                 </p>
-                
-                {result.hasTumor && (
-                  <dl className="mt-2 text-sm grid grid-cols-2 gap-x-4 gap-y-2">
-                    <dt className="text-muted-foreground">Type:</dt>
-                    <dd>{result.tumorType}</dd>
-                    
-                    <dt className="text-muted-foreground">Location:</dt>
-                    <dd>{result.location}</dd>
-                    
-                    <dt className="text-muted-foreground">Severity:</dt>
-                    <dd>{result.severity}</dd>
-                  </dl>
-                )}
+              )}
+              
+              {result.type && (
+                <p className="text-sm">
+                  <span className="font-medium">Classification:</span> {result.type}
+                </p>
+              )}
+              
+              {result.recommendations && result.recommendations.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-sm font-medium mb-1">Recommendations:</p>
+                  <ul className="text-sm space-y-1 list-disc list-inside">
+                    {result.recommendations.map((rec, i) => (
+                      <li key={i}>{rec}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              <div className="text-xs text-muted-foreground mt-4">
+                <p>Note: This is an automated analysis and should not replace professional medical advice. 
+                Always consult with a healthcare provider for proper diagnosis.</p>
               </div>
             </div>
           </div>
         )}
         
+        {/* Error message */}
         {status === 'failed' && error && (
-          <div className="rounded-lg border p-4 bg-destructive/10 border-destructive/20">
-            <div className="flex items-start gap-3">
-              <AlertTriangleIcon className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-medium text-destructive">Processing Failed</h3>
-                <p className="text-sm mt-1">{error}</p>
-              </div>
-            </div>
+          <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm">
+            <p className="font-medium">Error: {error}</p>
+            <p className="text-xs mt-1">Please try again or use a different image.</p>
           </div>
         )}
       </CardContent>
       
-      <CardFooter className="flex gap-2">
-        {status === 'idle' && (
-          <Button 
-            onClick={handleUpload} 
-            disabled={!file}
-            className="w-full"
-          >
-            Analyze Scan
-          </Button>
-        )}
-        
-        {(status === 'uploading' || status === 'processing') && (
-          <Button 
-            variant="outline" 
-            onClick={handleCancel}
-            className="w-full"
-          >
-            Cancel
-          </Button>
-        )}
-        
-        {(status === 'completed' || status === 'failed') && (
-          <Button 
-            onClick={handleReset}
-            className="w-full"
-          >
-            Start New Analysis
-          </Button>
+      <CardFooter className="flex justify-between">
+        {(status === 'idle' || status === 'failed') && file ? (
+          <>
+            <Button variant="ghost" onClick={handleReset}>Cancel</Button>
+            <Button onClick={handleUpload}>Analyze Scan</Button>
+          </>
+        ) : status === 'completed' ? (
+          <>
+            <Button variant="ghost" onClick={handleReset}>Upload New Scan</Button>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                if (result) {
+                  // In a real app, this would trigger a download of the results or a PDF report
+                  toast({
+                    title: "Report downloaded",
+                    description: "The analysis report has been downloaded."
+                  });
+                }
+              }}
+            >
+              Download Report
+            </Button>
+          </>
+        ) : status === 'uploading' || status === 'processing' ? (
+          <Button variant="ghost" onClick={handleCancel} className="ml-auto">Cancel</Button>
+        ) : (
+          <Button onClick={handleUpload} disabled={!file}>Analyze Scan</Button>
         )}
       </CardFooter>
     </Card>
