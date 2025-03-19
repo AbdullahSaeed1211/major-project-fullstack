@@ -2,13 +2,11 @@
  * Simple logger utility for consistent logging throughout the application
  */
 
-type LogLevel = 'debug' | 'info' | 'warn' | 'error';
-
 interface Logger {
-  debug: (message: string, ...args: any[]) => void;
-  info: (message: string, ...args: any[]) => void;
-  warn: (message: string, ...args: any[]) => void;
-  error: (message: string, ...args: any[]) => void;
+  debug: (message: string, ...args: unknown[]) => void;
+  info: (message: string, ...args: unknown[]) => void;
+  warn: (message: string, ...args: unknown[]) => void;
+  error: (message: string, ...args: unknown[]) => void;
 }
 
 /**
@@ -27,21 +25,21 @@ export function createServiceLogger(serviceName: string): Logger {
   };
 
   return {
-    debug: (message: string, ...args: any[]): void => {
+    debug: (message: string, ...args: unknown[]): void => {
       if (shouldLogDebug) {
         console.debug(formatMessage('debug', message), ...args);
       }
     },
     
-    info: (message: string, ...args: any[]): void => {
+    info: (message: string, ...args: unknown[]): void => {
       console.info(formatMessage('info', message), ...args);
     },
     
-    warn: (message: string, ...args: any[]): void => {
+    warn: (message: string, ...args: unknown[]): void => {
       console.warn(formatMessage('warn', message), ...args);
     },
     
-    error: (message: string, ...args: any[]): void => {
+    error: (message: string, ...args: unknown[]): void => {
       console.error(formatMessage('error', message), ...args);
     }
   };

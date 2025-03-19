@@ -11,30 +11,42 @@ export interface IHealthMetric extends Document {
   updatedAt: Date;
 }
 
-const HealthMetricSchema: Schema = new Schema(
+const HealthMetricSchema = new Schema(
   {
-    userId: { 
-      type: String, 
+    userId: {
+      type: String,
       required: true,
-      index: true
+      index: true,
     },
-    name: { type: String, required: true },
-    value: { type: Number, required: true },
-    unit: { type: String, required: true },
-    status: { 
-      type: String, 
-      enum: ['normal', 'warning', 'critical'], 
-      required: true 
+    name: {
+      type: String,
+      required: true,
     },
-    date: { type: Date, default: Date.now }
+    value: {
+      type: Number,
+      required: true,
+    },
+    unit: {
+      type: String,
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ['normal', 'warning', 'critical'],
+      default: 'normal',
+    },
+    date: {
+      type: Date,
+      default: Date.now,
+    },
   },
-  { 
-    timestamps: true 
+  {
+    timestamps: true,
   }
 );
 
 // Compound index for efficient queries by user and date
 HealthMetricSchema.index({ userId: 1, date: -1 });
 
-export default mongoose.models.HealthMetric || 
+export const HealthMetric = mongoose.models.HealthMetric || 
   mongoose.model<IHealthMetric>('HealthMetric', HealthMetricSchema); 

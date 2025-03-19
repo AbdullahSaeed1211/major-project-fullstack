@@ -68,25 +68,25 @@ export function StrokePredictionForm() {
     setIsLoading(true);
     
     try {
-      // Add a small delay to simulate processing
-      await new Promise<void>((resolve) => setTimeout(resolve, 1000));
+      // Make API request to predict stroke
+      const response = await fetch('/api/stroke/predict', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
       
-      // Use our model to predict stroke risk
-      const modelInput: StrokeInput = {
-        gender: formData.gender,
-        age: formData.age,
-        hypertension: formData.hypertension,
-        heartDisease: formData.heartDisease,
-        everMarried: formData.everMarried,
-        workType: formData.workType,
-        residenceType: formData.residenceType,
-        avgGlucoseLevel: formData.avgGlucoseLevel,
-        bmi: formData.bmi,
-        smokingStatus: formData.smokingStatus
-      };
-      const prediction = predictStroke(modelInput);
+      if (!response.ok) {
+        throw new Error('Failed to get prediction');
+      }
       
-      setResult(prediction);
+      const data = await response.json();
+      
+      setResult({
+        prediction: data.prediction,
+        probability: data.probability,
+      });
     } catch (error) {
       console.error("Error making prediction:", error instanceof Error ? error.message : String(error));
     } finally {

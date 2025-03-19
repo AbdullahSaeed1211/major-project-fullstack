@@ -58,73 +58,86 @@ export function BrainScanUpload() {
     };
   }, [processingTimeout]);
 
-  // Handle client-side processing simulation
+  // Handle real processing instead of mock
   const handleUpload = async () => {
     if (!file) return;
 
     try {
-      // Start "uploading"
+      // Start uploading
       setStatus('uploading');
       setProgress(10);
-
-      // Simulate upload delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setProgress(50);
       
-      // Move to "processing" stage
+      // Create form data
+      const formData = new FormData();
+      formData.append('file', file);
+      if (webhookUrl) {
+        formData.append('webhookUrl', webhookUrl);
+      }
+      
+      // Upload the file to your API
+      const response = await fetch('/api/brain-scan/analyze', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+      
+      const data = await response.json();
+      const assessmentId = data.assessmentId;
+      
       setStatus('processing');
+      setProgress(50);
       
       toast({
         title: 'Brain scan uploaded',
         description: 'Your scan is being processed. You will be notified when the analysis is complete.',
       });
       
-      // Simulate processing with increasing progress
-      let currentProgress = 50;
-      const progressInterval = setInterval(() => {
-        if (currentProgress < 90) {
-          currentProgress += 5;
-          setProgress(currentProgress);
-        } else {
-          clearInterval(progressInterval);
+      // Poll for status
+      let completed = false;
+      const statusInterval = setInterval(async () => {
+        try {
+          const statusResponse = await fetch(`/api/brain-scan/status/${assessmentId}`);
+          if (statusResponse.ok) {
+            const statusData = await statusResponse.json();
+            
+            if (statusData.status === 'completed') {
+              clearInterval(statusInterval);
+              completed = true;
+              setProgress(100);
+              setStatus('completed');
+              setResult(statusData.result);
+              
+              toast({
+                title: 'Analysis complete',
+                description: 'Your brain scan analysis is ready to view.'
+              });
+            } else if (statusData.status === 'failed') {
+              clearInterval(statusInterval);
+              throw new Error('Analysis failed');
+            }
+          }
+        } catch (error) {
+          console.error('Status check error:', error);
         }
-      }, 800);
-      
-      // Simulate completion after some seconds
-      const timeout = setTimeout(() => {
-        clearInterval(progressInterval);
-        setProgress(100);
-        setStatus('completed');
-        
-        // Generate mock result 
-        // In a real implementation, this would be the result of actual client-side ML processing
-        const mockResult: AnalysisResult = Math.random() > 0.7 ? 
-          {
-            tumorDetected: true,
-            confidence: 0.86,
-            location: "Right temporal lobe",
-            type: "Potentially benign",
-            recommendations: [
-              "Consult with a neurologist",
-              "Consider follow-up MRI in 6 months",
-              "Monitor for any new symptoms"
-            ]
-          } : 
-          {
-            tumorDetected: false,
-            confidence: 0.92,
-            recommendations: ["Regular check-ups as recommended by your physician"]
-          };
-          
-        setResult(mockResult);
-        
-        toast({
-          title: 'Analysis complete',
-          description: 'Your brain scan analysis is ready to view.'
-        });
       }, 5000);
       
-      setProcessingTimeout(timeout);
+      // Set a timeout to stop polling after 2 minutes
+      setTimeout(() => {
+        if (!completed) {
+          clearInterval(statusInterval);
+          setStatus('failed');
+          setError('Analysis timed out. Please try again later.');
+          
+          toast({
+            variant: 'destructive',
+            title: 'Processing timeout',
+            description: 'The analysis is taking too long. Please check back later.'
+          });
+        }
+      }, 120000);
       
     } catch (err) {
       console.error('Processing error:', err);

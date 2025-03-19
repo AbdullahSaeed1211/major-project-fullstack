@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
 import { mapFormToModelInput, predictStroke } from "@/lib/stroke-model";
+import { connectToDatabase } from "@/lib/database";
+import { Assessment } from "@/lib/models/Assessment";
 
 export async function POST(request: NextRequest) {
   console.log("🔍 [Stroke Prediction] Processing new prediction request");
@@ -43,42 +45,48 @@ export async function POST(request: NextRequest) {
     if (modelInput.heartDisease === 1) riskFactors.push('Heart Disease');
     if (modelInput.age > 65) riskFactors.push('Age > 65');
     if (modelInput.smokingStatus === 'smokes') riskFactors.push('Smoking');
-    if (modelInput.avgGlucoseLevel > 140) riskFactors.push('High Glucose');
+    if (modelInput.avgGlucoseLevel > 140) riskFactors.push('High Blood Glucose');
     if (modelInput.bmi > 30) riskFactors.push('Obesity');
     
-    if (riskFactors.length > 0) {
-      console.log(`⚠️ [Stroke Prediction] Risk factors identified: ${riskFactors.join(', ')}`);
-    } else {
-      console.log("ℹ️ [Stroke Prediction] No major risk factors identified");
-    }
+    console.log(`🩺 [Stroke Prediction] Risk factors identified: ${riskFactors.join(', ') || 'None'}`);
     
-    // Predict stroke risk
-    console.log("🧠 [Stroke Prediction] Running prediction model");
-    const prediction = await predictStroke(modelInput);
-    console.log(`✅ [Stroke Prediction] Prediction completed: ${prediction.prediction} with ${(prediction.probability * 100).toFixed(2)}% probability`);
+    // Use the model to get prediction
+    const prediction = predictStroke(modelInput);
+    console.log(`📊 [Stroke Prediction] Result: ${prediction.prediction} (${prediction.probability.toFixed(2)})`);
     
-    // Log prediction if authenticated
+    // Save assessment if user is authenticated
     if (userId) {
-      console.log(`📝 [Stroke Prediction] Recording prediction for user ${userId}`);
-      
-      // In a real app, you would save this to a database:
-      // await StrokePrediction.create({
-      //   userId,
-      //   inputs: modelInput,
-      //   prediction: prediction.prediction,
-      //   probability: prediction.probability,
-      //   timestamp: new Date()
-      // });
+      try {
+        await connectToDatabase();
+        await Assessment.create({
+          userId: userId,
+          type: 'stroke',
+          result: `${prediction.prediction} (${(prediction.probability * 100).toFixed(2)}%)`,
+          risk: prediction.prediction === 'Likely' ? 'high' : 'low',
+          data: { 
+            input: modelInput, 
+            result: prediction,
+            riskFactors 
+          },
+        });
+        console.log(`💾 [Stroke Prediction] Assessment saved for user: ${userId}`);
+      } catch (dbError) {
+        console.error("Database error:", dbError);
+        // Continue despite DB error - don't fail the request
+      }
     }
     
-    console.log("✅ [Stroke Prediction] Request completed successfully");
+    // Return the prediction result
+    return NextResponse.json({
+      prediction: prediction.prediction,
+      probability: prediction.probability,
+      riskFactors: riskFactors,
+    });
     
-    // Return prediction results
-    return NextResponse.json(prediction);
   } catch (error) {
     console.error("❌ [Stroke Prediction] Error:", error);
     return NextResponse.json(
-      { error: "Failed to predict stroke risk" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
