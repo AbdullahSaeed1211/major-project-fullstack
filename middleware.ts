@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { getAuth } from "@clerk/nextjs/server";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-// List of public routes that don't require authentication
-const publicPaths = [
+// Create a matcher for public routes
+const isPublicRoute = createRouteMatcher([
   "/",
   "/about",
   "/cognitive-games",
@@ -11,31 +10,18 @@ const publicPaths = [
   "/contact",
   "/api/newsletter",
   "/api/webhooks/clerk",
-];
+  "/api/newsletter/(.*)",
+  "/api/webhooks/clerk/(.*)"
+]);
 
-// Function to match a URL path against a list of allowed paths
-function isPublicPath(path: string) {
-  return publicPaths.find((publicPath) => 
-    path === publicPath || 
-    path.startsWith(`${publicPath}/`)
-  );
-}
-
-export function middleware(req: NextRequest) {
-  const { userId } = getAuth(req);
-  const path = req.nextUrl.pathname;
-
-  // If the path is public or the user is authenticated, continue
-  if (isPublicPath(path) || userId) {
-    return NextResponse.next();
+export default clerkMiddleware(async (auth, req) => {
+  // If the path is not public, protect it
+  if (!isPublicRoute(req)) {
+    await auth.protect();
   }
 
-  // Otherwise, redirect to sign-in
-  const signInUrl = new URL("/sign-in", req.url);
-  signInUrl.searchParams.set("redirect_url", path);
-
-  return NextResponse.redirect(signInUrl);
-}
+  return NextResponse.next();
+});
 
 export const config = {
   matcher: [
