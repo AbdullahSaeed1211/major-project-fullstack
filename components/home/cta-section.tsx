@@ -5,17 +5,28 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
 import { AvatarCircles } from "@/components/ui/avatar-circles";
 import { motion } from "framer-motion";
+import { useState, useEffect, useMemo } from "react";
 
 export function CtaSection() {
-  // Sample users who joined recently
-  const recentUsers = [
-    { name: "Alex Johnson", fallback: "AJ", image: "/avatars/user1.jpg" },
-    { name: "Maria Garcia", fallback: "MG", image: "/avatars/user2.jpg" },
-    { name: "David Lee", fallback: "DL", image: "/avatars/user3.jpg" },
-    { name: "Sarah Wilson", fallback: "SW", image: "/avatars/user4.jpg" },
-    { name: "James Brown", fallback: "JB", image: "/avatars/user5.jpg" },
-    { name: "Emma Davis", fallback: "ED", image: "/avatars/user6.jpg" },
-  ];
+  // Wrap the users array in useMemo to prevent recreation on each render
+  const recentUsers = useMemo(() => [
+    { name: "Alex Johnson", fallback: "AJ", image: "/avatars/user1.png" },
+    { name: "Maria Garcia", fallback: "MG", image: "/avatars/user2.png" },
+    { name: "David Lee", fallback: "DL", image: "/avatars/user3.png" },
+    { name: "Sarah Wilson", fallback: "SW", image: "/avatars/user4.png" },
+    { name: "James Brown", fallback: "JB", image: "/avatars/user5.png" },
+    { name: "Emma Davis", fallback: "ED", image: "/avatars/user6.png" },
+    { name: "Olivia Chen", fallback: "OC", image: "/avatars/user7.png" },
+  ], []); // Empty dependency array means this only runs once
+
+  // Create a state for the users to display
+  const [displayUsers, setDisplayUsers] = useState(recentUsers);
+  
+  // Use the memoized recentUsers in the effect
+  useEffect(() => {
+    const shuffled = [...recentUsers].sort(() => Math.random() - 0.5);
+    setDisplayUsers(shuffled);
+  }, [recentUsers]); // Now this is safe because recentUsers is memoized
 
   const benefitItems = [
     {
@@ -95,7 +106,7 @@ export function CtaSection() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.4 }}
               >
-                <AvatarCircles people={recentUsers} numPeople={5000} limit={4} />
+                <AvatarCircles people={displayUsers} numPeople={5000} limit={5} />
                 <p className="text-sm text-muted-foreground">5,000+ users joined this month</p>
               </motion.div>
             </motion.div>
