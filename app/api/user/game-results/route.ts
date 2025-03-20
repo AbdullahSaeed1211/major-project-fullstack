@@ -13,25 +13,35 @@ import {
 
 // Helper to get the GameResult model dynamically
 const getGameResultModel = async () => {
-  await db.connect();
   try {
-    return mongoose.model('GameResult');
-  } catch {
-    // If model doesn't exist yet, this will import it
-    const { default: GameResultModel } = await import("@/lib/models/GameResult");
-    return GameResultModel;
+    await db.connect();
+    try {
+      return mongoose.model('GameResult');
+    } catch {
+      // If model doesn't exist yet, this will import it
+      const { default: GameResultModel } = await import("@/lib/models/GameResult");
+      return GameResultModel;
+    }
+  } catch (error) {
+    console.error("MongoDB connection error in getGameResultModel:", error);
+    throw new Error("Database connection failed");
   }
 };
 
 // Helper to get the User model dynamically
 const getUserModel = async () => {
-  await db.connect();
   try {
-    return mongoose.model('User');
-  } catch {
-    // If model doesn't exist yet, this will import it
-    const { default: UserModel } = await import("@/lib/models/User");
-    return UserModel;
+    await db.connect();
+    try {
+      return mongoose.model('User');
+    } catch {
+      // If model doesn't exist yet, this will import it
+      const { default: UserModel } = await import("@/lib/models/User");
+      return UserModel;
+    }
+  } catch (error) {
+    console.error("MongoDB connection error in getUserModel:", error);
+    throw new Error("Database connection failed");
   }
 };
 
@@ -51,14 +61,32 @@ export async function GET(req: NextRequest) {
     }
 
     // Connect to the database
-    await db.connect();
-    const User = await getUserModel();
-    const GameResult = await getGameResultModel();
+    try {
+      await db.connect();
+    } catch (dbError) {
+      console.error("Database connection failed:", dbError);
+      return serverErrorResponse("Database connection failed. Please try again later.");
+    }
+
+    let User, GameResult;
+    try {
+      User = await getUserModel();
+      GameResult = await getGameResultModel();
+    } catch (modelError) {
+      console.error("Error loading database models:", modelError);
+      return serverErrorResponse("Error initializing database models. Please try again later.");
+    }
 
     // Find the user in the database
-    const user = await User.findOne({ clerkId: userId });
-    if (!user) {
-      return notFoundResponse("User not found");
+    let user;
+    try {
+      user = await User.findOne({ clerkId: userId });
+      if (!user) {
+        return notFoundResponse("User not found");
+      }
+    } catch (userError) {
+      console.error("Error finding user:", userError);
+      return serverErrorResponse("Error retrieving user data. Please try again later.");
     }
 
     // Parse query parameters
@@ -75,14 +103,23 @@ export async function GET(req: NextRequest) {
     if (difficulty) query.difficulty = difficulty;
 
     // Get total count for pagination
-    const total = await GameResult.countDocuments(query);
+    let total, results;
+    try {
+      total = await GameResult.countDocuments(query);
 
-    // Get results with pagination
-    const results = await GameResult.find(query)
-      .sort({ completedAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean();
+      // Get results with pagination
+      results = await GameResult.find(query)
+        .sort({ completedAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean();
+    } catch (queryError) {
+      console.error("Error querying game results:", queryError);
+      if (queryError instanceof mongoose.Error.CastError) {
+        return serverErrorResponse("Invalid query parameters");
+      }
+      return serverErrorResponse("Error retrieving game results. Please try again later.");
+    }
 
     return successResponse({
       results,
@@ -95,6 +132,16 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     console.error("Error getting game results:", error);
+    
+    // Provide more specific error messages for common errors
+    if (error instanceof mongoose.Error.ValidationError) {
+      return serverErrorResponse("Data validation error");
+    } else if (error instanceof mongoose.Error.DocumentNotFoundError) {
+      return notFoundResponse("Requested data not found");
+    } else if (error instanceof mongoose.Error.CastError) {
+      return serverErrorResponse("Invalid data format");
+    }
+    
     return serverErrorResponse("Failed to fetch game results");
   }
 }

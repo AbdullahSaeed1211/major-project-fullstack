@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Send } from "lucide-react";
 
 type Message = {
   role: "user" | "assistant";
@@ -20,7 +21,7 @@ export function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hello! I'm your Brainwise assistant. How can I help you with brain health today?",
+      content: "Hi there! I'm your Brain Health Assistant. How can I help you today?",
       timestamp: new Date(),
     },
   ]);
@@ -95,12 +96,12 @@ export function Chatbot() {
   }
   
   return (
-    <Card className="w-full h-[700px] flex flex-col magic-card">
-      <CardHeader className="pb-4">
+    <Card className="w-full h-[700px] flex flex-col shadow-lg border-primary/10">
+      <CardHeader className="pb-4 border-b">
         <CardTitle className="text-xl flex items-center gap-2">
           <Avatar className="h-8 w-8">
             <AvatarImage src="/brain-ai-logo.png" alt="Brainwise" />
-            <AvatarFallback className="bg-gradient-to-r from-[rgb(var(--magic-primary))] to-[rgb(var(--magic-secondary))] text-white">
+            <AvatarFallback className="bg-primary text-primary-foreground">
               BW
             </AvatarFallback>
           </Avatar>
@@ -110,67 +111,69 @@ export function Chatbot() {
       
       <CardContent className="flex-1 overflow-hidden p-0">
         <ScrollArea className="h-full px-4">
-          <div className="space-y-4 pb-4">
+          <div className="space-y-4 py-4">
             {messages.map((message, i) => (
               <div 
                 key={i}
                 className={`flex ${
                   message.role === "user" ? "justify-end" : "justify-start"
-                }`}
+                } animate-in fade-in-0 slide-in-from-bottom-3 duration-300`}
               >
-                <div className="flex items-start gap-2 max-w-[80%]">
-                  {message.role === "assistant" && (
-                    <Avatar className="h-8 w-8 mt-1">
+                <div className={`flex items-start gap-3 max-w-[85%] ${
+                  message.role === "user" ? "flex-row-reverse" : "flex-row"
+                }`}>
+                  {message.role === "assistant" ? (
+                    <Avatar className="h-8 w-8 mt-1 flex-shrink-0">
                       <AvatarImage src="/brain-ai-logo.png" alt="Brainwise" />
-                      <AvatarFallback className="bg-gradient-to-r from-[rgb(var(--magic-primary))] to-[rgb(var(--magic-secondary))] text-white">
+                      <AvatarFallback className="bg-primary text-primary-foreground">
                         BW
+                      </AvatarFallback>
+                    </Avatar>
+                  ) : (
+                    <Avatar className="h-8 w-8 mt-1 flex-shrink-0">
+                      <AvatarImage src={user?.image} alt={user?.name || "User"} />
+                      <AvatarFallback className="bg-secondary text-secondary-foreground">
+                        {user?.name?.[0] || "U"}
                       </AvatarFallback>
                     </Avatar>
                   )}
                   
                   <div className="flex flex-col">
                     <div
-                      className={`rounded-lg p-3 ${
+                      className={`rounded-2xl px-4 py-3 ${
                         message.role === "user"
-                          ? "bg-gradient-to-r from-[rgb(var(--magic-primary))] to-[rgb(var(--magic-secondary))] text-white"
-                          : "bg-muted"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary/50"
                       }`}
                     >
-                      {message.content}
+                      <div className="whitespace-pre-wrap">{message.content}</div>
                     </div>
-                    <span className="text-xs text-muted-foreground mt-1">
+                    <span className={`text-xs text-muted-foreground mt-1 ${
+                      message.role === "user" ? "text-right" : "text-left"
+                    }`}>
                       {formatTime(message.timestamp)}
                     </span>
                   </div>
-                  
-                  {message.role === "user" && (
-                    <Avatar className="h-8 w-8 mt-1">
-                      <AvatarImage src={user?.image} alt={user?.name || "User"} />
-                      <AvatarFallback className="bg-primary text-primary-foreground">
-                        {user?.name?.[0] || "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
                 </div>
               </div>
             ))}
             
             {isLoading && (
-              <div className="flex justify-start">
-                <div className="flex items-start gap-2 max-w-[80%]">
-                  <Avatar className="h-8 w-8 mt-1">
+              <div className="flex justify-start animate-in fade-in-0 slide-in-from-bottom-3">
+                <div className="flex items-start gap-3 max-w-[85%]">
+                  <Avatar className="h-8 w-8 mt-1 flex-shrink-0">
                     <AvatarImage src="/brain-ai-logo.png" alt="Brainwise" />
-                    <AvatarFallback className="bg-gradient-to-r from-[rgb(var(--magic-primary))] to-[rgb(var(--magic-secondary))] text-white">
+                    <AvatarFallback className="bg-primary text-primary-foreground">
                       BW
                     </AvatarFallback>
                   </Avatar>
                   
                   <div className="flex flex-col">
-                    <div className="rounded-lg p-3 bg-muted">
+                    <div className="rounded-2xl px-4 py-3 bg-secondary/50">
                       <div className="flex items-center gap-1">
-                        <div className="h-2 w-2 rounded-full bg-foreground/50 animate-bounce" />
-                        <div className="h-2 w-2 rounded-full bg-foreground/50 animate-bounce [animation-delay:0.2s]" />
-                        <div className="h-2 w-2 rounded-full bg-foreground/50 animate-bounce [animation-delay:0.4s]" />
+                        <div className="h-2 w-2 rounded-full bg-foreground/50 animate-pulse" />
+                        <div className="h-2 w-2 rounded-full bg-foreground/50 animate-pulse [animation-delay:0.2s]" />
+                        <div className="h-2 w-2 rounded-full bg-foreground/50 animate-pulse [animation-delay:0.4s]" />
                       </div>
                     </div>
                   </div>
@@ -183,7 +186,7 @@ export function Chatbot() {
         </ScrollArea>
       </CardContent>
       
-      <CardFooter className="pt-4 pb-6">
+      <CardFooter className="pt-4 pb-6 border-t">
         <form 
           onSubmit={(e) => {
             e.preventDefault();
@@ -195,7 +198,7 @@ export function Chatbot() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about brain health..."
-            className="flex-1 min-h-[60px] max-h-[120px]"
+            className="flex-1 min-h-[60px] max-h-[120px] resize-none focus-visible:ring-primary"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -205,10 +208,11 @@ export function Chatbot() {
           />
           <Button 
             type="submit" 
+            size="icon"
             disabled={isLoading || !input.trim()}
-            className="h-auto self-end"
+            className="h-[60px] w-[60px] rounded-full"
           >
-            Send
+            <Send className="h-5 w-5" />
           </Button>
         </form>
         

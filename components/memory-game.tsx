@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { Play, RotateCcw } from "lucide-react";
 import type { GameResult, CognitiveScore } from "@/lib/types";
 
 // Card icons for the memory game
@@ -35,13 +35,14 @@ export function MemoryGame() {
   const [gameStats, setGameStats] = useState<GameStats>({
     moves: 0,
     matches: 0,
-    startTime: Date.now(),
+    startTime: 0,
     endTime: null,
   });
   const [difficulty, setDifficulty] = useState<Difficulty>("easy");
   const [isGameComplete, setIsGameComplete] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [timeElapsed, setTimeElapsed] = useState(0);
+  const [gameStarted, setGameStarted] = useState(false);
   
   // Save game result function
   const saveGameResult = async (result: Omit<GameResult, "id" | "userId" | "completedAt">) => {
@@ -113,11 +114,12 @@ export function MemoryGame() {
     setGameStats({
       moves: 0,
       matches: 0,
-      startTime: Date.now(),
+      startTime: 0,
       endTime: null,
     });
     setFeedback("");
     setTimeElapsed(0);
+    setGameStarted(false);
   }, [difficulty]);
 
   // Initialize the game when difficulty changes
@@ -129,7 +131,7 @@ export function MemoryGame() {
   useEffect(() => {
     let timerId: NodeJS.Timeout | undefined;
     
-    if (!isGameComplete && cards.length > 0) {
+    if (gameStarted && !isGameComplete && cards.length > 0) {
       timerId = setInterval(() => {
         setTimeElapsed(Date.now() - gameStats.startTime);
       }, 100);
@@ -139,12 +141,22 @@ export function MemoryGame() {
     return () => {
       if (timerId) clearInterval(timerId);
     };
-  }, [isGameComplete, cards.length, gameStats.startTime]);
+  }, [gameStarted, isGameComplete, cards.length, gameStats.startTime]);
+
+  // Start the game
+  const startGame = () => {
+    setGameStarted(true);
+    setGameStats(prev => ({
+      ...prev,
+      startTime: Date.now()
+    }));
+  };
 
   // Handle card click
   const handleCardClick = (id: number) => {
-    // Ignore if the card is already flipped or matched
+    // Ignore if game not started or the card is already flipped or matched
     if (
+      !gameStarted ||
       cards[id].isFlipped ||
       cards[id].isMatched ||
       flippedCards.length >= 2
@@ -250,113 +262,164 @@ export function MemoryGame() {
         score,
       });
     } catch (error) {
-      console.error("Failed to save game result:", error);
+      console.error("Failed to save game data:", error);
     }
   };
-
-  // Provide feedback based on performance
+  
   const provideFeedback = (timeElapsed: number, moves: number, totalPairs: number) => {
-    const seconds = timeElapsed / 1000;
-    const perfectMoves = totalPairs; // Ideal minimum moves (pairs)
+    const perfectMoves = totalPairs;
     const efficiency = perfectMoves / moves;
     
-    let feedbackMessage = "";
+    let feedbackText = "";
     
-    if (efficiency > 0.8) {
-      feedbackMessage = "Excellent memory! Your brain health is in top shape.";
-    } else if (efficiency > 0.6) {
-      feedbackMessage = "Good job! Your memory is working well.";
-    } else if (efficiency > 0.4) {
-      feedbackMessage = "Not bad. Regular memory exercises can help improve your skills.";
+    if (efficiency >= 0.9) {
+      feedbackText = "Excellent! Your memory is exceptional.";
+    } else if (efficiency >= 0.7) {
+      feedbackText = "Great job! You have a very good memory.";
+    } else if (efficiency >= 0.5) {
+      feedbackText = "Good work! Your memory is functioning well.";
+    } else if (efficiency >= 0.3) {
+      feedbackText = "Nice effort! With practice, your memory can improve.";
     } else {
-      feedbackMessage = "Keep practicing! Memory games can help strengthen neural connections.";
+      feedbackText = "Good try! Regular memory exercises can help strengthen your memory.";
     }
     
-    feedbackMessage += ` You completed the game in ${seconds.toFixed(1)} seconds.`;
-    
-    setFeedback(feedbackMessage);
+    setFeedback(feedbackText);
   };
-
-  // Brain health tips related to memory
-  const memoryTips = [
-    "Regular physical exercise increases blood flow to the brain, enhancing memory formation",
-    "A good night's sleep is essential for memory consolidation",
-    "Reducing stress through meditation can improve memory recall",
-    "A diet rich in antioxidants and omega-3 fatty acids supports brain health",
-    "Learning new skills creates new neural pathways, keeping your brain sharp"
-  ];
   
-  // Format time for display
   const formatTime = (ms: number) => {
     const seconds = Math.floor(ms / 1000);
     const minutes = Math.floor(seconds / 60);
-    return `${minutes}:${(seconds % 60).toString().padStart(2, '0')}`;
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+  };
+  
+  // Get grid columns based on difficulty
+  const getGridColumns = () => {
+    if (difficulty === "easy") return "grid-cols-3 sm:grid-cols-4";
+    if (difficulty === "medium") return "grid-cols-4";
+    return "grid-cols-4 sm:grid-cols-6";
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-2">
-        <h2 className="text-2xl font-bold">Memory Card Game</h2>
-        <p className="text-muted-foreground">
+    <div className="flex flex-col space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold mb-2">Memory Card Game</h2>
+        <p className="text-muted-foreground text-sm">
           Test and improve your short-term memory. Match pairs of cards to complete the game.
         </p>
       </div>
-
-      <Tabs defaultValue="easy" className="w-full" onValueChange={(value: string) => setDifficulty(value as Difficulty)}>
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="easy">Easy</TabsTrigger>
-          <TabsTrigger value="medium">Medium</TabsTrigger>
-          <TabsTrigger value="hard">Hard</TabsTrigger>
-        </TabsList>
-      </Tabs>
-
-      <div className="flex justify-between items-center">
-        <div className="space-y-1">
-          <p className="text-sm font-medium">Moves: {gameStats.moves}</p>
-          <p className="text-sm font-medium">Matches: {gameStats.matches} of {cards.length / 2}</p>
-          <p className="text-sm font-medium">Time: {formatTime(timeElapsed)}</p>
+      
+      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <Tabs 
+          value={difficulty} 
+          onValueChange={(value) => setDifficulty(value as Difficulty)}
+          className="w-full sm:w-auto"
+        >
+          <TabsList className="grid grid-cols-3 w-full sm:w-auto">
+            <TabsTrigger 
+              value="easy" 
+              className="text-xs sm:text-sm px-3 py-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              disabled={gameStarted && !isGameComplete}
+            >
+              Easy
+            </TabsTrigger>
+            <TabsTrigger 
+              value="medium" 
+              className="text-xs sm:text-sm px-3 py-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              disabled={gameStarted && !isGameComplete}
+            >
+              Medium
+            </TabsTrigger>
+            <TabsTrigger 
+              value="hard" 
+              className="text-xs sm:text-sm px-3 py-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              disabled={gameStarted && !isGameComplete}
+            >
+              Hard
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+        
+        <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+          {!gameStarted && !isGameComplete ? (
+            <Button 
+              onClick={startGame}
+              className="px-4 py-2 flex items-center gap-2"
+              variant="default"
+            >
+              <Play className="h-4 w-4" />
+              Start Game
+            </Button>
+          ) : (
+            <Button 
+              onClick={initializeGame}
+              className="px-4 py-2 flex items-center gap-2"
+              variant={isGameComplete ? "default" : "outline"}
+            >
+              <RotateCcw className="h-4 w-4" />
+              Restart
+            </Button>
+          )}
         </div>
-        <Button onClick={initializeGame}>Restart Game</Button>
       </div>
-
-      <div className={cn(
-        "grid gap-2",
-        difficulty === "easy" 
-          ? "grid-cols-2 xs:grid-cols-3 sm:grid-cols-4" 
-          : difficulty === "medium" 
-            ? "grid-cols-3 xs:grid-cols-4 sm:grid-cols-4" 
-            : "grid-cols-3 xs:grid-cols-4 sm:grid-cols-6"
-      )}>
-        {cards.map((card) => (
-          <div
-            key={card.id}
-            className={cn(
-              "aspect-square flex items-center justify-center rounded-lg cursor-pointer transition-all duration-300 min-h-[60px]",
-              card.isFlipped || card.isMatched
-                ? "bg-primary text-primary-foreground text-3xl"
-                : "bg-muted text-transparent hover:bg-muted/80"
-            )}
-            onClick={() => handleCardClick(card.id)}
-          >
-            {(card.isFlipped || card.isMatched) ? card.icon : "?"}
+      
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-sm">
+        <div className="flex gap-4">
+          <div>
+            <span className="font-medium">Moves:</span> {gameStats.moves}
           </div>
-        ))}
+          <div>
+            <span className="font-medium">Matches:</span> {gameStats.matches} of {cards.length / 2}
+          </div>
+        </div>
+        <div>
+          <span className="font-medium">Time:</span> {formatTime(timeElapsed)}
+        </div>
       </div>
-
+      
+      <div className="max-w-2xl mx-auto w-full"> 
+        <div className={`grid ${getGridColumns()} gap-3 sm:gap-4`}>
+          {cards.map((card) => (
+            <div
+              key={card.id}
+              className={cn(
+                "aspect-square rounded-lg cursor-pointer transition-all duration-300 transform",
+                "flex items-center justify-center text-2xl sm:text-3xl",
+                "select-none shadow-sm hover:shadow",
+                !gameStarted ? "opacity-70 pointer-events-none" : "",
+                card.isMatched
+                  ? "bg-primary/20 border-primary border-2"
+                  : card.isFlipped
+                  ? "bg-card border-primary border-2 rotate-y-180"
+                  : "bg-primary/5 border border-border hover:border-primary/30"
+              )}
+              onClick={() => handleCardClick(card.id)}
+              aria-label={`Card ${card.id + 1}`}
+              tabIndex={0}
+              role="button"
+              style={{
+                perspective: "1000px",
+              }}
+            >
+              <div
+                className={cn(
+                  "transition-all duration-300 transform",
+                  card.isFlipped ? "rotate-y-180" : "rotate-y-0"
+                )}
+              >
+                {card.isFlipped || card.isMatched ? card.icon : ""}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      
       {isGameComplete && (
-        <Card>
-          <CardContent className="pt-6">
-            <h3 className="text-lg font-medium mb-2">Game Complete!</h3>
-            <p>{feedback}</p>
-            <div className="mt-4">
-              <h4 className="font-medium mb-2">Brain Health Tips:</h4>
-              <p className="text-sm text-muted-foreground">{memoryTips[Math.floor(Math.random() * memoryTips.length)]}</p>
-            </div>
-            <div className="mt-4 flex justify-end">
-              <Button onClick={initializeGame}>Play Again</Button>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="rounded-lg bg-primary/10 p-4 text-center mt-4">
+          <h3 className="font-semibold mb-1">Game Complete! 🎉</h3>
+          <p>{feedback}</p>
+        </div>
       )}
     </div>
   );

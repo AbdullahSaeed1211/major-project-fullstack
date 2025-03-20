@@ -20,6 +20,14 @@ interface ChatMessage {
 function generatePrompt(context: string, query: string): string {
   return `You are a brain health expert providing educational information about neurological health. Please provide helpful information about brain health, but remember you are not giving medical advice.
 
+Instructions:
+1. Keep your responses concise and to the point (3-5 sentences for general questions)
+2. Use simple, clear language without jargon
+3. Break information into short paragraphs when needed
+4. Avoid long-winded explanations
+5. Prioritize actionable information
+6. Focus only on the most relevant information to the user's question
+
 Previous conversation:
 ${context}
 
@@ -46,7 +54,7 @@ export const POST = withAuth(async (req: NextRequest, userId: string) => {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
       model: "gemini-1.5-flash",
-      systemInstruction: "You are a brain health assistant providing educational information about neurological health.",
+      systemInstruction: "You are a brain health assistant providing educational information about neurological health. Keep responses concise and focused.",
     });
 
     const context = history.map((msg: ChatMessage) => `${msg.role === "assistant" ? "Assistant" : "User"}: ${msg.content}`).join('\n');

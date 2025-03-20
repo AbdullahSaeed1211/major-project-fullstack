@@ -11,7 +11,13 @@ const isPublicRoute = createRouteMatcher([
   "/api/newsletter",
   "/api/webhooks/clerk",
   "/api/newsletter/(.*)",
-  "/api/webhooks/clerk/(.*)"
+  "/api/webhooks/clerk/(.*)",
+  "/404", // Make 404 page public
+  "/_not-found", // Next.js internal route for 404
+  "/sign-in(.*)", // All sign-in routes
+  "/sign-up(.*)", // All sign-up routes
+  "/login(.*)", // Custom login routes if used
+  "/register(.*)" // Custom register routes if used
 ]);
 
 export default clerkMiddleware(async (auth, req) => {

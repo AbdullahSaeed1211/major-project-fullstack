@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Brain, ArrowRight } from "lucide-react";
+import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
 
 export function HeroSection() {
   return (
@@ -21,7 +22,9 @@ export function HeroSection() {
               <span className="bg-primary/20 text-primary rounded-full p-1 mr-2">
                 <Brain className="h-3 w-3 md:h-3.5 md:w-3.5" />
               </span>
-              <span>Brainwise — Complete Brain Health Toolkit</span>
+              <AnimatedShinyText shimmerWidth={150} shimmerDuration={3} shimmerDelay={4}>
+                Brainwise — Complete Brain Health Toolkit
+              </AnimatedShinyText>
             </div>
             <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight">
               Train, Assess & <span className="magic-gradient-text">Optimize</span> Your Brain Health

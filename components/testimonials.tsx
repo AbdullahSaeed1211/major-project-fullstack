@@ -89,20 +89,7 @@ const TestimonialCard = ({
 export function Testimonials() {
   return (
     <section className="py-20">
-      <div className="container px-4 md:px-6">
-        <div className="flex flex-col items-center justify-center space-y-4 text-center">
-          <div className="space-y-2">
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl magic-gradient-text">
-              Trusted by Healthcare Professionals
-            </h2>
-            <p className="max-w-[700px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-              See how Brainwise is making a difference in stroke prevention and brain health management.
-            </p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="relative mt-12 flex w-full flex-col items-center justify-center overflow-hidden">
+      <div className="relative flex w-full flex-col items-center justify-center overflow-hidden">
         <Marquee pauseOnHover className="[--duration:40s] [--gap:2rem]">
           {firstRow.map((testimonial) => (
             <TestimonialCard key={testimonial.name} {...testimonial} />

@@ -3,12 +3,49 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
+import { AvatarCircles } from "@/components/ui/avatar-circles";
+import { motion } from "framer-motion";
 
 export function CtaSection() {
+  // Sample users who joined recently
+  const recentUsers = [
+    { name: "Alex Johnson", fallback: "AJ", image: "/avatars/user1.jpg" },
+    { name: "Maria Garcia", fallback: "MG", image: "/avatars/user2.jpg" },
+    { name: "David Lee", fallback: "DL", image: "/avatars/user3.jpg" },
+    { name: "Sarah Wilson", fallback: "SW", image: "/avatars/user4.jpg" },
+    { name: "James Brown", fallback: "JB", image: "/avatars/user5.jpg" },
+    { name: "Emma Davis", fallback: "ED", image: "/avatars/user6.jpg" },
+  ];
+
+  const benefitItems = [
+    {
+      title: "Personalized Risk Assessment",
+      description: "Get insights tailored to your health profile"
+    },
+    {
+      title: "Progress Tracking",
+      description: "Monitor improvements in cognitive performance"
+    },
+    {
+      title: "5+ Brain Training Tools",
+      description: "Access our complete cognitive training suite"
+    },
+    {
+      title: "Evidence-Based Resources",
+      description: "Access scientifically vetted information"
+    }
+  ];
+
   return (
     <section className="py-20 px-4 md:px-6 bg-destructive/10">
       <div className="container mx-auto max-w-6xl">
-        <div className="bg-card rounded-2xl p-8 md:p-12 border shadow-lg relative overflow-hidden">
+        <motion.div
+          className="bg-card rounded-2xl p-8 md:p-12 border shadow-lg relative overflow-hidden"
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.7 }}
+        >
           {/* Background pattern */}
           <div className="absolute inset-0 opacity-5 pointer-events-none">
             <div className="absolute top-0 left-0 w-72 h-72 bg-primary rounded-full -translate-x-1/2 -translate-y-1/2 mix-blend-multiply"></div>
@@ -16,72 +53,81 @@ export function CtaSection() {
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center relative z-10">
-            <div className="space-y-6">
-              <span className="inline-block px-3 py-1 bg-primary/10 text-primary rounded-md text-sm font-medium mb-2">Limited Time Offer</span>
+            <motion.div 
+              className="space-y-6"
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <motion.span 
+                className="inline-block px-3 py-1 bg-primary/10 text-primary rounded-md text-sm font-medium mb-2"
+                initial={{ opacity: 0, y: -10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.3 }}
+              >
+                Limited Time Offer
+              </motion.span>
               <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Start your brain health journey today</h2>
               <p className="text-xl text-muted-foreground">
                 Join thousands of users who are actively improving their cognitive function and reducing health risks.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Button size="lg" className="bg-primary hover:bg-primary/90 text-white shadow-md">Create Free Account</Button>
-                <Button size="lg" variant="outline" className="hover:bg-muted/30" asChild>
+              <motion.div 
+                className="flex flex-col sm:flex-row gap-4 pt-4"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
+                <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-md">Create Free Account</Button>
+                <Button size="lg" variant="outline" className="hover:bg-muted/30 text-foreground" asChild>
                   <Link href="/tools">
                     Explore Tools First
                   </Link>
                 </Button>
-              </div>
+              </motion.div>
               
-              <div className="flex items-center space-x-4 pt-2">
-                <div className="flex -space-x-2">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="w-8 h-8 rounded-full bg-muted border-2 border-background flex items-center justify-center text-xs font-medium">
-                      {String.fromCharCode(64 + i)}
-                    </div>
-                  ))}
-                </div>
-                <p className="text-sm text-muted-foreground">Joined this week</p>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="bg-primary/20 p-2 rounded-full mt-1">
-                  <CheckCircle className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-medium">Personalized Risk Assessment</h3>
-                  <p className="text-muted-foreground">Get insights tailored to your health profile</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="bg-primary/20 p-2 rounded-full mt-1">
-                  <CheckCircle className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-medium">Progress Tracking</h3>
-                  <p className="text-muted-foreground">Monitor improvements in cognitive performance</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="bg-primary/20 p-2 rounded-full mt-1">
-                  <CheckCircle className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-medium">5+ Brain Training Tools</h3>
-                  <p className="text-muted-foreground">Access our complete cognitive training suite</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="bg-primary/20 p-2 rounded-full mt-1">
-                  <CheckCircle className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-medium">Evidence-Based Resources</h3>
-                  <p className="text-muted-foreground">Access scientifically vetted information</p>
-                </div>
-              </div>
-            </div>
+              <motion.div 
+                className="flex items-center space-y-0 space-x-4 pt-2"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+              >
+                <AvatarCircles people={recentUsers} numPeople={5000} limit={4} />
+                <p className="text-sm text-muted-foreground">5,000+ users joined this month</p>
+              </motion.div>
+            </motion.div>
+            
+            <motion.div 
+              className="space-y-4"
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              {benefitItems.map((item, index) => (
+                <motion.div 
+                  key={index}
+                  className="flex items-start gap-3"
+                  initial={{ opacity: 0, y: 15 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.3, delay: 0.4 + (index * 0.1) }}
+                >
+                  <div className="bg-primary/20 p-2 rounded-full mt-1">
+                    <CheckCircle className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium">{item.title}</h3>
+                    <p className="text-muted-foreground">{item.description}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Link from "next/link";
 import { Brain, Github, Twitter, Linkedin } from "lucide-react";
+import { dark } from '@clerk/themes';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,7 +21,33 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={{
+        baseTheme: dark,
+        elements: {
+          formButtonPrimary: "bg-indigo-600 hover:bg-indigo-700 text-sm normal-case",
+          card: "bg-zinc-900 shadow-xl border border-zinc-800",
+          formField: "bg-zinc-800 border-zinc-700",
+          formFieldInput: "text-white placeholder:text-zinc-400",
+          footerActionLink: "text-indigo-400 hover:text-indigo-300",
+          headerTitle: "text-white",
+          headerSubtitle: "text-zinc-300",
+          socialButtonsBlockButton: "border-zinc-700 hover:bg-zinc-800",
+          socialButtonsBlockButtonText: "text-white font-normal",
+          dividerLine: "bg-zinc-700",
+          dividerText: "text-zinc-300",
+          formFieldLabel: "text-zinc-200",
+          form: "gap-y-4",
+          identityPreview: "bg-zinc-800 border-zinc-700",
+          identityPreviewText: "text-white",
+          identityPreviewEditButton: "text-indigo-400 hover:text-indigo-300",
+          alert: "text-zinc-900",
+          alertText: "text-zinc-900",
+          formResendCodeLink: "text-indigo-400 hover:text-indigo-300",
+          otpCodeFieldInput: "border-zinc-700 bg-zinc-800 text-white",
+        }
+      }}
+    >
       <html lang="en" suppressHydrationWarning>
         <body className={inter.className}>
           <ThemeProvider

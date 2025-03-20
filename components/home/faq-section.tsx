@@ -1,60 +1,75 @@
 "use client";
 
-import { HelpCircle } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { motion } from "framer-motion";
 
 export function FaqSection() {
   const faqs = [
     {
-      question: "How can Brainwise help improve my cognitive health?",
-      answer: "Our toolkit provides scientifically-designed exercises that target different cognitive domains including memory, attention, processing speed, and problem-solving. Regular use can help maintain and potentially improve cognitive function over time."
+      question: "How do the brain training games help improve cognitive function?",
+      answer: "Our brain training games target specific cognitive domains like memory, attention, and processing speed. Regular practice creates new neural connections and strengthens existing ones, improving overall brain function and resilience."
     },
     {
-      question: "Is Brainwise suitable for all ages?",
-      answer: "Yes! Our brain health tools are designed for adults of all ages. Whether you're in your 20s looking to optimize brain performance or in your 60s focused on maintaining cognitive health, our exercises adapt to different skill levels."
+      question: "How accurate is the stroke risk assessment?",
+      answer: "Our stroke risk assessment is based on established medical risk factors and validated prediction models. While it provides a good indication of relative risk, it should be used as a conversation starter with healthcare professionals rather than a definitive diagnosis."
+    },
+    {
+      question: "Is my health data secure and private?",
+      answer: "Yes, we take data privacy seriously. All health information is encrypted, stored securely, and never shared with third parties without explicit consent. You can read our complete privacy policy for more details."
     },
     {
       question: "How often should I use the brain training tools?",
-      answer: "For optimal results, we recommend using our brain training tools 3-5 times per week, for about 15-20 minutes per session. Consistency is more important than duration for building cognitive resilience."
+      answer: "For optimal results, we recommend using the tools for 10-15 minutes daily. Consistent practice is more effective than occasional longer sessions."
     },
     {
-      question: "Can Brainwise help with stroke prevention?",
-      answer: "While no tool can guarantee stroke prevention, our risk assessment can help identify modifiable risk factors. Combined with our educational resources, this knowledge empowers you to make lifestyle changes that may reduce your risk."
-    },
-    {
-      question: "Is my data secure and private?",
-      answer: "Absolutely. We take data privacy seriously and comply with industry best practices for security. Your personal information and assessment results are encrypted and never shared without your explicit permission."
+      question: "Can brain training prevent dementia or Alzheimer's disease?",
+      answer: "While research suggests that cognitive stimulation may help reduce risk or delay onset of cognitive decline, brain training alone cannot prevent conditions like dementia. A holistic approach including physical exercise, proper nutrition, social engagement, and cognitive stimulation offers the best protection."
     }
   ];
 
   return (
-    <section className="py-20 px-4 md:px-6 bg-muted/20">
+    <section className="py-20 px-4 md:px-6 bg-muted/10">
       <div className="container mx-auto max-w-4xl">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center rounded-full border px-4 py-1.5 text-sm font-medium mb-4">
-            <HelpCircle className="h-4 w-4 text-primary mr-2" />
-            <span>Frequently Asked Questions</span>
-          </div>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
-            Common Questions About Brainwise
-          </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Everything you need to know about our brain health platform and how it can benefit you.
+        <motion.div 
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+        >
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Frequently Asked Questions</h2>
+          <p className="text-xl text-muted-foreground">
+            Get answers to common questions about brain health and our platform
           </p>
-        </div>
+        </motion.div>
 
-        <Accordion type="single" collapsible className="w-full">
-          {faqs.map((faq, index) => (
-            <AccordionItem key={index} value={`item-${index}`}>
-              <AccordionTrigger className="text-left text-lg font-medium">
-                {faq.question}
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
-                {faq.answer}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.7 }}
+        >
+          <Accordion type="single" collapsible className="w-full">
+            {faqs.map((faq, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+              >
+                <AccordionItem value={`item-${index}`}>
+                  <AccordionTrigger className="text-lg font-medium text-left">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              </motion.div>
+            ))}
+          </Accordion>
+        </motion.div>
       </div>
     </section>
   );

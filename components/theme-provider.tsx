@@ -10,6 +10,7 @@ type ThemeProviderProps = {
   enableSystem?: boolean;
   attribute?: string;
   disableTransitionOnChange?: boolean;
+  storageKey?: string;
 };
 
 type ThemeProviderState = {
@@ -30,8 +31,18 @@ export function ThemeProvider({
   enableSystem = true,
   attribute = "data-theme",
   disableTransitionOnChange = false,
+  storageKey = "brainwise-ui-theme",
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(defaultTheme);
+
+  useEffect(() => {
+    // Get stored theme from localStorage on initial mount
+    const storedTheme = localStorage.getItem(storageKey) as Theme | null;
+    
+    if (storedTheme) {
+      setTheme(storedTheme);
+    }
+  }, [storageKey]);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -62,6 +73,9 @@ export function ThemeProvider({
 
     applyTheme(theme);
 
+    // Save theme preference to localStorage whenever it changes
+    localStorage.setItem(storageKey, theme);
+
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handleChange = () => {
       if (theme === "system" && enableSystem) {
@@ -71,7 +85,7 @@ export function ThemeProvider({
 
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [theme, attribute, enableSystem, disableTransitionOnChange]);
+  }, [theme, attribute, enableSystem, disableTransitionOnChange, storageKey]);
 
   return (
     <ThemeProviderContext.Provider value={{ theme, setTheme }}>
