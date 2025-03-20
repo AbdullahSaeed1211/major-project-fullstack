@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { predictStroke, type StrokeInput } from "@/lib/stroke-model";
+import { predictStroke, type StrokeRiskInput } from "@/lib/stroke-model";
 import { Button } from "@/components/ui/button";
 
 interface FormData {
@@ -60,20 +60,20 @@ export function StrokeForm() {
       await new Promise<void>((resolve) => setTimeout(resolve, 1000));
       
       // Use our model to predict stroke risk
-      const modelInput: StrokeInput = {
-        gender: formData.gender,
+      const modelInput: StrokeRiskInput = {
+        gender: formData.gender === "male" ? "Male" : formData.gender === "female" ? "Female" : "Other",
         age: formData.age,
-        hypertension: formData.hypertension,
-        heartDisease: formData.heartDisease,
-        everMarried: formData.everMarried,
-        workType: formData.workType,
-        residenceType: formData.residenceType,
+        hypertension: formData.hypertension as 0 | 1,
+        heartDisease: formData.heartDisease as 0 | 1,
+        everMarried: formData.everMarried === "yes" ? "Yes" : "No",
+        workType: formData.workType as 'Private' | 'Self-employed' | 'Govt_job' | 'children' | 'Never_worked',
+        residenceType: formData.residenceType as "Urban" | "Rural",
         avgGlucoseLevel: formData.avgGlucoseLevel,
         bmi: formData.bmi,
-        smokingStatus: formData.smokingStatus
+        smokingStatus: formData.smokingStatus as 'formerly smoked' | 'never smoked' | 'smokes' | 'Unknown'
       };
       
-      const prediction = predictStroke(modelInput);
+      const prediction = await predictStroke(modelInput);
       
       setResult(prediction);
     } catch (error) {

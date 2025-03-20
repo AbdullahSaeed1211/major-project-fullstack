@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Brain, ArrowRight } from "lucide-react";
 import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
@@ -51,11 +52,18 @@ export function HeroSection() {
           </div>
           <div className="relative h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px]">
             <div className="absolute inset-0 bg-background/50 backdrop-blur-sm rounded-xl overflow-hidden border shadow-xl hover:shadow-2xl transition-all duration-500">
-              <div className="absolute inset-0 bg-[url('/brain-illustration.svg')] bg-no-repeat bg-center bg-contain opacity-80"></div>
+              <Image
+                src="/herotest.webp"
+                alt="Brain health visualization"
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                priority
+                className="object-cover object-center opacity-90 hover:scale-105 transition-transform duration-700"
+              />
               
               {/* Inner decorative elements */}
-              <div className="absolute top-5 right-5 h-20 w-20 rounded-full bg-gradient-to-br from-[rgba(var(--magic-primary),0.2)] to-[rgba(var(--magic-accent),0.2)] blur-xl"></div>
-              <div className="absolute bottom-5 left-5 h-16 w-16 rounded-full bg-gradient-to-tr from-[rgba(var(--magic-secondary),0.2)] to-[rgba(var(--magic-primary),0.2)] blur-xl"></div>
+              <div className="absolute top-5 right-5 h-20 w-20 rounded-full bg-gradient-to-br from-[rgba(var(--magic-primary),0.15)] to-[rgba(var(--magic-accent),0.15)] blur-xl"></div>
+              <div className="absolute bottom-5 left-5 h-16 w-16 rounded-full bg-gradient-to-tr from-[rgba(var(--magic-secondary),0.15)] to-[rgba(var(--magic-primary),0.15)] blur-xl"></div>
             </div>
           </div>
         </div>

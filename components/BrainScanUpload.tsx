@@ -17,7 +17,7 @@ export function BrainScanUpload() {
     toast({
       title: "Brain Scan Analysis (Beta)",
       description: "ML model integration is under development. Results are simulated for demonstration purposes.",
-      duration: 6000,
+      variant: "default",
     });
   }, [toast]);
 
@@ -70,6 +70,7 @@ export function BrainScanUpload() {
       toast({
         title: 'Brain scan uploaded',
         description: 'Your scan is being processed. You will be notified when the analysis is complete.',
+        variant: "default",
       });
       
       // In a real implementation, you would poll for status here

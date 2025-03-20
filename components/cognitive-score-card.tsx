@@ -4,6 +4,18 @@ import React, { useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ArrowUpIcon, ArrowDownIcon, MinusIcon } from "lucide-react";
+import { useState, useEffect } from "react";
+import type { CognitiveScore } from "@/lib/types";
+import { useAuth } from "@clerk/nextjs";
+
+// Define a more complete cognitive score type to use internally
+interface ExtendedCognitiveScore {
+  userId: string;
+  domain: string;
+  score: number;
+  previousScore: number | null;
+  lastUpdated: string;
+}
 
 interface DomainScore {
   domain: string;
@@ -15,36 +27,223 @@ interface DomainScore {
   icon: React.ReactNode;
 }
 
+// Create a custom hook to fetch cognitive scores
+export function useCognitiveScores() {
+  const { isLoaded, isSignedIn, userId } = useAuth();
+  const [cognitiveScores, setCognitiveScores] = useState<ExtendedCognitiveScore[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch scores on component mount
+  useEffect(() => {
+    async function fetchScores() {
+      if (!isLoaded) return;
+      
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        let scoresData: ExtendedCognitiveScore[] = [];
+        
+        // For signed in users, fetch from API
+        if (isSignedIn && userId) {
+          try {
+            // Try to fetch from server first
+            console.log('Fetching cognitive scores from server for user:', userId);
+            const response = await fetch('/api/user/cognitive-scores', {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              credentials: 'include', // Include credentials for auth
+            });
+            
+            if (!response.ok) {
+              const errorText = await response.text();
+              console.error('Server response not OK:', response.status, errorText);
+              throw new Error(`Failed to fetch from server: ${response.status} ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            console.log('Successfully fetched cognitive scores from server:', data);
+            
+            // Check for both formats - either the results array directly or nested in a results property
+            const resultsList = data.results || data;
+            
+            // Map API results to our ExtendedCognitiveScore format
+            if (Array.isArray(resultsList) && resultsList.length > 0) {
+              scoresData = resultsList.map(item => ({
+                userId: userId,
+                domain: item.domain,
+                score: item.score,
+                previousScore: item.previousScore,
+                lastUpdated: item.assessmentDate
+              }));
+            }
+          } catch (err) {
+            // Log the detailed error for debugging
+            console.error('Server fetch failed, using local storage as fallback', err);
+            
+            // Fall back to local storage if server fetch fails
+            const localScores = localStorage.getItem('cognitiveScores');
+            if (localScores) {
+              try {
+                const parsedScores = JSON.parse(localScores);
+                if (Array.isArray(parsedScores)) {
+                  console.log('Successfully loaded cognitive scores from localStorage');
+                  scoresData = parsedScores;
+                }
+              } catch (parseError) {
+                console.error('Error parsing localStorage cognitive scores:', parseError);
+              }
+            }
+          }
+        } 
+        // For non-signed in users, fetch from localStorage
+        else {
+          console.log('User not signed in, using localStorage for cognitive scores');
+          const localScores = localStorage.getItem('cognitiveScores');
+          if (localScores) {
+            try {
+              const parsedScores = JSON.parse(localScores);
+              if (Array.isArray(parsedScores)) {
+                scoresData = parsedScores;
+              }
+            } catch (parseError) {
+              console.error('Error parsing localStorage cognitive scores:', parseError);
+            }
+          }
+        }
+        
+        // If we don't have any scores or can't parse them, use some defaults
+        if (scoresData.length === 0) {
+          scoresData = [
+            { userId: userId || "guest", domain: "Memory", score: 78, previousScore: 72, lastUpdated: new Date().toISOString() },
+            { userId: userId || "guest", domain: "Attention", score: 82, previousScore: 85, lastUpdated: new Date().toISOString() },
+            { userId: userId || "guest", domain: "Processing", score: 65, previousScore: 65, lastUpdated: new Date().toISOString() }
+          ];
+          
+          // Save these defaults to localStorage so they persist
+          localStorage.setItem('cognitiveScores', JSON.stringify(scoresData));
+        }
+        
+        setCognitiveScores(scoresData);
+      } catch (err) {
+        console.error('Error in fetchScores:', err);
+        setError('Failed to load cognitive scores. Please try again later.');
+        setCognitiveScores([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    fetchScores();
+  }, [isLoaded, isSignedIn, userId]);
+
+  // Function to save a new cognitive score
+  const saveCognitiveScore = async (data: Pick<CognitiveScore, "domain" | "score">) => {
+    try {
+      // Get existing scores from localStorage for calculating previous score
+      const existingScoresJSON = localStorage.getItem('cognitiveScores') || '[]';
+      const existingScores: ExtendedCognitiveScore[] = JSON.parse(existingScoresJSON);
+      
+      // Find the latest score for this domain to use as previous score
+      const existingScore = existingScores
+        .filter(score => score.domain === data.domain)
+        .sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime())[0];
+      
+      // Create new score object for the local state
+      const newScore: ExtendedCognitiveScore = {
+        userId: userId || "guest",
+        domain: data.domain,
+        score: data.score,
+        previousScore: existingScore?.score || null,
+        lastUpdated: new Date().toISOString()
+      };
+      
+      // For signed in users, save to API
+      if (isSignedIn && userId) {
+        try {
+          console.log('Saving cognitive score to server:', data);
+          
+          const payload = {
+            domain: data.domain,
+            score: data.score,
+            source: data.domain.toLowerCase() + "-game",
+            assessmentDate: new Date().toISOString()
+          };
+          
+          console.log('Formatted payload for API:', payload);
+          
+          const response = await fetch('/api/user/cognitive-scores', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include', // Include credentials for auth
+            body: JSON.stringify(payload),
+          });
+          
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error response from server:', response.status, errorText);
+            throw new Error(`Failed to save to server: ${response.status} ${response.statusText}`);
+          }
+          
+          const responseData = await response.json();
+          console.log('Successfully saved cognitive score to server:', responseData);
+          
+          // Update the newScore with server data if available
+          if (responseData.data) {
+            newScore.previousScore = responseData.data.previousScore;
+            newScore.lastUpdated = responseData.data.assessmentDate;
+          }
+        } catch (serverError) {
+          console.error('Server save failed, falling back to localStorage only:', serverError);
+          // Continue with localStorage save even if server fails
+        }
+      }
+      
+      // Always update localStorage for backup and offline capabilities
+      const updatedScores = [newScore, ...existingScores];
+      localStorage.setItem('cognitiveScores', JSON.stringify(updatedScores));
+      
+      // Update state
+      setCognitiveScores(updatedScores);
+      
+      return newScore;
+    } catch (error) {
+      console.error("Failed to save cognitive score:", error);
+      throw error;
+    }
+  };
+
+  return {
+    cognitiveScores,
+    isLoading,
+    error,
+    saveCognitiveScore
+  };
+}
+
 export function CognitiveScoreCard() {
   // Use our custom hook to fetch cognitive scores
-  const { cognitiveScores, isLoading } = useMemo(() => {
-    // Create temporary mock implementation to avoid import errors
-    return {
-      cognitiveScores: [
-        { domain: "Memory", score: 78, previousScore: 72, assessmentDate: new Date().toISOString() },
-        { domain: "Attention", score: 82, previousScore: 85, assessmentDate: new Date().toISOString() },
-        { domain: "Processing", score: 65, previousScore: 65, assessmentDate: new Date().toISOString() }
-      ],
-      isLoading: false,
-      error: null,
-      saveCognitiveScore: async () => null
-    };
-  }, []);
+  const { cognitiveScores, isLoading } = useCognitiveScores();
 
   // Process and sort the scores
   const processedScores: DomainScore[] = useMemo(() => {
     if (!cognitiveScores?.length) return [];
 
-    const latestScores = new Map<string, { score: number; previousScore: number | null; assessmentDate: string }>();
+    const latestScores = new Map<string, { score: number; previousScore: number | null; lastUpdated: string }>();
     
     // Get the latest score for each domain
     cognitiveScores.forEach(score => {
       const existing = latestScores.get(score.domain);
-      if (!existing || new Date(score.assessmentDate) > new Date(existing.assessmentDate)) {
+      if (!existing || new Date(score.lastUpdated) > new Date(existing.lastUpdated)) {
         latestScores.set(score.domain, {
           score: score.score,
           previousScore: score.previousScore,
-          assessmentDate: score.assessmentDate
+          lastUpdated: score.lastUpdated
         });
       }
     });

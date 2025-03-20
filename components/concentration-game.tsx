@@ -6,7 +6,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import type { GameResult, CognitiveScore } from "@/lib/types";
+import type { GameResult } from "@/lib/types";
+import { useGameResults } from "@/hooks/use-game-results";
+import { useCognitiveScores } from "@/components/cognitive-score-card";
 
 type Difficulty = "easy" | "medium" | "hard";
 
@@ -30,43 +32,21 @@ export function ConcentrationGame() {
   const gameTimerRef = useRef<NodeJS.Timeout | null>(null);
   const roundTimerRef = useRef<NodeJS.Timeout | null>(null);
   
+  // Use the game results and cognitive scores hooks
+  const { saveResult } = useGameResults();
+  const { saveCognitiveScore } = useCognitiveScores();
+  
   // Save game result function
   const saveGameResult = async (result: Omit<GameResult, "id" | "userId" | "completedAt">) => {
     try {
-      // In production, this would save to a database
-      console.log("Saving game result:", result);
-      // Return a mock result
-      return {
-        ...result,
-        id: Math.random().toString(36).substring(2, 9),
-        userId: "current-user",
-        completedAt: new Date().toISOString()
-      };
+      // Now we use the real saveResult function from the hook
+      return await saveResult(result);
     } catch (error) {
       console.error("Failed to save game result:", error);
       throw error;
     }
   };
   
-  // Save cognitive score function
-  const saveCognitiveScore = async (data: Pick<CognitiveScore, "domain" | "score">) => {
-    try {
-      // In production, this would save to a database
-      console.log("Saving cognitive score:", data);
-      // Return a mock result
-      return {
-        ...data,
-        id: Math.random().toString(36).substring(2, 9),
-        userId: "current-user",
-        previousScore: null,
-        assessmentDate: new Date().toISOString()
-      };
-    } catch (error) {
-      console.error("Failed to save cognitive score:", error);
-      throw error;
-    }
-  };
-
   // Get game settings based on difficulty
   const getGameSettings = (): GameSettings => {
     switch (difficulty) {
@@ -162,30 +142,31 @@ export function ConcentrationGame() {
 
   // Save game data to our persistent storage
   const saveGameData = async () => {
-    const settings = getGameSettings();
-    const maxRounds = Math.floor(settings.gameLength / (settings.showDuration + 1000));
-    const successRate = Math.min(1, score / maxRounds);
-    
-    // Calculate final score (0-100)
-    const finalScore = Math.round(successRate * 100);
-    
     try {
       // Save the game result
       await saveGameResult({
         gameType: "concentration-game",
-        score: finalScore,
-        timeSpent: totalTime - remainingTime,
-        movesOrAttempts: score,
+        score: score,
+        level: 1,
+        duration: totalTime,
         difficulty,
+        accuracy: Math.round((score / (totalTime / 1000)) * 100) / 100,
+        metrics: {
+          successfulClicks: score,
+          totalTime,
+        },
+        tags: ["attention", "reaction-time", "focus"]
       });
       
       // Also save this as a cognitive score for attention domain
       await saveCognitiveScore({
         domain: "Attention",
-        score: finalScore,
+        score: Math.min(100, score * 5)
       });
+      
+      console.log("Game data saved successfully!");
     } catch (error) {
-      console.error("Failed to save game result:", error);
+      console.error("Failed to save game data:", error);
     }
   };
 

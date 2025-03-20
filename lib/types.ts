@@ -5,20 +5,26 @@ export interface GameResult {
   userId: string;
   gameType: string;
   score: number;
-  timeSpent: number;
-  movesOrAttempts: number;
-  difficulty: string;
+  level?: number;
+  duration: number;
+  difficulty?: string;
+  accuracy?: number;
   completedAt: string;
+  metrics?: Record<string, unknown>;
+  tags?: string[];
 }
 
-export interface CognitiveScore {
-  id: string;
-  userId: string;
+export type CognitiveScore = {
   domain: string;
   score: number;
-  previousScore: number | null;
-  assessmentDate: string;
-}
+  change?: number;
+  lastUpdated: string;
+};
+
+export type CognitiveScores = {
+  overall: number;
+  domains: CognitiveScore[];
+};
 
 export interface UserActivity {
   id: string;

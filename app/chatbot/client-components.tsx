@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Brain, Heart, Activity, BookOpen, Zap } from "lucide-react";
+import { Brain, Heart, Activity, BookOpen, Zap, Pill, Clock } from "lucide-react";
 
 // Define a type for the question prop
 interface Question {
@@ -20,15 +20,19 @@ export function SampleQuestionButton({ question }: SampleQuestionButtonProps) {
   const renderIcon = () => {
     switch (question.iconName) {
       case "Brain":
-        return <Brain className="mr-1 h-3.5 w-3.5" />;
+        return <Brain className="h-4 w-4 flex-shrink-0" />;
       case "Heart":
-        return <Heart className="mr-1 h-3.5 w-3.5" />;
+        return <Heart className="h-4 w-4 flex-shrink-0" />;
       case "Activity":
-        return <Activity className="mr-1 h-3.5 w-3.5" />;
+        return <Activity className="h-4 w-4 flex-shrink-0" />;
       case "BookOpen":
-        return <BookOpen className="mr-1 h-3.5 w-3.5" />;
+        return <BookOpen className="h-4 w-4 flex-shrink-0" />;
       case "Zap":
-        return <Zap className="mr-1 h-3.5 w-3.5" />;
+        return <Zap className="h-4 w-4 flex-shrink-0" />;
+      case "Pill":
+        return <Pill className="h-4 w-4 flex-shrink-0" />;
+      case "Clock":
+        return <Clock className="h-4 w-4 flex-shrink-0" />;
       default:
         return null;
     }
@@ -36,8 +40,8 @@ export function SampleQuestionButton({ question }: SampleQuestionButtonProps) {
   
   // Add a proper onClick handler inside the client component
   const handleClick = () => {
-    // Find the textarea or input in the Chatbot component
-    const textArea = document.querySelector('input[type="text"]') as HTMLInputElement;
+    // Find the textarea in the Chatbot component
+    const textArea = document.querySelector('#message-input') as HTMLTextAreaElement;
     
     if (textArea) {
       // Set the value to the question text
@@ -47,7 +51,7 @@ export function SampleQuestionButton({ question }: SampleQuestionButtonProps) {
       const event = new Event('input', { bubbles: true });
       textArea.dispatchEvent(event);
       
-      // Find the submit button and click it - Fix by casting to HTMLButtonElement
+      // Optional: Submit the form
       const submitButton = textArea.form?.querySelector('button[type="submit"]') as HTMLButtonElement;
       if (submitButton) {
         submitButton.click();
@@ -57,11 +61,11 @@ export function SampleQuestionButton({ question }: SampleQuestionButtonProps) {
   
   return (
     <button 
-      className="px-3 py-1.5 text-sm rounded-full bg-secondary/50 hover:bg-secondary/70 transition-colors"
+      className="text-left py-2 px-3 text-sm rounded-md bg-secondary/30 hover:bg-secondary/50 transition-colors w-full flex items-start gap-2"
       onClick={handleClick}
     >
-      {renderIcon()}
-      {question.text}
+      <span className="mt-0.5">{renderIcon()}</span>
+      <span>{question.text}</span>
     </button>
   );
 } 

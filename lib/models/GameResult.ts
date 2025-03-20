@@ -21,7 +21,22 @@ const GameResultSchema = new Schema<IGameResult>(
     gameType: { 
       type: String, 
       required: true,
-      enum: ["memory-game", "concentration-game", "reaction-game"]
+      enum: [
+        "memory-game", 
+        "concentration-game", 
+        "reaction-game", 
+        "reaction-test", 
+        "sequence-memory", 
+        "sequence-memory-test", 
+        "pattern-recognition", 
+        "pattern-recognition-test", 
+        "verbal-fluency", 
+        "verbal-fluency-test", 
+        "visual-attention", 
+        "visual-attention-test", 
+        "word-memory", 
+        "word-memory-test"
+      ]
     },
     score: { 
       type: Number, 

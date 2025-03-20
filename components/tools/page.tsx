@@ -2,7 +2,19 @@
 
 import React from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Brain, Activity, LineChart, Gauge, Lightbulb, Calendar, Scale } from "lucide-react";
+import { 
+  Brain, 
+  Activity, 
+  LineChart, 
+  Gauge, 
+  Lightbulb, 
+  Calendar, 
+  Scale, 
+  BookOpen,
+  ListOrdered,
+  MessageSquare,
+  Grid
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -38,6 +50,38 @@ const toolsData = [
     icon: <Gauge className="h-8 w-8 text-primary" />,
     component: "MentalMathChallenge",
     tags: ["Training", "2 min"]
+  },
+  {
+    id: "word-memory-test",
+    title: "Word Memory Test",
+    description: "Test and improve your verbal memory by recalling words from a list.",
+    icon: <BookOpen className="h-8 w-8 text-primary" />,
+    component: "WordMemoryTest",
+    tags: ["Training", "3 min"]
+  },
+  {
+    id: "sequence-memory-test",
+    title: "Sequence Memory Test",
+    description: "Remember and repeat increasingly complex sequences to improve working memory.",
+    icon: <ListOrdered className="h-8 w-8 text-primary" />,
+    component: "SequenceMemoryTest",
+    tags: ["Training", "3-5 min"]
+  },
+  {
+    id: "verbal-fluency-test",
+    title: "Verbal Fluency Test",
+    description: "List words in a category to assess language skills and executive function.",
+    icon: <MessageSquare className="h-8 w-8 text-primary" />,
+    component: "VerbalFluencyTest",
+    tags: ["Training", "1 min"]
+  },
+  {
+    id: "pattern-recognition-test",
+    title: "Pattern Recognition Test",
+    description: "Recognize and complete patterns to enhance logical reasoning abilities.",
+    icon: <Grid className="h-8 w-8 text-primary" />,
+    component: "PatternRecognitionTest",
+    tags: ["Training", "5-10 min"]
   },
   {
     id: "mood-tracker",

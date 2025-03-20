@@ -2,320 +2,300 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
-import type { GameResult, CognitiveScore } from "@/lib/types";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Clock, Brain, Zap, AlertCircle } from "lucide-react";
+import { useGameResults } from "@/hooks/use-game-results";
+import { useToast } from "@/hooks/use-toast";
 
-type Difficulty = "easy" | "medium" | "hard";
-type GameState = "idle" | "waiting" | "ready" | "clicked" | "complete";
-
-interface ReactionResult {
-  reactionTime: number;
-  valid: boolean;
-}
+type GameState = "waiting" | "ready" | "clicking" | "tooEarly" | "results";
 
 export function ReactionGame() {
-  const [difficulty, setDifficulty] = useState<Difficulty>("easy");
-  const [gameState, setGameState] = useState<GameState>("idle");
-  const [results, setResults] = useState<ReactionResult[]>([]);
-  const [startTime, setStartTime] = useState<number | null>(null);
-  const [averageTime, setAverageTime] = useState<number | null>(null);
-  const [feedback, setFeedback] = useState("");
-  const [countdownText, setCountdownText] = useState("");
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [gameState, setGameState] = useState<GameState>("waiting");
+  const [reactionTime, setReactionTime] = useState<number | null>(null);
+  const [bestTime, setBestTime] = useState<number | null>(null);
+  const [attempts, setAttempts] = useState<number[]>([]);
+  const startTimeRef = useRef<number>(0);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { saveResult } = useGameResults();
+  const { toast } = useToast();
 
-  // Save game result function
-  const saveGameResult = async (result: Omit<GameResult, "id" | "userId" | "completedAt">) => {
-    try {
-      // In production, this would save to a database
-      console.log("Saving game result:", result);
-      // Return a mock result
-      return {
-        ...result,
-        id: Math.random().toString(36).substring(2, 9),
-        userId: "current-user",
-        completedAt: new Date().toISOString()
-      };
-    } catch (error) {
-      console.error("Failed to save game result:", error);
-      throw error;
-    }
-  };
-  
-  // Save cognitive score function
-  const saveCognitiveScore = async (data: Pick<CognitiveScore, "domain" | "score">) => {
-    try {
-      // In production, this would save to a database
-      console.log("Saving cognitive score:", data);
-      // Return a mock result
-      return {
-        ...data,
-        id: Math.random().toString(36).substring(2, 9),
-        userId: "current-user",
-        previousScore: null,
-        assessmentDate: new Date().toISOString()
-      };
-    } catch (error) {
-      console.error("Failed to save cognitive score:", error);
-      throw error;
-    }
-  };
-
-  // Start a new game
-  const startGame = () => {
-    setGameState("waiting");
-    setResults([]);
-    setAverageTime(null);
-    setFeedback("");
-    setCountdownText("Wait for the green color...");
-    
-    // Set a random time to wait before showing the target
-    const waitTime = getRandomWaitTime();
-    
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      setGameState("ready");
-      setStartTime(Date.now());
-    }, waitTime);
-  };
-
-  // Handle click on the target area
-  const handleClick = () => {
-    if (gameState === "waiting") {
-      // Clicked too early
-      if (timerRef.current) clearTimeout(timerRef.current);
-      
-      setGameState("clicked");
-      setCountdownText("Too early! Click to try again.");
-      
-      // Record as invalid attempt
-      setResults(prev => [...prev, { reactionTime: 0, valid: false }]);
-      
-      return;
-    }
-    
-    if (gameState === "ready") {
-      // Calculate reaction time
-      const endTime = Date.now();
-      const reactionTime = startTime ? endTime - startTime : 0;
-      
-      // Record the result
-      setResults(prev => [...prev, { reactionTime, valid: true }]);
-      
-      // Check if we've completed all rounds
-      if (results.length + 1 >= getRoundsForDifficulty()) {
-        completeGame(reactionTime);
-      } else {
-        // Prepare for next round
-        setGameState("clicked");
-        setCountdownText(`${reactionTime}ms - Click to continue`);
-      }
-    }
-    
-    if (gameState === "clicked" || gameState === "complete") {
-      if (results.length >= getRoundsForDifficulty()) {
-        // Game is already complete
-        setGameState("idle");
-      } else {
-        // Start next round
-        startGame();
-      }
-    }
-  };
-
-  // Complete the game and calculate final results
-  const completeGame = (finalReactionTime: number) => {
-    const validResults = [...results, { reactionTime: finalReactionTime, valid: true }]
-      .filter(r => r.valid);
-    
-    if (validResults.length > 0) {
-      const total = validResults.reduce((sum, r) => sum + r.reactionTime, 0);
-      const avg = Math.round(total / validResults.length);
-      setAverageTime(avg);
-      
-      // Save game data
-      saveGameData(avg);
-      
-      // Provide feedback
-      provideFeedback(avg);
-    }
-    
-    setGameState("complete");
-    setCountdownText(`Average: ${averageTime}ms - Click to restart`);
-  };
-
-  // Save game data to our persistent storage
-  const saveGameData = async (avgReactionTime: number) => {
-    // Convert reaction time to a score (faster = higher score)
-    // Baseline: 200ms = 100 points, 400ms = 0 points
-    const baselineMax = 200;
-    const baselineMin = 400;
-    
-    const score = Math.round(100 * Math.max(0, Math.min(1, 
-      (baselineMin - avgReactionTime) / (baselineMin - baselineMax)
-    )));
-    
-    try {
-      // Save the game result
-      await saveGameResult({
-        gameType: "reaction-game",
-        score,
-        timeSpent: results.length * 2000, // Approximate time spent
-        movesOrAttempts: results.length,
-        difficulty,
-      });
-      
-      // Also save this as a cognitive score for processing speed domain
-      await saveCognitiveScore({
-        domain: "Processing",
-        score,
-      });
-    } catch (error) {
-      console.error("Failed to save game result:", error);
-    }
-  };
-
-  // Provide feedback based on performance
-  const provideFeedback = (avgTime: number) => {
-    let feedbackMessage = "";
-    
-    if (avgTime < 220) {
-      feedbackMessage = "Lightning fast! Your processing speed is exceptional.";
-    } else if (avgTime < 280) {
-      feedbackMessage = "Very quick! Your reaction time is above average.";
-    } else if (avgTime < 350) {
-      feedbackMessage = "Good job! Your reaction time is within normal range.";
-    } else {
-      feedbackMessage = "Keep practicing! Regular exercises can help improve your processing speed.";
-    }
-    
-    setFeedback(feedbackMessage);
-  };
-
-  // Get random wait time based on difficulty
-  const getRandomWaitTime = () => {
-    const baseTime = 1000; // 1 second minimum
-    const maxAdditionalTime = difficulty === "easy" ? 4000 : 
-                             difficulty === "medium" ? 6000 : 8000;
-    
-    return baseTime + Math.random() * maxAdditionalTime;
-  };
-
-  // Get number of rounds based on difficulty
-  const getRoundsForDifficulty = () => {
-    return difficulty === "easy" ? 3 : 
-           difficulty === "medium" ? 5 : 7;
-  };
-
-  // Processing speed tips
-  const processingTips = [
-    "Regular cardiovascular exercise can improve neural processing speed",
-    "Adequate sleep is essential for optimal brain processing",
-    "Practicing quick decision-making games can enhance processing speed",
-    "Staying hydrated helps maintain optimal brain function",
-    "Reducing stress through relaxation techniques can improve neural efficiency"
-  ];
-
-  // Clean up timers when component unmounts
+  // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
     };
   }, []);
 
-  // Get the appropriate color for the reaction area
-  const getReactionAreaColor = () => {
-    switch (gameState) {
-      case "waiting":
-        return "bg-red-500 hover:bg-red-600";
-      case "ready":
-        return "bg-green-500 hover:bg-green-600";
-      case "clicked":
-      case "complete":
-        return "bg-yellow-500 hover:bg-yellow-600";
-      default:
-        return "bg-muted hover:bg-muted/80";
+  const startGame = () => {
+    setGameState("ready");
+    setReactionTime(null);
+    
+    // Random delay between 1-5 seconds
+    const delay = Math.floor(Math.random() * 4000) + 1000;
+    
+    timeoutRef.current = setTimeout(() => {
+      setGameState("clicking");
+      startTimeRef.current = Date.now();
+    }, delay);
+  };
+
+  const handleClick = () => {
+    if (gameState === "ready") {
+      // Clicked too early
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      setGameState("tooEarly");
+    } else if (gameState === "clicking") {
+      // Record reaction time
+      const endTime = Date.now();
+      const time = endTime - startTimeRef.current;
+      setReactionTime(time);
+      
+      // Update attempts and best time
+      const newAttempts = [...attempts, time];
+      setAttempts(newAttempts);
+      
+      if (bestTime === null || time < bestTime) {
+        setBestTime(time);
+      }
+      
+      setGameState("results");
     }
   };
 
+  const handleComplete = () => {
+    if (attempts.length >= 5) {
+      const avgTime = Math.round(attempts.reduce((a, b) => a + b, 0) / attempts.length);
+      
+      // Save result to the game results system
+      saveResult({
+        gameType: "reaction-test",
+        score: avgTime,
+        duration: attempts.length * 5, // Approximate time spent in seconds
+        difficulty: "medium",
+        accuracy: 100, // All attempts are valid
+        metrics: {
+          attempts: attempts.length,
+          bestTime,
+          avgTime
+        },
+        tags: ["reaction-time", "processing-speed"]
+      })
+      .then(() => {
+        toast({
+          variant: "default",
+          title: "Results saved!",
+          description: `Your average reaction time: ${avgTime}ms`,
+        });
+      })
+      .catch(error => {
+        toast({
+          variant: "destructive",
+          title: "Error saving results",
+          description: "Your results couldn&apos;t be saved. Please try again.",
+        });
+        console.error("Error saving game results:", error);
+      });
+      
+      // Reset the game
+      setAttempts([]);
+      setBestTime(null);
+    }
+    
+    setGameState("waiting");
+  };
+
+  const getReactionFeedback = (time: number): { text: string; color: string } => {
+    if (time < 200) {
+      return { 
+        text: "Lightning fast! Exceptional reaction time.", 
+        color: "text-green-500" 
+      };
+    } else if (time < 250) {
+      return { 
+        text: "Extremely fast! Better than most people.", 
+        color: "text-green-500"
+      };
+    } else if (time < 300) {
+      return { 
+        text: "Very good reaction time.", 
+        color: "text-green-500" 
+      };
+    } else if (time < 350) {
+      return { 
+        text: "Good reaction time, above average.", 
+        color: "text-blue-500" 
+      };
+    } else if (time < 400) {
+      return { 
+        text: "Average reaction time.", 
+        color: "text-blue-500" 
+      };
+    } else if (time < 500) {
+      return { 
+        text: "Slightly below average, but still normal.", 
+        color: "text-yellow-500" 
+      };
+    } else if (time < 600) {
+      return { 
+        text: "Below average reaction time.", 
+        color: "text-yellow-500" 
+      };
+    } else {
+      return { 
+        text: "Your reaction time is slow. Consider more practice.", 
+        color: "text-red-500" 
+      };
+    }
+  };
+
+  const getAverageTime = () => {
+    if (attempts.length === 0) return null;
+    return Math.round(attempts.reduce((a, b) => a + b, 0) / attempts.length);
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-2">
-        <h2 className="text-2xl font-bold">Reaction Time Game</h2>
-        <p className="text-muted-foreground">
-          Test and improve your processing speed. Click when the color changes to green.
-        </p>
-      </div>
-
-      <Tabs 
-        defaultValue="easy" 
-        className="w-full" 
-        onValueChange={(value: string) => setDifficulty(value as Difficulty)}
-      >
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="easy" disabled={gameState !== "idle"}>Easy</TabsTrigger>
-          <TabsTrigger value="medium" disabled={gameState !== "idle"}>Medium</TabsTrigger>
-          <TabsTrigger value="hard" disabled={gameState !== "idle"}>Hard</TabsTrigger>
-        </TabsList>
-      </Tabs>
-
-      <div className="flex flex-col items-center justify-center gap-4">
-        {gameState === "idle" ? (
-          <Button onClick={startGame} size="lg">Start Game</Button>
-        ) : (
-          <>
-            <div className="text-sm font-medium mb-2">
-              Round: {results.length + 1} of {getRoundsForDifficulty()}
+    <div className="max-w-xl mx-auto">
+      <Card className="overflow-hidden">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-primary" />
+                Reaction Time Test
+              </CardTitle>
+              <CardDescription>Test your brain&apos;s processing speed and reaction time</CardDescription>
             </div>
-            
-            <div
-              className={cn(
-                "w-full h-48 rounded-lg flex items-center justify-center cursor-pointer transition-colors",
-                getReactionAreaColor()
+            <div className="flex items-center gap-2">
+              {bestTime && (
+                <div className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
+                  Best: {bestTime}ms
+                </div>
               )}
+              {attempts.length > 0 && (
+                <div className="text-xs font-medium px-2 py-1 rounded-full bg-muted">
+                  {attempts.length}/5 attempts
+                </div>
+              )}
+            </div>
+          </div>
+        </CardHeader>
+        
+        <CardContent>
+          {gameState === "waiting" && (
+            <div className="py-10 text-center">
+              <Zap className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-xl font-medium mb-2">Test Your Reaction Time</h3>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                When the red box turns green, click as quickly as possible. 
+                This measures your visual reaction time.
+              </p>
+              <Button size="lg" onClick={startGame}>
+                Start Test
+              </Button>
+      </div>
+          )}
+          
+          {gameState === "ready" && (
+            <div 
+              className="w-full h-64 bg-red-500/80 dark:bg-red-600/90 rounded-xl flex items-center justify-center cursor-pointer transition-colors"
               onClick={handleClick}
             >
-              <p className="text-center text-white font-medium">
-                {countdownText}
-              </p>
+              <p className="text-white font-medium text-xl">Wait for green...</p>
             </div>
+          )}
             
-            <div className="w-full">
-              <div className="text-sm font-medium mb-2">Previous times:</div>
-              <div className="flex flex-wrap gap-2">
-                {results.filter(r => r.valid).map((result, index) => (
-                  <div 
-                    key={index}
-                    className="px-3 py-1 bg-muted rounded text-sm"
-                  >
-                    {result.reactionTime}ms
+          {gameState === "clicking" && (
+            <div
+              className="w-full h-64 bg-green-500/80 dark:bg-green-600/90 rounded-xl flex items-center justify-center cursor-pointer transition-colors"
+              onClick={handleClick}
+            >
+              <p className="text-white font-medium text-xl">Click now!</p>
+            </div>
+          )}
+          
+          {gameState === "tooEarly" && (
+            <div className="py-8 text-center">
+              <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+              <h3 className="text-xl font-medium mb-2">Too Early!</h3>
+              <p className="text-muted-foreground mb-6">
+                You clicked before the color changed. Please wait for the green color.
+              </p>
+              <Button onClick={startGame}>
+                Try Again
+              </Button>
+            </div>
+          )}
+          
+          {gameState === "results" && reactionTime && (
+            <div className="py-8 space-y-6">
+              <div className="text-center">
+                <h3 className="text-3xl font-bold mb-1">{reactionTime} ms</h3>
+                <p className={`${getReactionFeedback(reactionTime).color} font-medium`}>
+                  {getReactionFeedback(reactionTime).text}
+                </p>
+              </div>
+            
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-muted/50 p-4 rounded-lg">
+                    <div className="text-sm text-muted-foreground mb-1">Attempts</div>
+                    <div className="font-medium">{attempts.length}/5</div>
                   </div>
-                ))}
+                  <div className="bg-muted/50 p-4 rounded-lg">
+                    <div className="text-sm text-muted-foreground mb-1">Average</div>
+                    <div className="font-medium">{getAverageTime() || "-"} ms</div>
+                  </div>
+                </div>
+                
+                {attempts.length >= 5 && (
+                  <Alert className="bg-primary/10 border-primary/20">
+                    <Brain className="h-4 w-4" />
+                    <AlertTitle>Test completed!</AlertTitle>
+                    <AlertDescription>
+                      You&apos;ve completed 5 attempts. See your average score and save your results.
+                    </AlertDescription>
+                  </Alert>
+                )}
               </div>
             </div>
+          )}
+        </CardContent>
+        
+        <CardFooter className="flex justify-between border-t bg-muted/20 p-4">
+          {gameState === "results" && (
+            <>
+              {attempts.length < 5 ? (
+                <>
+                  <Button variant="outline" onClick={handleComplete}>
+                    End Test
+                  </Button>
+                  <Button onClick={startGame}>
+                    Next Attempt
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="outline" onClick={() => {
+                    setAttempts([]);
+                    setBestTime(null);
+                    setGameState("waiting");
+                  }}>
+                    Reset
+                  </Button>
+                  <Button onClick={handleComplete}>
+                    Save Results
+                  </Button>
+                </>
+              )}
           </>
         )}
-      </div>
-
-      {gameState === "complete" && (
-        <Card>
-          <CardContent className="pt-6">
-            <h3 className="text-lg font-medium mb-2">Game Complete!</h3>
-            <p>Your average reaction time: {averageTime}ms</p>
-            <p>{feedback}</p>
-            <div className="mt-4">
-              <h4 className="font-medium mb-2">Brain Health Tips:</h4>
-              <p className="text-sm text-muted-foreground">
-                {processingTips[Math.floor(Math.random() * processingTips.length)]}
-              </p>
-            </div>
-            <div className="mt-4 flex justify-end">
-              <Button onClick={startGame}>Play Again</Button>
-            </div>
-          </CardContent>
+        </CardFooter>
         </Card>
-      )}
     </div>
   );
 } 

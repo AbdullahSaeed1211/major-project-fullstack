@@ -95,7 +95,7 @@ export async function getCurrentUserId(): Promise<string | null> {
 
 // Get the current user from the database
 export async function getCurrentUser() {
-  const userId = getCurrentUserId();
+  const userId = await getCurrentUserId();
   
   if (!userId) {
     return null;

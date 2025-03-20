@@ -9,7 +9,7 @@ export function NewsletterSignup() {
     toast({
       title: "Newsletter Feature (Coming Soon)",
       description: "Email delivery is under development. Your subscription will be recorded but emails won't be sent yet.",
-      duration: 5000,
+      variant: "default",
     });
   }, [toast]);
   

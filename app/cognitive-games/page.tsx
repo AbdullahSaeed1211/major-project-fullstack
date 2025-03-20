@@ -2,6 +2,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MemoryGame } from "@/components/memory-game";
 import { ConcentrationGame } from "@/components/concentration-game";
 import { ReactionGame } from "@/components/reaction-game";
+import { WordMemoryTest } from "@/components/word-memory-test";
+import { SequenceMemoryTest } from "@/components/sequence-memory-test";
+import { VerbalFluencyTest } from "@/components/verbal-fluency-test";
+import { PatternRecognitionTest } from "@/components/pattern-recognition-test";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -42,10 +46,14 @@ export default function CognitiveGamesPage() {
       </div>
 
       <Tabs defaultValue="memory" className="w-full">
-        <TabsList className="grid grid-cols-3 mb-4 md:mb-8">
+        <TabsList className="grid grid-cols-7 mb-4 md:mb-8">
           <TabsTrigger value="memory" className="text-xs sm:text-sm md:text-base">Memory Game</TabsTrigger>
           <TabsTrigger value="concentration" className="text-xs sm:text-sm md:text-base">Concentration</TabsTrigger>
           <TabsTrigger value="reaction" className="text-xs sm:text-sm md:text-base">Reaction Time</TabsTrigger>
+          <TabsTrigger value="word-memory" className="text-xs sm:text-sm md:text-base">Word Memory</TabsTrigger>
+          <TabsTrigger value="sequence-memory" className="text-xs sm:text-sm md:text-base">Sequence Memory</TabsTrigger>
+          <TabsTrigger value="verbal-fluency" className="text-xs sm:text-sm md:text-base">Verbal Fluency</TabsTrigger>
+          <TabsTrigger value="pattern-recognition" className="text-xs sm:text-sm md:text-base">Pattern Recognition</TabsTrigger>
         </TabsList>
         
         <TabsContent value="memory" className="mt-0">
@@ -65,14 +73,38 @@ export default function CognitiveGamesPage() {
             <ReactionGame />
           </div>
         </TabsContent>
+
+        <TabsContent value="word-memory" className="mt-0">
+          <div className="bg-card rounded-lg p-3 sm:p-4 md:p-6">
+            <WordMemoryTest />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="sequence-memory" className="mt-0">
+          <div className="bg-card rounded-lg p-3 sm:p-4 md:p-6">
+            <SequenceMemoryTest />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="verbal-fluency" className="mt-0">
+          <div className="bg-card rounded-lg p-3 sm:p-4 md:p-6">
+            <VerbalFluencyTest />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="pattern-recognition" className="mt-0">
+          <div className="bg-card rounded-lg p-3 sm:p-4 md:p-6">
+            <PatternRecognitionTest />
+          </div>
+        </TabsContent>
       </Tabs>
 
-      <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mt-8 md:mt-12">
+      <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 mt-8 md:mt-12">
         <div className="rounded-lg border bg-card p-4 md:p-6">
           <h3 className="font-semibold mb-2">Memory</h3>
           <p className="text-sm text-muted-foreground">
-            The memory game tests and enhances your short-term memory by challenging you to 
-            remember the location of matching cards. Regular memory exercises can strengthen 
+            Memory games test and enhance your short-term memory by challenging you to 
+            remember information. Regular memory exercises can strengthen 
             neural connections associated with memory formation and recall.
           </p>
         </div>
@@ -80,18 +112,27 @@ export default function CognitiveGamesPage() {
         <div className="rounded-lg border bg-card p-4 md:p-6">
           <h3 className="font-semibold mb-2">Attention</h3>
           <p className="text-sm text-muted-foreground">
-            The concentration game tests your ability to maintain focused attention on rapidly
+            Attention games test your ability to maintain focused attention on rapidly
             changing stimuli. Improving attention skills can help with everyday tasks that 
             require concentration and can enhance overall cognitive performance.
           </p>
         </div>
         
-        <div className="rounded-lg border bg-card p-4 md:p-6 sm:col-span-2 md:col-span-1">
+        <div className="rounded-lg border bg-card p-4 md:p-6">
           <h3 className="font-semibold mb-2">Processing Speed</h3>
           <p className="text-sm text-muted-foreground">
-            The reaction time game measures how quickly you process and respond to visual
+            Reaction time games measure how quickly you process and respond to visual
             stimuli. Processing speed is a fundamental cognitive function that affects
             many aspects of thinking and can decline with age if not exercised.
+          </p>
+        </div>
+
+        <div className="rounded-lg border bg-card p-4 md:p-6">
+          <h3 className="font-semibold mb-2">Executive Function</h3>
+          <p className="text-sm text-muted-foreground">
+            Pattern recognition and verbal fluency tests assess executive functions like planning, 
+            problem-solving, and cognitive flexibility. These high-level cognitive abilities are 
+            essential for complex thinking and decision-making.
           </p>
         </div>
       </div>

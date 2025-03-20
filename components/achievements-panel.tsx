@@ -35,7 +35,7 @@ export function AchievementsPanel() {
     
     // Calculate average reaction time
     const avgReactionTime = reactionTests.length > 0
-      ? reactionTests.reduce((sum, test) => sum + test.timeSpent, 0) / reactionTests.length
+      ? reactionTests.reduce((sum, test) => sum + test.duration, 0) / reactionTests.length
       : 0;
     
     const calculatedAchievements: Achievement[] = [

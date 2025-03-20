@@ -1,11 +1,12 @@
 import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ActivityHistory } from "@/components/activity-history";
 import { CognitiveScoreCard } from "@/components/cognitive-score-card";
-import { Brain, Activity, FileText, Zap, Clock } from "lucide-react";
+import { DailyChallenge } from "@/components/daily-challenge";
+import { Brain, Activity, FileText, Zap, Target, Info } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -18,6 +19,11 @@ export const metadata: Metadata = {
 };
 
 export default function DashboardPage() {
+  // This would typically come from a hook or server component
+  const hasActivityData = false;
+  const hasAssessmentData = false;
+  const hasCognitiveScores = false;
+
   return (
     <div className="container mx-auto py-8">
       <div className="flex flex-col gap-2 mb-8">
@@ -38,49 +44,131 @@ export default function DashboardPage() {
             
             <TabsContent value="overview" className="space-y-6">
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <Card className="col-span-1">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium">Overall Brain Health</CardTitle>
-                    <Brain className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">85%</div>
-                    <p className="text-xs text-muted-foreground">
-                      +2% from last assessment
-                    </p>
-                  </CardContent>
-                </Card>
+                {hasAssessmentData ? (
+                  <Card className="col-span-1">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                      <CardTitle className="text-sm font-medium">Overall Brain Health</CardTitle>
+                      <Brain className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">85%</div>
+                      <p className="text-xs text-muted-foreground">
+                        +2% from last assessment
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <Card className="col-span-1">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                      <CardTitle className="text-sm font-medium">Overall Brain Health</CardTitle>
+                      <Brain className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent className="pt-2">
+                      <div className="text-sm text-muted-foreground">
+                        No assessment data yet
+                      </div>
+                      <Link href="/tools" className="text-xs text-primary hover:underline inline-block mt-1">
+                        Take your first assessment
+                      </Link>
+                    </CardContent>
+                  </Card>
+                )}
+                
+                {hasActivityData ? (
+                  <Card className="col-span-1">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                      <CardTitle className="text-sm font-medium">Weekly Activity</CardTitle>
+                      <Activity className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">6 sessions</div>
+                      <p className="text-xs text-muted-foreground">
+                        3 hours total training
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <Card className="col-span-1">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                      <CardTitle className="text-sm font-medium">Weekly Activity</CardTitle>
+                      <Activity className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent className="pt-2">
+                      <div className="text-sm text-muted-foreground">
+                        No activity recorded yet
+                      </div>
+                      <Link href="/tools" className="text-xs text-primary hover:underline inline-block mt-1">
+                        Try a cognitive game
+                      </Link>
+                    </CardContent>
+                  </Card>
+                )}
                 
                 <Card className="col-span-1">
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium">Weekly Activity</CardTitle>
-                    <Activity className="h-4 w-4 text-muted-foreground" />
+                    <CardTitle className="text-sm font-medium">Daily Challenge</CardTitle>
+                    <Target className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">6 sessions</div>
-                    <p className="text-xs text-muted-foreground">
-                      3 hours total training
-                    </p>
-                  </CardContent>
-                </Card>
-                
-                <Card className="col-span-1">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium">Next Assessment</CardTitle>
-                    <FileText className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">3 days</div>
-                    <p className="text-xs text-muted-foreground">
-                      Comprehensive analysis
-                    </p>
+                  <CardContent className="pt-2">
+                    <div className="text-sm">
+                      Check your daily brain exercise
+                    </div>
+                    <Link href="#daily-challenge" className="text-xs text-primary hover:underline inline-block mt-1">
+                      View today&apos;s challenge
+                    </Link>
                   </CardContent>
                 </Card>
               </div>
 
               <div className="grid gap-6 md:grid-cols-2">
-                <ActivityHistory />
-                <CognitiveScoreCard />
+                {hasActivityData ? (
+                  <ActivityHistory />
+                ) : (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Activity History</CardTitle>
+                      <CardDescription>Track your brain training activities</CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-0 flex flex-col items-center justify-center py-8">
+                      <div className="text-center space-y-2 max-w-xs">
+                        <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-lg font-medium">No activity history yet</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Complete cognitive exercises to build your activity history and track your progress
+                        </p>
+                      </div>
+                    </CardContent>
+                    <CardFooter className="pb-6 flex justify-center">
+                      <Link href="/tools">
+                        <Button>Start Training</Button>
+                      </Link>
+                    </CardFooter>
+                  </Card>
+                )}
+                {hasCognitiveScores ? (
+                  <CognitiveScoreCard />
+                ) : (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Cognitive Scores</CardTitle>
+                      <CardDescription>Track your performance across cognitive domains</CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-0 flex flex-col items-center justify-center py-8">
+                      <div className="text-center space-y-2 max-w-xs">
+                        <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-lg font-medium">No cognitive scores yet</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Complete assessments to generate your cognitive domain profile and track improvements
+                        </p>
+                      </div>
+                    </CardContent>
+                    <CardFooter className="pb-6 flex justify-center">
+                      <Link href="/tools">
+                        <Button>Take Assessment</Button>
+                      </Link>
+                    </CardFooter>
+                  </Card>
+                )}
               </div>
             </TabsContent>
             
@@ -89,88 +177,54 @@ export default function DashboardPage() {
                 <CardHeader>
                   <CardTitle>Training Plan</CardTitle>
                   <CardDescription>
-                    Your personalized cognitive training schedule
+                    Recommended activities to improve your cognitive health
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center pb-2 border-b">
-                      <div className="font-medium">Memory Training</div>
-                      <div className="text-sm text-muted-foreground">Today</div>
-                    </div>
-                    <div className="flex justify-between items-center pb-2 border-b">
-                      <div className="font-medium">Attention Exercises</div>
-                      <div className="text-sm text-muted-foreground">Tomorrow</div>
-                    </div>
-                    <div className="flex justify-between items-center pb-2 border-b">
-                      <div className="font-medium">Processing Speed</div>
-                      <div className="text-sm text-muted-foreground">In 2 days</div>
-                    </div>
-                    <div className="flex justify-between items-center pb-2 border-b">
-                      <div className="font-medium">Executive Function</div>
-                      <div className="text-sm text-muted-foreground">In 3 days</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recommended Games</CardTitle>
-                  <CardDescription>
-                    Games selected to match your training needs
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <Link href="/cognitive-games?tab=memory" className="block">
-                      <div className="rounded-lg border p-3 hover:bg-muted/50 transition-colors">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Brain className="h-5 w-5 text-primary" />
-                          <span className="font-medium">Memory Cards</span>
+                  {hasActivityData ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-medium">Memory Training</h3>
+                          <p className="text-sm text-muted-foreground">Improve your recall and memory formation</p>
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                          Test and improve your short-term memory
+                        <Link href="/tools/memory-game">
+                          <Button variant="outline" size="sm">Start</Button>
+                        </Link>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-medium">Attention Exercise</h3>
+                          <p className="text-sm text-muted-foreground">Enhance focus and sustained attention</p>
+                        </div>
+                        <Link href="/tools/visual-attention">
+                          <Button variant="outline" size="sm">Start</Button>
+                        </Link>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-medium">Processing Speed</h3>
+                          <p className="text-sm text-muted-foreground">Increase your mental processing velocity</p>
+                        </div>
+                        <Link href="/tools/reaction-test">
+                          <Button variant="outline" size="sm">Start</Button>
+                        </Link>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 space-y-4">
+                      <Info className="h-12 w-12 text-muted-foreground mx-auto" />
+                      <div>
+                        <h3 className="text-lg font-medium">Complete your first assessment</h3>
+                        <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
+                          To receive personalized training recommendations, complete at least one cognitive assessment
                         </p>
                       </div>
-                    </Link>
-                    
-                    <Link href="/cognitive-games?tab=concentration" className="block">
-                      <div className="rounded-lg border p-3 hover:bg-muted/50 transition-colors">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Zap className="h-5 w-5 text-primary" />
-                          <span className="font-medium">Concentration</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Strengthen your focus and attention span
-                        </p>
-                      </div>
-                    </Link>
-                    
-                    <Link href="/cognitive-games?tab=reaction" className="block">
-                      <div className="rounded-lg border p-3 hover:bg-muted/50 transition-colors">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Clock className="h-5 w-5 text-primary" />
-                          <span className="font-medium">Reaction Time</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Improve your processing speed and reaction time
-                        </p>
-                      </div>
-                    </Link>
-                    
-                    <Link href="/cognitive-games" className="block">
-                      <div className="rounded-lg border p-3 hover:bg-muted/50 transition-colors">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Activity className="h-5 w-5 text-primary" />
-                          <span className="font-medium">View All Games</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Explore all available cognitive games
-                        </p>
-                      </div>
-                    </Link>
-                  </div>
+                      <Link href="/tools">
+                        <Button>Explore Tools</Button>
+                      </Link>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -178,88 +232,116 @@ export default function DashboardPage() {
             <TabsContent value="recommendations" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Brain Health Recommendations</CardTitle>
+                  <CardTitle>Personalized Recommendations</CardTitle>
                   <CardDescription>
-                    Personalized suggestions to improve your cognitive health
+                    Based on your cognitive profile and activity
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <div className="rounded-lg bg-muted p-4">
-                      <h3 className="font-medium mb-1">Increase memory training frequency</h3>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        Based on your recent assessment, more frequent memory exercises would be beneficial.
-                      </p>
-                      <div className="text-sm">
-                        <Button variant="outline" size="sm">Schedule Training</Button>
+                  {hasAssessmentData ? (
+                    <div className="space-y-6">
+                      <div className="space-y-2">
+                        <h3 className="font-semibold text-lg">Brain Health Tips</h3>
+                        <ul className="space-y-2 list-disc list-inside text-sm">
+                          <li>Consider regular aerobic exercise to boost blood flow to your brain</li>
+                          <li>Practice mindfulness meditation to improve attention and focus</li>
+                          <li>Ensure adequate sleep (7-9 hours) for optimal cognitive performance</li>
+                        </ul>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <h3 className="font-semibold text-lg">Focus Areas</h3>
+                        <p className="text-sm">Based on your assessments, we recommend focusing on:</p>
+                        <div className="grid grid-cols-2 gap-4 mt-2">
+                          <div className="bg-muted rounded-md p-3">
+                            <h4 className="font-medium">Memory</h4>
+                            <p className="text-xs text-muted-foreground mt-1">Your recent scores indicate opportunity for improvement</p>
+                          </div>
+                          <div className="bg-muted rounded-md p-3">
+                            <h4 className="font-medium">Processing Speed</h4>
+                            <p className="text-xs text-muted-foreground mt-1">Regular practice can help boost your mental quickness</p>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    
-                    <div className="rounded-lg bg-muted p-4">
-                      <h3 className="font-medium mb-1">Try the new concentration exercises</h3>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        Your attention scores could benefit from our focused concentration activities.
-                      </p>
-                      <div className="text-sm">
-                        <Button variant="outline" size="sm">View Exercises</Button>
+                  ) : (
+                    <div className="text-center py-8 space-y-4">
+                      <Brain className="h-12 w-12 text-muted-foreground mx-auto" />
+                      <div>
+                        <h3 className="text-lg font-medium">No recommendations yet</h3>
+                        <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
+                          Complete cognitive assessments to receive personalized recommendations for improving brain health
+                        </p>
                       </div>
+                      <Link href="/tools">
+                        <Button>Take Assessment</Button>
+                      </Link>
                     </div>
-                    
-                    <div className="rounded-lg bg-muted p-4">
-                      <h3 className="font-medium mb-1">Complete your cognitive assessment</h3>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        It&apos;s been 30 days since your last full assessment. A new one is recommended.
-                      </p>
-                      <div className="text-sm">
-                        <Button variant="outline" size="sm">Start Assessment</Button>
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
           </Tabs>
         </div>
         
-        <div className="col-span-1">
-          <Card className="h-full">
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-              <CardDescription>Start your brain training</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Link href="/cognitive-games">
-                <Button className="w-full justify-start" variant="outline">
-                  <Brain className="mr-2 h-4 w-4" />
-                  Play Cognitive Games
-                </Button>
-              </Link>
-              
-              <Link href="/stroke-prediction">
-                <Button className="w-full justify-start" variant="outline">
-                  <Activity className="mr-2 h-4 w-4" />
-                  Stroke Risk Assessment
-                </Button>
-              </Link>
-              
-              <Link href="/chatbot">
-                <Button className="w-full justify-start" variant="outline">
-                  <FileText className="mr-2 h-4 w-4" />
-                  Ask Brain Health Questions
-                </Button>
-              </Link>
-              
-              <div className="pt-4 border-t">
-                <h3 className="text-sm font-medium mb-3">Daily Tips</h3>
-                <div className="space-y-2 text-sm text-muted-foreground">
-                  <p>Regular physical exercise increases cerebral blood flow.</p>
-                  <p>Maintaining social connections helps preserve cognitive function.</p>
-                  <p>Sleep is essential for memory consolidation and brain health.</p>
+        <div className="col-span-2 lg:col-span-1">
+          <div className="grid gap-6">
+            <div id="daily-challenge">
+              <DailyChallenge />
+            </div>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Links</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Link href="/tools">
+                  <Button className="w-full justify-start" variant="default">
+                    <Zap className="mr-2 h-4 w-4" />
+                    Play Cognitive Games
+                  </Button>
+                </Link>
+                
+                <Link href="/stroke-prediction">
+                  <Button className="w-full justify-start" variant="outline">
+                    <Activity className="mr-2 h-4 w-4" />
+                    Stroke Risk Assessment
+                  </Button>
+                </Link>
+                
+                <Link href="/assessment-report">
+                  <Button className="w-full justify-start" variant="outline">
+                    <FileText className="mr-2 h-4 w-4" />
+                    Assessment Report
+                  </Button>
+                </Link>
+                
+                <Link href="/chatbot">
+                  <Button className="w-full justify-start" variant="outline">
+                    <FileText className="mr-2 h-4 w-4" />
+                    Ask Brain Health Questions
+                  </Button>
+                </Link>
+                
+                <div className="pt-4 border-t">
+                  <h3 className="text-sm font-medium mb-3">Daily Tips</h3>
+                  <div className="space-y-2 text-sm text-muted-foreground">
+                    <p>Regular physical exercise increases cerebral blood flow.</p>
+                    <p>Maintaining social connections helps preserve cognitive function.</p>
+                    <p>Sleep is essential for memory consolidation and brain health.</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </div>
+      </div>
+      
+      <div className="mt-12 text-center">
+        <p className="text-xs text-muted-foreground max-w-2xl mx-auto">
+          <span className="font-medium">Disclaimer:</span> All cognitive tools, assessments, and scores are designed for recreational use and self-improvement. 
+          They are not medical diagnoses or professional evaluations. Always consult healthcare professionals for medical advice.
+        </p>
       </div>
     </div>
   );

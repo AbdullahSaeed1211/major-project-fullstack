@@ -8,13 +8,13 @@ import { CtaSection } from "@/components/home/cta-section";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Brainwise | Complete Brain Health Platform",
-  description: "Optimize your brain health with personalized cognitive training, stroke risk assessment, and AI-driven brain health tools.",
-  keywords: "brain health, cognitive training, stroke prevention, brain optimization, memory training, brain games",
+  title: "Brainwise: Brain Health & Cognitive Training Platform",
+  description: "Improve your brain health, assess stroke risk, and enhance cognitive abilities with science-backed tools and training games.",
+  keywords: "brain health, cognitive training, stroke prediction, alzheimer's risk, memory games, brain exercises",
   openGraph: {
-    title: "Brainwise | Complete Brain Health Platform",
-    description: "Optimize your brain health with personalized cognitive training, stroke risk assessment, and AI-driven brain health tools.",
-    url: "https://brainwise.com",
+    title: "Brainwise: Brain Health & Cognitive Training Platform",
+    description: "Improve your brain health, assess stroke risk, and enhance cognitive abilities with science-backed tools and training games.",
+    url: "https://brainwise.vercel.app",
     type: "website",
     images: [
       {
@@ -23,13 +23,12 @@ export const metadata: Metadata = {
         height: 630,
         alt: "Brainwise Brain Health Platform"
       }
-    ],
-    siteName: "Brainwise"
+    ]
   },
   twitter: {
     card: "summary_large_image",
-    title: "Brainwise | Complete Brain Health Platform",
-    description: "Optimize your brain health with personalized cognitive training, stroke risk assessment, and AI-driven brain health tools.",
+    title: "Brainwise: Brain Health & Cognitive Training Platform",
+    description: "Improve your brain health, assess stroke risk, and enhance cognitive abilities with science-backed tools and training games.",
     images: ["/images/og-home.jpg"]
   },
   robots: {

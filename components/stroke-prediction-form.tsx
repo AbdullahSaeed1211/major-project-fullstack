@@ -58,7 +58,7 @@ export function StrokePredictionForm() {
     toast({
       title: "Stroke Prediction (Beta)",
       description: "ML model integration is under development. Results are simulated based on risk factors.",
-      duration: 6000,
+      variant: "default",
     });
   }, [toast]);
 

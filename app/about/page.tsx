@@ -1,8 +1,34 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "About | Brainwise",
-  description: "Learn more about Brainwise and our mission to improve brain health.",
+export const metadata: Metadata = {
+  title: "About Brainwise | Brain Health Platform",
+  description: "Our mission is to make brain health analysis accessible to everyone through innovative AI-powered tools and evidence-based approaches.",
+  keywords: "about brainwise, brain health mission, cognitive health team, brain science, neurological wellbeing",
+  openGraph: {
+    title: "About Brainwise | Brain Health Platform",
+    description: "Our mission is to make brain health analysis accessible to everyone through innovative AI-powered tools and evidence-based approaches.",
+    url: "https://brainwise-sigma.vercel.app/about",
+    type: "website",
+    images: [
+      {
+        url: "/images/og-about.jpg",
+        width: 1200,
+        height: 630,
+        alt: "About Brainwise"
+      }
+    ]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "About Brainwise | Brain Health Platform",
+    description: "Our mission is to make brain health analysis accessible to everyone through innovative AI-powered tools and evidence-based approaches.",
+    images: ["/images/og-about.jpg"]
+  },
+  robots: {
+    index: true,
+    follow: true
+  }
 };
 
 export default function AboutPage() {

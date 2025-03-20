@@ -1,182 +1,244 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { GameResult } from "@/lib/types";
 import { useAuth } from "@clerk/nextjs";
+import { v4 as uuidv4 } from "uuid";
 
 // Define the type for game result input
 interface GameResultInput {
   gameType: string;
   score: number;
-  difficulty: string;
-  timeSpent: number;
-  movesOrAttempts: number;
-  cognitiveDomainsAffected?: string[];
+  level?: number;
+  duration: number;
+  difficulty?: string;
+  accuracy?: number;
+  metrics?: Record<string, unknown>;
+  tags?: string[];
 }
 
 export function useGameResults() {
+  const { isLoaded, isSignedIn, userId } = useAuth();
   const [results, setResults] = useState<GameResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { isLoaded, isSignedIn } = useAuth();
-
-  // Fetch game results when the component mounts
+  
+  // Fetch results on component mount
   useEffect(() => {
-    if (!isLoaded) return; // Wait for auth to load
-    
-    async function fetchResults(retryCount = 0) {
-      const MAX_RETRIES = 2;
+    async function fetchResults() {
+      if (!isLoaded) return;
       
-      if (!isSignedIn) {
-        // Not signed in - use local storage or return empty array
-        try {
-          const storedResults = localStorage.getItem('gameResults');
-          if (storedResults) {
-            setResults(JSON.parse(storedResults));
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        // For signed in users, fetch from API
+        if (isSignedIn && userId) {
+          try {
+            // Try to fetch from server first
+            console.log('Fetching game results from server for user:', userId);
+            const response = await fetch('/api/user/game-results', {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              credentials: 'include', // Include credentials for auth
+            });
+            
+            if (!response.ok) {
+              const errorText = await response.text();
+              console.error('Server response not OK:', response.status, errorText);
+              throw new Error(`Failed to fetch from server: ${response.status} ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            console.log('Successfully fetched game results from server:', data);
+            
+            // Check for both formats - either the results array directly or nested in a results property
+            const resultsList = data.results || data;
+            
+            // Validate that we received an array
+            if (!Array.isArray(resultsList)) {
+              console.error('Received invalid results format from server:', data);
+              throw new Error('Server returned invalid data format');
+            }
+            
+            setResults(resultsList);
+          } catch (err) {
+            // Log the detailed error for debugging
+            console.error('Server fetch failed, using local storage as fallback', err);
+            
+            // Fall back to local storage if server fetch fails
+            const localResults = localStorage.getItem('gameResults');
+            if (localResults) {
+              try {
+                const parsedResults = JSON.parse(localResults);
+                if (Array.isArray(parsedResults)) {
+                  console.log('Successfully loaded game results from localStorage');
+                  setResults(parsedResults);
+                } else {
+                  console.error('Invalid format in localStorage:', parsedResults);
+                  setResults([]);
+                }
+              } catch (parseError) {
+                console.error('Error parsing localStorage results:', parseError);
+                setResults([]);
+              }
+            } else {
+              console.log('No results found in localStorage');
+              setResults([]);
+            }
+          }
+        } 
+        // For non-signed in users, fetch from localStorage
+        else {
+          console.log('User not signed in, using localStorage for game results');
+          const localResults = localStorage.getItem('gameResults');
+          if (localResults) {
+            try {
+              const parsedResults = JSON.parse(localResults);
+              if (Array.isArray(parsedResults)) {
+                setResults(parsedResults);
+              } else {
+                console.error('Invalid format in localStorage:', parsedResults);
+                setResults([]);
+              }
+            } catch (parseError) {
+              console.error('Error parsing localStorage results:', parseError);
+              setResults([]);
+            }
           } else {
             setResults([]);
           }
-          setIsLoading(false);
-        } catch (err) {
-          console.error("Error fetching local game results:", err);
-          setError("Failed to load game results");
-          setIsLoading(false);
         }
-      } else {
-        // Use API if signed in
-        try {
-          // Check for network connectivity first
-          if (!navigator.onLine) {
-            throw new Error("You are offline. Please check your internet connection.");
-          }
-          
-          const response = await fetch("/api/user/game-results");
-          
-          if (!response.ok) {
-            // Add more descriptive error message with status code and response text if available
-            const errorText = await response.text().catch(() => "No response text");
-            
-            // If server error and we haven't exceeded max retries, try again
-            if (response.status >= 500 && retryCount < MAX_RETRIES) {
-              console.warn(`Server error (${response.status}), retrying... (${retryCount + 1}/${MAX_RETRIES})`);
-              // Wait for exponential backoff time before retrying (1s, 2s, 4s, etc)
-              await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retryCount)));
-              return fetchResults(retryCount + 1);
-            }
-            
-            // If we've exhausted retries or it's a client error, throw
-            throw new Error(`API Error (${response.status}): ${errorText}`);
-          }
-          
-          const data = await response.json();
-          
-          if (data.success) {
-            setResults(data.data.results);
-          } else {
-            throw new Error(data.error || "Failed to load game results");
-          }
-          
-          setIsLoading(false);
-        } catch (err) {
-          console.error("Error fetching game results:", err);
-          setError(err instanceof Error ? err.message : "Failed to load game results");
-          
-          // Fallback to empty array rather than showing error UI
-          setResults([]);
-          setIsLoading(false);
-        }
+      } catch (err) {
+        console.error('Error in fetchResults:', err);
+        setError('Failed to load results. Please try again later.');
+        setResults([]);
+      } finally {
+        setIsLoading(false);
       }
     }
     
     fetchResults();
-  }, [isLoaded, isSignedIn]);
+  }, [isLoaded, isSignedIn, userId]);
 
-  // Save a game result
-  const saveGameResult = async (result: GameResultInput) => {
+  // Save result to server function
+  const saveResultToServer = async (result: GameResult) => {
     try {
-      setIsLoading(true);
+      console.log('Saving game result to server:', result);
       
-      if (!isSignedIn) {
-        // Not signed in - save to local storage
-        const newResult: GameResult = {
-          id: crypto.randomUUID(),
-          userId: "local", // Local user
-          gameType: result.gameType,
-          score: result.score,
-          difficulty: result.difficulty,
-          timeSpent: result.timeSpent,
-          movesOrAttempts: result.movesOrAttempts,
-          completedAt: new Date().toISOString()
-        };
-        
-        const updatedResults = [newResult, ...results];
-        
-        // Save to localStorage
-        localStorage.setItem('gameResults', JSON.stringify(updatedResults));
-        
-        // Update the state with the new result
-        setResults(updatedResults);
-      } else {
-        // Save to API if signed in
-        const response = await fetch("/api/user/game-results", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            gameType: result.gameType,
-            score: result.score,
-            difficulty: result.difficulty,
-            timeSpent: result.timeSpent,
-            movesOrAttempts: result.movesOrAttempts,
-            cognitiveDomainsAffected: result.cognitiveDomainsAffected || [],
-          }),
-        });
-        
-        if (!response.ok) {
-          // Add more descriptive error message with status code and response text if available
-          const errorText = await response.text().catch(() => "No response text");
-          throw new Error(`API Error (${response.status}): ${errorText}`);
-        }
-        
-        const data = await response.json();
-        
-        if (!data.success) {
-          throw new Error(data.error || "Failed to save game result");
-        }
-        
-        // Refresh the results after saving
-        const refreshResponse = await fetch("/api/user/game-results");
-        
-        if (!refreshResponse.ok) {
-          // Add more descriptive error message with status code and response text if available
-          const errorText = await refreshResponse.text().catch(() => "No response text");
-          console.warn(`Failed to refresh results: ${errorText}`);
-          return; // Early return to avoid processing invalid response
-        }
-        
-        const refreshData = await refreshResponse.json();
-        
-        if (refreshData.success) {
-          setResults(refreshData.data.results);
-        } else {
-          console.warn("Refresh response was not successful:", refreshData.error);
-        }
+      const payload = {
+        gameType: result.gameType,
+        score: result.score,
+        level: result.level,
+        timeSpent: result.duration, // Match API field name
+        difficulty: result.difficulty || 'medium', // Provide default difficulty
+        movesOrAttempts: result.metrics?.attempts || 0,
+        completedAt: result.completedAt,
+        cognitiveDomainsAffected: result.tags || []
+      };
+      
+      console.log('Formatted payload for API:', payload);
+      
+      const response = await fetch('/api/user/game-results', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // Include credentials for auth
+        body: JSON.stringify(payload),
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response from server:', response.status, errorText);
+        throw new Error(`Failed to save to server: ${response.status} ${response.statusText}`);
       }
       
-      setError(null);
-    } catch (err) {
-      console.error("Error saving game result:", err);
-      setError(err instanceof Error ? err.message : "Failed to save game result");
-    } finally {
-      setIsLoading(false);
+      const responseData = await response.json();
+      console.log('Successfully saved game result to server:', responseData);
+      return responseData;
+    } catch (error) {
+      console.error('Error saving to server:', error);
+      // We don't throw here - we've already updated local state and storage
+      // Just log the error and return null to indicate server save failed
+      return null;
     }
   };
+  
+  // Save a new game result, with both local state update and server sync
+  const saveResult = useCallback(
+    async (data: GameResultInput) => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        // Validate required fields
+        if (!data.gameType || data.score === undefined || data.duration === undefined) {
+          throw new Error('Missing required game result fields');
+        }
+        
+        console.log('Saving game result:', data);
+        
+        const newResult: GameResult = {
+          id: uuidv4(),
+          ...data,
+          completedAt: new Date().toISOString(),
+          userId: userId || ''
+        };
+
+        // Update the local state immediately for better UX
+        setResults(prevResults => [newResult, ...prevResults]);
+        console.log('Updated local state with new result');
+
+        // Store in localStorage regardless of auth state for backup and offline capabilities
+        try {
+          const existingResults = JSON.parse(localStorage.getItem('gameResults') || '[]');
+          const updatedResults = [newResult, ...existingResults];
+          
+          // Keep only the last 100 results to prevent localStorage from growing too large
+          const trimmedResults = updatedResults.slice(0, 100);
+          
+          localStorage.setItem('gameResults', JSON.stringify(trimmedResults));
+          console.log('Saved game result to localStorage');
+        } catch (storageError) {
+          console.error('Error saving to localStorage:', storageError);
+          // Continue even if localStorage fails - we still have state update
+        }
+
+        // If user is signed in, sync with the server
+        let serverResult = null;
+        if (isSignedIn && userId) {
+          console.log('User is signed in, syncing with server');
+          try {
+            // If server fails, we still have the local copy
+            serverResult = await saveResultToServer(newResult);
+          } catch (serverError) {
+            console.error('Server sync failed but local save succeeded:', serverError);
+          }
+        } else {
+          console.log('User not signed in, skipping server sync');
+        }
+
+        setIsLoading(false);
+        return serverResult || newResult; // Return server result if available, otherwise local result
+      } catch (err) {
+        console.error('Error saving game result:', err);
+        setError(typeof err === 'object' && err !== null && 'message' in err 
+          ? (err as Error).message 
+          : 'Failed to save result. Please try again.');
+        setIsLoading(false);
+        throw err;
+      }
+    },
+    [isSignedIn, userId]
+  );
 
   return {
     results,
     isLoading,
     error,
-    saveGameResult,
+    saveResult,
   };
 } 

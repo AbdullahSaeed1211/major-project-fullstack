@@ -1,16 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth, createErrorResponse } from "@/lib/auth";
 import db from "@/lib/mongodb";
+import User from "@/lib/models/User";
 import Assessment from "@/lib/models/Assessment";
+import { predictAlzheimers } from "@/lib/ml/alzheimers-model";
+import { preloadModels } from "@/lib/ml/model-loader";
+
+// Preload alzheimers model to avoid cold starts if possible
+try {
+  preloadModels();
+} catch (error) {
+  console.warn('Failed to preload alzheimer\'s model:', error);
+}
 
 export const POST = withAuth(async (request: NextRequest, userId: string) => {
-  console.log("🔍 [Alzheimer's Prediction] Processing new prediction request");
-  console.log(`👤 [Alzheimer's Prediction] Authenticated user: ${userId}`);
-  
   try {
     // Parse request body
     const body = await request.json();
-    console.log(`📄 [Alzheimer's Prediction] Received data with ${Object.keys(body).length} fields`);
     
     // Validate required fields
     const requiredFields = ['age', 'sex', 'education', 'memoryComplaints', 'familyHistory', 
@@ -18,7 +24,6 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
     const missingFields = requiredFields.filter(field => body[field] == null);
     
     if (missingFields.length > 0) {
-      console.error(`❌ [Alzheimer's Prediction] Missing required fields: ${missingFields.join(', ')}`);
       return createErrorResponse(`Missing required fields: ${missingFields.join(', ')}`, 400);
     }
     
@@ -31,86 +36,83 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
     if (body.mobility === 'limited') riskFactors.push('Limited Mobility');
     if (body.independentLiving === 'needs assistance') riskFactors.push('Needs Assistance');
     
-    console.log(`🩺 [Alzheimer's Prediction] Risk factors identified: ${riskFactors.join(', ') || 'None'}`);
-    
-    // Under construction placeholder logic
-    console.log("⚠️ [Alzheimer's Prediction] Using placeholder model - ML integration pending");
-    
-    // Simulated prediction logic based on risk factors
-    const riskCount = riskFactors.length;
-    let prediction;
-    
-    if (riskCount === 0) {
-      prediction = { 
-        prediction: "Very Low Risk", 
-        probability: 0.05,
-        recommendation: "Continue regular health check-ups" 
-      };
-    } else if (riskCount === 1) {
-      prediction = { 
-        prediction: "Low Risk", 
-        probability: 0.15,
-        recommendation: "Consider cognitive screening at your next check-up" 
-      };
-    } else if (riskCount === 2) {
-      prediction = { 
-        prediction: "Moderate Risk", 
-        probability: 0.30,
-        recommendation: "Discuss cognitive screening with your doctor"
-      };
-    } else if (riskCount === 3) {
-      prediction = { 
-        prediction: "High Risk", 
-        probability: 0.60,
-        recommendation: "Consult with a neurologist for evaluation"
-      };
-    } else {
-      prediction = { 
-        prediction: "Very High Risk", 
-        probability: 0.80,
-        recommendation: "Urgent consultation with a specialist recommended"
-      };
-    }
-    
-    console.log(`🔮 [Alzheimer's Prediction] Prediction result: ${prediction.prediction}`);
-    
-    // Save the assessment result
+    // Connect to database
     await db.connect();
     
+    // Get user record
+    const user = await User.findOne({ clerkId: userId });
+    if (!user) {
+      return createErrorResponse("User not found", 404);
+    }
+    
+    // Optional parameters
+    const options = {
+      version: body.version,
+      forceRefresh: body.forceRefresh === true
+    };
+    
+    // Run prediction using ML model
+    const inputData = {
+      age: Number(body.age),
+      sex: body.sex,
+      education: body.education,
+      memoryComplaints: body.memoryComplaints,
+      familyHistory: body.familyHistory, 
+      cognitiveAssessment: Number(body.cognitiveAssessment),
+      mobility: body.mobility,
+      independentLiving: body.independentLiving
+    };
+    
+    const prediction = await predictAlzheimers(inputData, options);
+    
+    // Save the assessment result
     await Assessment.create({
-      userId,
+      user: user._id,
       type: 'alzheimers-risk',
       result: prediction.prediction,
-      risk: getRiskLevel(prediction.probability),
+      risk: prediction.riskLevel,
       data: {
-        ...body,
+        ...inputData,
         riskFactors,
-        recommendation: prediction.recommendation,
-        modelStatus: 'placeholder'
+        modelVersion: prediction.modelVersion,
+        probability: prediction.probability
       },
       date: new Date()
     });
     
-    console.log("✅ [Alzheimer's Prediction] Assessment saved to database");
-    
+    // Return prediction results
     return NextResponse.json({
-      ...prediction,
+      prediction: prediction.prediction,
+      probability: prediction.probability,
+      riskLevel: prediction.riskLevel,
       riskFactors,
-      modelStatus: "under_construction"
+      modelVersion: prediction.modelVersion,
+      inferenceTimeMs: prediction.inferenceTimeMs
     });
     
   } catch (error) {
-    console.error("❌ [Alzheimer's Prediction] Error:", error);
-    return createErrorResponse(
-      "Failed to process Alzheimer's risk assessment", 
-      500
-    );
+    console.error("Error in Alzheimer's prediction:", error);
+    return createErrorResponse("Failed to process Alzheimer's risk assessment", 500);
   }
 });
 
-// Helper function to convert probability to risk level
-function getRiskLevel(probability: number): string {
-  if (probability < 0.1) return 'low';
-  if (probability < 0.3) return 'moderate';
-  return 'high';
+// Optionally, you can add a GET method for model information
+export async function GET() {
+  return NextResponse.json({
+    modelInfo: {
+      name: "Alzheimer's Risk Prediction Model",
+      description: "Predicts the risk of Alzheimer's disease based on various risk factors",
+      features: [
+        'Age', 'Sex', 'Education', 'Memory Complaints',
+        'Family History', 'Cognitive Assessment Score',
+        'Mobility Status', 'Independent Living Status'
+      ],
+      outputClasses: [
+        'Very Low Risk', 'Low Risk', 'Moderate Risk',
+        'High Risk', 'Very High Risk'
+      ],
+      version: 'latest',
+      status: 'active'
+    }
+  });
 } 

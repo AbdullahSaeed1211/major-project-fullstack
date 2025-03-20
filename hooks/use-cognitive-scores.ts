@@ -96,16 +96,14 @@ export function useCognitiveScores(domain?: string) {
         // Find previous score for this domain (if any)
         const previousScore = allScores
           .filter(s => s.domain === score.domain)
-          .sort((a, b) => new Date(b.assessmentDate).getTime() - new Date(a.assessmentDate).getTime())[0]?.score || null;
+          .sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime())[0]?.score || null;
         
         // Create new score object
         const newScore: CognitiveScore = {
-          id: crypto.randomUUID(),
-          userId: "local", // Local user
           domain: score.domain,
           score: score.score,
-          previousScore,
-          assessmentDate: (score.assessmentDate || new Date()).toISOString()
+          change: previousScore !== null ? score.score - previousScore : undefined,
+          lastUpdated: (score.assessmentDate || new Date()).toISOString()
         };
         
         // Update scores array

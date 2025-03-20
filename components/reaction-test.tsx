@@ -1,273 +1,332 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useGameResults } from "@/hooks/use-game-results";
+import { Button } from "./ui/button";
+import { Card } from "./ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { AlertCircle, Timer, RefreshCcw } from "lucide-react";
+import { Badge } from "./ui/badge";
+import { Progress } from "./ui/progress";
 
-export function ReactionTest() {
-  const [gameState, setGameState] = useState<"idle" | "waiting" | "ready" | "clicked" | "finished">("idle");
-  const [startTime, setStartTime] = useState(0);
-  const [reactionTime, setReactionTime] = useState(0);
-  const [bestTime, setBestTime] = useState<number | null>(null);
-  const [countdown, setCountdown] = useState(3);
-  const [trials, setTrials] = useState<number[]>([]);
-  const [attemptsLeft, setAttemptsLeft] = useState(5);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+// Types for the game
+interface GameState {
+  status: "waiting" | "ready" | "started" | "finished";
+  startTime: number | null;
+  reactionTime: number | null;
+  countDown: number;
+  attempts: number[];
+  currentAttempt: number;
+  tooEarly: boolean;
+}
 
-  // Clean up any timers when component unmounts
+// Difficulty settings
+interface Difficulty {
+  attempts: number;
+  minDelay: number;
+  maxDelay: number;
+}
+
+const DIFFICULTIES: Record<string, Difficulty> = {
+  easy: { attempts: 3, minDelay: 1500, maxDelay: 3500 },
+  medium: { attempts: 5, minDelay: 1000, maxDelay: 3000 },
+  hard: { attempts: 7, minDelay: 500, maxDelay: 2500 },
+};
+
+export default function ReactionTest() {
+  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
+  const [gameState, setGameState] = useState<GameState>({
+    status: "waiting",
+    startTime: null,
+    reactionTime: null,
+    countDown: 0,
+    attempts: [],
+    currentAttempt: 1,
+    tooEarly: false,
+  });
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const gameSettings = DIFFICULTIES[difficulty];
+  const { saveResult } = useGameResults();
+  const { toast } = useToast();
+
+  // Clean up timeouts when component unmounts
   useEffect(() => {
     return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
       }
     };
   }, []);
 
-  // Start the game
-  const handleStart = () => {
-    setGameState("waiting");
-    setCountdown(3);
-    setAttemptsLeft(5);
-    setTrials([]);
-    setBestTime(null);
-    
-    // Start countdown
-    const intervalId = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(intervalId);
-          startTrial();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
+  // Function to get random delay based on difficulty
+  const getRandomDelay = useCallback(() => {
+    return Math.floor(
+      Math.random() * (gameSettings.maxDelay - gameSettings.minDelay) + gameSettings.minDelay
+    );
+  }, [gameSettings]);
 
-  // Start a single trial
-  const startTrial = () => {
-    // Random delay between 1-5 seconds
-    const randomDelay = 1000 + Math.random() * 4000;
+  // Prepare the test with random delay
+  const prepareTest = useCallback(() => {
+    const delay = getRandomDelay();
     
-    setGameState("waiting");
-    
-    // Set a timeout to show the target
-    timerRef.current = setTimeout(() => {
-      setStartTime(Date.now());
-      setGameState("ready");
-    }, randomDelay);
-  };
+    setGameState(prev => ({
+      ...prev,
+      status: "ready",
+      tooEarly: false
+    }));
 
-  // Handle the user's click
-  const handleClick = () => {
-    // If clicked too early (before the target appears)
-    if (gameState === "waiting") {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
+    // Set timeout to change circle to green
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      setGameState(prev => ({
+        ...prev,
+        status: "started",
+        startTime: Date.now()
+      }));
+    }, delay);
+  }, [getRandomDelay]);
+
+  // Start game
+  const startGame = useCallback(() => {
+    setGameState({
+      status: "ready",
+      startTime: null,
+      reactionTime: null,
+      countDown: 3,
+      attempts: [],
+      currentAttempt: 1,
+      tooEarly: false,
+    });
+
+    // Create a countdown from 3 to go
+    let count = 3;
+    const countdownInterval = setInterval(() => {
+      count -= 1;
+      setGameState(prev => ({ ...prev, countDown: count }));
+      
+      if (count === 0) {
+        clearInterval(countdownInterval);
+        prepareTest();
       }
-      setGameState("clicked");
-      setReactionTime(-1); // Indicate a false start
-      
-      // After a pause, start the next trial or end the game
-      setTimeout(() => {
-        if (attemptsLeft > 1) {
-          setAttemptsLeft((prev) => prev - 1);
-          startTrial();
-        } else {
-          setGameState("finished");
-        }
-      }, 1500);
-      
+    }, 1000);
+  }, [prepareTest]);
+
+  // Handle click on the circle
+  const handleClick = useCallback(() => {
+    // If already in waiting/finished state, ignore clicks
+    if (gameState.status === "waiting" || gameState.status === "finished") {
       return;
     }
-    
-    // If clicked when the target is visible
-    if (gameState === "ready") {
-      const endTime = Date.now();
-      const time = endTime - startTime;
-      setReactionTime(time);
-      
-      // Update trials array
-      const newTrials = [...trials, time];
-      setTrials(newTrials);
-      
-      // Update best time
-      if (bestTime === null || time < bestTime) {
-        setBestTime(time);
+
+    // If clicked during ready state, it's too early
+    if (gameState.status === "ready") {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
       }
-      
-      setGameState("clicked");
-      
-      // After a pause, start the next trial or end the game
+
+      setGameState(prev => ({
+        ...prev,
+        tooEarly: true
+      }));
+
+      // After a delay, reset and prepare the test again
       setTimeout(() => {
-        if (attemptsLeft > 1) {
-          setAttemptsLeft((prev) => prev - 1);
-          startTrial();
-        } else {
-          setGameState("finished");
-        }
+        prepareTest();
+      }, 1000);
+      return;
+    }
+
+    // Calculate reaction time
+    const endTime = Date.now();
+    const reactionTime = gameState.startTime ? endTime - gameState.startTime : 0;
+    
+    const newAttempts = [...gameState.attempts, reactionTime];
+    const isLastAttempt = gameState.currentAttempt >= gameSettings.attempts;
+
+    if (isLastAttempt) {
+      // Game is finished
+      setGameState(prev => ({
+        ...prev,
+        status: "finished",
+        reactionTime, 
+        attempts: newAttempts
+      }));
+
+      // Save the result
+      const averageTime = Math.round(
+        newAttempts.reduce((a, b) => a + b, 0) / newAttempts.length
+      );
+      
+      saveResult({
+        gameType: "reaction-test",
+        score: averageTime, // Lower is better for reaction time
+        duration: newAttempts.length * 5000, // Estimate total time spent
+        difficulty,
+        accuracy: 100, // Always 100% for reaction test
+        metrics: { attempts: newAttempts },
+        tags: ["Processing", "Attention"]
+      })
+      .then(() => {
+        toast({
+          title: "Result saved!",
+          description: `Your average reaction time: ${averageTime}ms`,
+          variant: "default"
+        });
+      })
+      .catch(error => {
+        toast({
+          title: "Error saving result",
+          description: "Please try again later",
+          variant: "destructive",
+        });
+        console.error("Error saving result:", error);
+      });
+    } else {
+      // Continue to next attempt
+      setGameState(prev => ({
+        ...prev,
+        reactionTime,
+        attempts: newAttempts,
+        currentAttempt: prev.currentAttempt + 1,
+      }));
+
+      // Prepare for next test after a short delay
+      setTimeout(() => {
+        prepareTest();
       }, 1500);
     }
-  };
+  }, [gameState, gameSettings.attempts, prepareTest, saveResult, difficulty, toast]);
 
-  // Get the average reaction time
-  const getAverageTime = () => {
-    const validTrials = trials.filter(time => time > 0);
-    if (validTrials.length === 0) return 0;
-    
-    const sum = validTrials.reduce((acc, time) => acc + time, 0);
-    return sum / validTrials.length;
-  };
-
-  // Get feedback on reaction time
-  const getFeedback = (averageTime: number) => {
-    // Based on general reaction time ranges
-    if (averageTime === 0) return "No valid attempts";
-    if (averageTime < 200) return "Extremely fast! This is exceptional.";
-    if (averageTime < 250) return "Very fast! Your reflexes are excellent.";
-    if (averageTime < 300) return "Good reflexes! Above average performance.";
-    if (averageTime < 350) return "Average reaction time. This is normal.";
-    if (averageTime < 450) return "Slightly slower than average. Consider regular practice.";
-    return "Your reaction time could use some improvement with practice.";
-  };
-
-  // Get health insights
-  const getHealthInsights = (averageTime: number) => {
-    if (averageTime === 0) return "";
-    
-    // General brain health insights based on reaction time
-    if (averageTime > 450) {
-      return "Slower reaction times can be affected by fatigue, stress, or dehydration. Regular exercise and adequate sleep may help improve your reaction time.";
+  // Reset the game
+  const resetGame = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
     }
-    
-    if (averageTime > 350) {
-      return "Your reaction time is within normal range. Staying physically active and maintaining good sleep habits can help maintain or improve your reaction time.";
-    }
-    
-    return "Your quick reaction time suggests good neurological health. Continue with brain-stimulating activities to maintain this performance.";
+    setGameState({
+      status: "waiting",
+      startTime: null,
+      reactionTime: null,
+      countDown: 0,
+      attempts: [],
+      currentAttempt: 1,
+      tooEarly: false,
+    });
+  }, []);
+
+  // Calculate average reaction time
+  const averageReactionTime = gameState.attempts.length > 0
+    ? Math.round(gameState.attempts.reduce((a, b) => a + b, 0) / gameState.attempts.length)
+    : 0;
+
+  // Get the background color based on game status
+  const getCircleColor = () => {
+    if (gameState.tooEarly) return "bg-red-500";
+    if (gameState.status === "started") return "bg-green-500";
+    return "bg-slate-300 dark:bg-slate-700";
   };
 
-  // Render the current state
-  const renderGameState = () => {
-    switch (gameState) {
-      case "idle":
-        return (
-          <div className="flex flex-col items-center space-y-4">
-            <p className="text-center text-muted-foreground">
-              This test measures how quickly you can respond to a visual stimulus. Click the button when it turns green!
-            </p>
-            <Button onClick={handleStart}>Start Test</Button>
-          </div>
-        );
-        
-      case "waiting":
-        if (countdown > 0) {
-          return (
-            <div className="flex flex-col items-center space-y-4">
-              <p className="text-xl font-bold">Get Ready!</p>
-              <p className="text-4xl font-bold">{countdown}</p>
-            </div>
-          );
-        }
-        
-        return (
-          <div 
-            className="w-full aspect-square bg-yellow-500 rounded-lg flex items-center justify-center cursor-pointer"
-            onClick={handleClick}
-          >
-            <p className="text-xl font-bold text-black">Wait...</p>
-          </div>
-        );
-        
-      case "ready":
-        return (
-          <div 
-            className="w-full aspect-square bg-green-500 rounded-lg flex items-center justify-center cursor-pointer"
-            onClick={handleClick}
-          >
-            <p className="text-xl font-bold text-black">Click Now!</p>
-          </div>
-        );
-        
-      case "clicked":
-        return (
-          <div className="flex flex-col items-center space-y-4">
-            <p className="text-xl font-bold">
-              {reactionTime === -1 
-                ? "Too early! Wait for green." 
-                : `Your reaction time: ${reactionTime} ms`}
-            </p>
-            <Progress value={(5 - attemptsLeft) * 20} className="w-full" />
-            <p className="text-sm text-muted-foreground">{attemptsLeft} attempts left</p>
-          </div>
-        );
-        
-      case "finished":
-        const averageTime = getAverageTime();
-        
-        return (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">Average Time</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-2xl font-bold">{averageTime.toFixed(0)} ms</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">Best Time</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-2xl font-bold">{bestTime || 0} ms</p>
-                </CardContent>
-              </Card>
-            </div>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Your Results</CardTitle>
-                <CardDescription>
-                  {getFeedback(averageTime)}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  {getHealthInsights(averageTime)}
-                </p>
-                
-                <div className="mt-4">
-                  <h4 className="text-sm font-medium mb-2">Health Connection:</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Reaction time is linked to brain processing speed and can be an indicator of neurological health. 
-                    Slower reaction times can sometimes be associated with increased stroke risk factors such as high blood pressure or poor sleep habits.
-                  </p>
-                </div>
-                
-                <Button onClick={handleStart} className="w-full mt-4">
-                  Try Again
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        );
-    }
+  // Get the text inside the circle
+  const getCircleText = () => {
+    if (gameState.status === "waiting") return "Click to Start";
+    if (gameState.status === "ready" && gameState.countDown > 0) return gameState.countDown;
+    if (gameState.status === "ready") return "Wait...";
+    if (gameState.tooEarly) return "Too early!";
+    if (gameState.status === "started") return "Click!";
+    if (gameState.status === "finished") return "Done!";
+    return "";
   };
 
   return (
-    <div className="space-y-4 max-w-md mx-auto">
-      <div className="flex flex-col gap-2">
-        <h2 className="text-2xl font-bold">Reaction Time Test</h2>
-        <p className="text-muted-foreground">
-          Test your brain&apos;s processing speed and reflex time.
-        </p>
+    <div className="flex flex-col items-center w-full max-w-2xl mx-auto space-y-6">
+      <div className="flex flex-col w-full items-center space-y-4">
+        <div className="flex space-x-2 items-center">
+          <Badge variant="outline" className="flex items-center space-x-1">
+            <Timer className="h-3 w-3" />
+            <span>Test {gameState.currentAttempt} of {gameSettings.attempts}</span>
+          </Badge>
+          
+          {gameState.status !== "waiting" && (
+            <Button variant="ghost" size="sm" onClick={resetGame}>
+              <RefreshCcw className="h-3 w-3 mr-1" />
+              Reset
+            </Button>
+          )}
+        </div>
+        
+        {/* Progress bar for attempts */}
+        {gameState.status !== "waiting" && (
+          <Progress 
+            value={(gameState.currentAttempt - 1) / gameSettings.attempts * 100} 
+            className="w-full h-2"
+          />
+        )}
       </div>
-      
-      {renderGameState()}
+
+      {/* Main game circle */}
+      <div 
+        className={`w-56 h-56 rounded-full flex items-center justify-center cursor-pointer transition-colors duration-100 ${getCircleColor()} text-center text-white text-2xl font-bold shadow-lg`}
+        onClick={gameState.status === "waiting" ? startGame : handleClick}
+      >
+        {getCircleText()}
+      </div>
+
+      {/* Instruction text */}
+      <Card className="p-4 w-full">
+        {gameState.status === "waiting" ? (
+          <div className="text-center space-y-2">
+            <p>Click the circle when it turns green to test your reaction time.</p>
+            <p className="text-sm text-muted-foreground">You will have {gameSettings.attempts} attempts.</p>
+          </div>
+        ) : gameState.status === "finished" ? (
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold text-center">Results</h3>
+            <div className="flex justify-between items-center px-4">
+              <span>Average reaction time:</span>
+              <span className="font-bold">{averageReactionTime}ms</span>
+            </div>
+            <div className="space-y-1">
+              {gameState.attempts.map((time, index) => (
+                <div key={index} className="flex justify-between text-sm">
+                  <span>Attempt {index + 1}:</span>
+                  <span>{time}ms</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-sm text-center mt-4">
+              <AlertCircle className="h-4 w-4 inline mr-1" />
+              Average human reaction time: 200-250ms
+            </p>
+          </div>
+        ) : (
+          <div className="text-center">
+            {gameState.tooEarly ? (
+              <p className="text-red-500">You clicked too early! Wait for the circle to turn green.</p>
+            ) : gameState.status === "ready" ? (
+              <p>Wait for the circle to turn green, then click as fast as you can!</p>
+            ) : (
+              <p>{gameState.reactionTime ? `Last: ${gameState.reactionTime}ms` : "Click now!"}</p>
+            )}
+          </div>
+        )}
+      </Card>
+
+      {/* Difficulty selector */}
+      <div className="flex space-x-2">
+        {["easy", "medium", "hard"].map((diff) => (
+          <Button
+            key={diff}
+            variant={difficulty === diff ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setDifficulty(diff as "easy" | "medium" | "hard");
+              resetGame();
+            }}
+            disabled={gameState.status !== "waiting" && gameState.status !== "finished"}
+          >
+            {diff.charAt(0).toUpperCase() + diff.slice(1)}
+          </Button>
+        ))}
+      </div>
     </div>
   );
 } 

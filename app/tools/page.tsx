@@ -1,4 +1,5 @@
-'use client'
+"use client";
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +22,7 @@ import {
 } from "lucide-react";
 
 import { MemoryGame } from "@/components/memory-game";
+import ReactionTest from "@/components/reaction-test";
 
 type Tool = {
   id: string;
@@ -54,7 +56,7 @@ export default function ToolsPage() {
       title: "Reaction Time Test",
       description: "Measure your response time",
       icon: <Clock className="h-8 w-8" />,
-      component: <div className="p-8 border rounded-lg">Coming soon</div>,
+      component: <ReactionTest />,
       category: "training",
       duration: "2 minutes",
       benefits: ["Measures neural processing speed", "Helps track cognitive alertness", "Trains hand-eye coordination"]

@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { Play, RotateCcw } from "lucide-react";
-import type { GameResult, CognitiveScore } from "@/lib/types";
+import type { GameResult } from "@/lib/types";
+import { useGameResults } from "@/hooks/use-game-results";
+import { useCognitiveScores } from "@/components/cognitive-score-card";
 
 // Card icons for the memory game
 const CARD_ICONS = [
@@ -44,43 +46,21 @@ export function MemoryGame() {
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
   
+  // Use the game results hook
+  const { saveResult } = useGameResults();
+  const { saveCognitiveScore } = useCognitiveScores();
+  
   // Save game result function
   const saveGameResult = async (result: Omit<GameResult, "id" | "userId" | "completedAt">) => {
     try {
-      // In production, this would save to a database
-      console.log("Saving game result:", result);
-      // Return a mock result
-      return {
-        ...result,
-        id: Math.random().toString(36).substring(2, 9),
-        userId: "current-user",
-        completedAt: new Date().toISOString()
-      };
+      // Now we use the real saveResult function from the hook
+      return await saveResult(result);
     } catch (error) {
       console.error("Failed to save game result:", error);
       throw error;
     }
   };
   
-  // Save cognitive score function
-  const saveCognitiveScore = async (data: Pick<CognitiveScore, "domain" | "score">) => {
-    try {
-      // In production, this would save to a database
-      console.log("Saving cognitive score:", data);
-      // Return a mock result
-      return {
-        ...data,
-        id: Math.random().toString(36).substring(2, 9),
-        userId: "current-user",
-        previousScore: null,
-        assessmentDate: new Date().toISOString()
-      };
-    } catch (error) {
-      console.error("Failed to save cognitive score:", error);
-      throw error;
-    }
-  };
-
   // Shuffle an array using Fisher-Yates algorithm
   const shuffleArray = <T,>(array: T[]): T[] => {
     const newArray = [...array];
@@ -209,7 +189,7 @@ export function MemoryGame() {
             endTime,
           }));
           setIsGameComplete(true);
-          saveGameData(endTime);
+          handleSaveGameData();
           provideFeedback(endTime - gameStats.startTime, gameStats.moves, totalPairs);
         }
       } else {
@@ -224,45 +204,44 @@ export function MemoryGame() {
     }
   };
 
-  // Save game data to our persistent storage
-  const saveGameData = async (endTime: number) => {
-    const timeSpent = endTime - gameStats.startTime;
-    const totalPairs = cards.length / 2;
-    const perfectMoves = totalPairs;
-    const efficiency = Math.min(1, perfectMoves / gameStats.moves);
+  // Handle saving game data
+  const handleSaveGameData = async () => {
+    if (!isGameComplete || !gameStats.endTime) return;
     
-    // Calculate score based on efficiency and time
-    // Higher efficiency and lower time = better score
-    const maxScore = 100;
-    const efficiencyFactor = 0.7; // 70% of score based on efficiency
-    const timeFactor = 0.3; // 30% of score based on time
+    // Calculate score based on difficulty and completion time
+    const baseScore = difficulty === "easy" ? 100 : difficulty === "medium" ? 150 : 200;
+    const timeBonus = Math.max(0, 300 - Math.floor(timeElapsed / 1000)); // Time bonus decreases as time increases
+    const movesPerMatch = gameStats.moves / gameStats.matches;
+    const efficiencyBonus = Math.max(0, 100 - (movesPerMatch - 2) * 20); // Efficiency bonus (ideally 2 moves per match)
     
-    // Time score decreases as time increases
-    // Assuming 3 seconds per pair is the optimal time
-    const optimalTime = totalPairs * 3000;
-    const timeScore = Math.max(0, 1 - (timeSpent - optimalTime) / (optimalTime * 2));
-    
-    const score = Math.round(
-      maxScore * (efficiency * efficiencyFactor + timeScore * timeFactor)
-    );
+    const totalScore = Math.floor(baseScore + timeBonus + efficiencyBonus);
     
     try {
-      // Save the game result
+      // Save the game result to the database
       await saveGameResult({
         gameType: "memory-game",
-        score,
-        timeSpent,
-        movesOrAttempts: gameStats.moves,
+        score: totalScore,
+        level: 1,
+        duration: Math.floor(timeElapsed / 1000), // Convert to seconds
         difficulty,
+        metrics: {
+          moves: gameStats.moves,
+          matches: gameStats.matches,
+          timeElapsed,
+          movesPerMatch: parseFloat(movesPerMatch.toFixed(2)),
+        },
+        tags: ["memory", "visual", "attention"]
       });
       
-      // Also save this as a cognitive score for memory domain
+      // Also save cognitive score
       await saveCognitiveScore({
         domain: "Memory",
-        score,
+        score: Math.min(100, totalScore / 3)
       });
+      
+      console.log("Game data saved successfully!");
     } catch (error) {
-      console.error("Failed to save game data:", error);
+      console.error("Error saving game data:", error);
     }
   };
   

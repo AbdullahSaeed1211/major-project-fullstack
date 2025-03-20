@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,7 +15,6 @@ type Message = {
 };
 
 export function Chatbot() {
-  const { isSignedIn, user } = useAuth();
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -48,17 +46,11 @@ export function Chatbot() {
     setIsLoading(true);
     
     try {
-      // Format history for API
-      const history = messages.map(msg => ({
-        role: msg.role,
-        content: msg.content
-      }));
-      
-      // Call API
+      // Send just the current message without history
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMessage.content, history })
+        body: JSON.stringify({ message: userMessage.content })
       });
       
       const data = await response.json();
@@ -131,9 +123,8 @@ export function Chatbot() {
                     </Avatar>
                   ) : (
                     <Avatar className="h-8 w-8 mt-1 flex-shrink-0">
-                      <AvatarImage src={user?.image} alt={user?.name || "User"} />
                       <AvatarFallback className="bg-secondary text-secondary-foreground">
-                        {user?.name?.[0] || "U"}
+                        U
                       </AvatarFallback>
                     </Avatar>
                   )}
@@ -195,6 +186,7 @@ export function Chatbot() {
           className="flex w-full gap-2"
         >
           <Textarea
+            id="message-input"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about brain health..."
@@ -215,12 +207,6 @@ export function Chatbot() {
             <Send className="h-5 w-5" />
           </Button>
         </form>
-        
-        {!isSignedIn && (
-          <p className="text-xs text-muted-foreground mt-2 w-full text-center">
-            Sign in to save your chat history
-          </p>
-        )}
       </CardFooter>
     </Card>
   );
