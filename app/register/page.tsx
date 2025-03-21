@@ -1,9 +1,11 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export const metadata: Metadata = {
   title: "Register | Brainwise",
@@ -20,7 +22,20 @@ export default function RegisterPage() {
         
         <div className="magic-container relative">
           <div className="mx-auto max-w-md">
-            <Card className="border-2">
+            <Alert variant="default" className="mb-6 animate-in fade-in slide-in-from-top-4 duration-500">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Demo Mode</AlertTitle>
+              <AlertDescription>
+                This is a demonstration form. For actual registration, please use the Clerk authentication provider.
+                <div className="mt-2">
+                  <Button className="micro-bounce w-full" asChild>
+                    <Link href="/sign-up">Go to Clerk Sign Up</Link>
+                  </Button>
+                </div>
+              </AlertDescription>
+            </Alert>
+
+            <Card className="border-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <CardHeader className="space-y-1">
                 <CardTitle className="text-2xl font-bold">Create an Account</CardTitle>
                 <CardDescription>
@@ -67,12 +82,12 @@ export default function RegisterPage() {
                     </Link>
                   </label>
                 </div>
-                <Button className="w-full" type="submit">
+                <Button className="micro-bounce w-full" type="submit">
                   Create Account
                 </Button>
                 <div className="text-center text-sm">
                   <span className="text-muted-foreground">Already have an account? </span>
-                  <Link href="/login" className="text-primary hover:underline">
+                  <Link href="/sign-in" className="text-primary hover:underline">
                     Sign in
                   </Link>
                 </div>
@@ -89,7 +104,7 @@ export default function RegisterPage() {
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <Button variant="outline">
+                  <Button variant="outline" className="micro-bounce interactive">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="24"
@@ -106,7 +121,7 @@ export default function RegisterPage() {
                     </svg>
                     Facebook
                   </Button>
-                  <Button variant="outline">
+                  <Button variant="outline" className="micro-bounce interactive">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="24"

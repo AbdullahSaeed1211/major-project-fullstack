@@ -214,7 +214,7 @@ export default function ToolsPage() {
   };
 
   return (
-    <div className="container max-w-7xl py-12">
+    <div className="container max-w-7xl py-8 sm:py-12 px-4 sm:px-6">
       {activeTool ? (
         <div className="space-y-6">
           <Button 
@@ -228,29 +228,29 @@ export default function ToolsPage() {
           {toolsData.find(tool => tool.id === activeTool)?.component}
         </div>
       ) : (
-        <div className="space-y-10">
-          <div className="text-center space-y-5 max-w-3xl mx-auto">
+        <div className="space-y-8 sm:space-y-10">
+          <div className="text-center space-y-4 sm:space-y-5 max-w-3xl mx-auto">
             <div className="flex justify-center mb-2">
               <div className="py-1 px-4 rounded-full bg-primary/10 text-primary text-sm font-medium inline-flex items-center gap-2">
                 <Brain className="h-4 w-4" /> Interactive Tools
               </div>
             </div>
-            <h1 className="text-4xl font-bold tracking-tight">Brain Health Toolkit</h1>
-            <p className="text-muted-foreground text-lg">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Brain Health Toolkit</h1>
+            <p className="text-muted-foreground text-base sm:text-lg">
               Scientifically designed exercises to assess and improve your cognitive function.
             </p>
             <div className="w-24 h-1 mx-auto mt-2 rounded-full bg-primary/50"></div>
           </div>
           
           <Tabs defaultValue="featured" value={activeCategory} onValueChange={setActiveCategory}>
-            <div className="flex justify-center">
+            <div className="flex justify-center overflow-x-auto pb-2 scrollbar-hide">
               <TabsList className="mb-8">
-                <TabsTrigger value="featured">Featured</TabsTrigger>
-                <TabsTrigger value="all">All Tools</TabsTrigger>
-                <TabsTrigger value="training">Training</TabsTrigger>
-                <TabsTrigger value="assessment">Assessment</TabsTrigger>
-                <TabsTrigger value="tracking">Tracking</TabsTrigger>
-                <TabsTrigger value="education">Education</TabsTrigger>
+                <TabsTrigger value="featured" className="text-sm sm:text-base px-3 sm:px-4">Featured</TabsTrigger>
+                <TabsTrigger value="all" className="text-sm sm:text-base px-3 sm:px-4">All Tools</TabsTrigger>
+                <TabsTrigger value="training" className="text-sm sm:text-base px-3 sm:px-4">Training</TabsTrigger>
+                <TabsTrigger value="assessment" className="text-sm sm:text-base px-3 sm:px-4">Assessment</TabsTrigger>
+                <TabsTrigger value="tracking" className="text-sm sm:text-base px-3 sm:px-4">Tracking</TabsTrigger>
+                <TabsTrigger value="education" className="text-sm sm:text-base px-3 sm:px-4">Education</TabsTrigger>
               </TabsList>
             </div>
             
@@ -262,20 +262,37 @@ export default function ToolsPage() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   {toolsData.filter(t => !t.comingSoon).slice(0, 4).map((tool) => (
-                    <div 
+                    <Card 
                       key={tool.id} 
-                      className="group cursor-pointer bg-card rounded-xl p-5 border border-border transition-all hover:shadow-md hover:border-primary/20 flex flex-col h-full"
+                      className="overflow-hidden border hover:border-primary/20 transition-all hover:shadow-md"
                       onClick={() => handleToolSelect(tool.id)}
                     >
-                      <div className="bg-primary/10 w-14 h-14 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/15 transition-colors">
-                        <div className="text-primary">{tool.icon}</div>
-                      </div>
-                      <h3 className="font-medium text-lg mb-1.5 group-hover:text-primary transition-colors">{tool.title}</h3>
-                      <p className="text-muted-foreground text-sm mb-3 flex-grow">{tool.description}</p>
-                      <div className="mt-auto text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-full w-fit">
-                        {tool.duration}
-                      </div>
-                    </div>
+                      <CardHeader className="pb-3">
+                        <div className="bg-primary/10 w-14 h-14 rounded-lg flex items-center justify-center mb-2 transition-colors">
+                          <div className="text-primary">{tool.icon}</div>
+                        </div>
+                        <CardTitle className="text-lg">{tool.title}</CardTitle>
+                        <CardDescription className="line-clamp-2">{tool.description}</CardDescription>
+                      </CardHeader>
+                      <CardContent className="pb-3">
+                        <div className="flex gap-2">
+                          <div className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-md">
+                            {tool.duration}
+                          </div>
+                          <div className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-md">
+                            {tool.category.charAt(0).toUpperCase() + tool.category.slice(1)}
+                          </div>
+                        </div>
+                      </CardContent>
+                      <CardFooter>
+                        <Button 
+                          className="w-full" 
+                          onClick={() => handleToolSelect(tool.id)}
+                        >
+                          Start {tool.title}
+                        </Button>
+                      </CardFooter>
+                    </Card>
                   ))}
                 </div>
                 

@@ -165,4 +165,101 @@
     background-color: rgba(var(--background-end-rgb), 0.8);
     border-top: 1px solid rgba(var(--magic-card-border), 0.2);
   }
+
+  /* Input focus transitions */
+  .form-input-transition {
+    @apply transition-all duration-200 ease-in-out;
+  }
+  
+  /* Form validation animations */
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+  }
+  
+  .input-error {
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+  }
+
+  /* Input focus ring */
+  .focus-ring {
+    @apply ring-2 ring-primary/50 ring-offset-2 ring-offset-background transition-all duration-200;
+  }
+  
+  /* Better focus states for interactive elements */
+  .interactive:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background transition-all duration-200;
+  }
+  
+  /* Skeleton loading animation */
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  
+  .skeleton {
+    background: linear-gradient(90deg, 
+      hsl(var(--muted) / 0.5) 25%, 
+      hsl(var(--muted) / 0.7) 50%, 
+      hsl(var(--muted) / 0.5) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  
+  /* Page transitions */
+  .page-transition-enter {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  
+  .page-transition-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 300ms, transform 300ms;
+  }
+  
+  /* Micro-feedback */
+  .micro-bounce {
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  
+  .micro-bounce:active {
+    transform: scale(0.96);
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
+  }
+  
+  /* Thin scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 3px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
+  
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+  }
 }

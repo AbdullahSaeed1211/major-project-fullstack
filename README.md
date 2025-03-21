@@ -11,6 +11,7 @@ A comprehensive application for brain health assessment, cognitive training, and
 - **Persistent Data Storage**: MongoDB integration for user data
 - **Responsive Design**: Optimized for both desktop and mobile
 - **Dark/Light Mode**: Theme support for different preferences
+- **ML-Powered Assessment**: TensorFlow.js models for health risk prediction
 
 ## Current Status
 
@@ -23,18 +24,18 @@ A comprehensive application for brain health assessment, cognitive training, and
 - ✅ Dark/light mode toggle
 - ✅ Analytics dashboard for cognitive progress
 - ✅ Responsive UI with Tailwind CSS
+- ✅ Assessment Report API with comprehensive analysis
+- ✅ ML infrastructure for model loading and caching
 
 ### In Progress
-- 🔄 API implementation for user progress tracking
+- 🔄 ML model integration with Google Cloud Storage
 - 🔄 Additional cognitive games (Pattern Recognition, Visual Attention)
 - 🔄 MongoDB integration for data persistence
 - 🔄 Daily challenges progress tracking
 - 🔄 Achievement system
 
 ### Planned Features
-- 📋 ML model for stroke risk prediction
 - 📋 Brain scan analysis
-- 📋 Comprehensive cognitive assessment
 - 📋 Newsletter functionality
 - 📋 Mobile app version
 
@@ -45,6 +46,7 @@ A comprehensive application for brain health assessment, cognitive training, and
 - **Authentication**: Clerk for user management
 - **Database**: MongoDB with Mongoose ODM
 - **UI Framework**: Shadcn UI components
+- **Machine Learning**: TensorFlow.js with Google Cloud Storage for model hosting
 
 ## Setup
 
@@ -53,6 +55,7 @@ A comprehensive application for brain health assessment, cognitive training, and
 - Node.js 18+ and npm/yarn
 - MongoDB database (Atlas recommended)
 - Clerk account for authentication
+- Google Cloud Storage account (for ML model hosting)
 
 ### Environment Variables
 
@@ -66,6 +69,10 @@ MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/brainwise?retryW
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your-clerk-publishable-key
 CLERK_SECRET_KEY=your-clerk-secret-key
 CLERK_WEBHOOK_SECRET=your-clerk-webhook-secret
+
+# Google Cloud Storage
+GOOGLE_CLOUD_PROJECT_ID=your-project-id
+GOOGLE_CLOUD_BUCKET_NAME=your-ml-models-bucket
 
 # Application Settings
 NEXT_PUBLIC_APP_URL=http://localhost:3000
@@ -95,6 +102,16 @@ npm run dev
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+## Machine Learning Models
+
+The application uses TensorFlow.js models for health risk predictions:
+
+- **Stroke Risk Model**: Predicts stroke risk based on health metrics and demographics
+- **Alzheimer's Risk Model**: Assesses cognitive decline risk based on various factors
+- **Brain Tumor Detection Model**: Analyzes brain scan images for abnormalities (planned)
+
+Models are hosted on Google Cloud Storage for production and loaded dynamically as needed, with fallback to simpler models when TensorFlow.js models are not available.
+
 ## Features
 
 ### Brain Training Games
@@ -114,6 +131,8 @@ npm run dev
 - Cognitive score tracking
 - Activity history
 - Newsletter subscriptions
+- ML-powered health risk assessments
+- Comprehensive cognitive assessment reports
 
 ## Deployment
 
@@ -126,5 +145,6 @@ The current implementation uses a hybrid approach:
 - For anonymous users, data is stored only in localStorage
 - The UI is implemented with Shadcn UI components and Tailwind CSS for styling
 - Cognitive games follow a consistent pattern for result tracking and scoring
+- ML models use a model-loader architecture that supports caching and versioning
 
 See the [TODO.md](./TODO.md) file for upcoming tasks and implementation priorities.

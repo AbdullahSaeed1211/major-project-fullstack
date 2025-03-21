@@ -3,9 +3,14 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
+import { 
+  User, FileText, ActivitySquare, Calendar, Clock, Award,
+  AlertTriangle, CheckCircle, ArrowUpRight
+} from "lucide-react";
 
 interface UserProfileProps {
   user?: {
@@ -50,13 +55,38 @@ export function UserProfile({ user }: UserProfileProps) {
     
     async function fetchHealthMetrics() {
       try {
-        const response = await fetch('/api/user/health-metrics');
-        if (response.ok) {
-          const data = await response.json();
-          setHealthMetrics(data.metrics);
-        } else {
-          throw new Error('Failed to fetch health metrics');
-        }
+        // Simulate API call with timeout
+        await new Promise(resolve => setTimeout(resolve, 1200));
+        
+        // Mock data
+        const mockMetrics: HealthMetric[] = [
+          {
+            id: "1",
+            name: "Blood Pressure",
+            value: 120,
+            unit: "mmHg",
+            date: new Date(Date.now() - 86400000 * 2), // 2 days ago
+            status: "normal"
+          },
+          {
+            id: "2",
+            name: "Blood Glucose",
+            value: 95,
+            unit: "mg/dL",
+            date: new Date(Date.now() - 86400000 * 4), // 4 days ago
+            status: "normal"
+          },
+          {
+            id: "3",
+            name: "Cholesterol",
+            value: 210,
+            unit: "mg/dL",
+            date: new Date(Date.now() - 86400000 * 30), // 30 days ago
+            status: "warning"
+          }
+        ];
+        
+        setHealthMetrics(mockMetrics);
       } catch (error) {
         console.error('Error fetching health metrics:', error);
         toast({
@@ -78,13 +108,28 @@ export function UserProfile({ user }: UserProfileProps) {
     
     async function fetchAssessments() {
       try {
-        const response = await fetch('/api/user/assessments');
-        if (response.ok) {
-          const data = await response.json();
-          setAssessments(data.assessments);
-        } else {
-          throw new Error('Failed to fetch assessments');
-        }
+        // Simulate API call with timeout
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        // Mock data
+        const mockAssessments: Assessment[] = [
+          {
+            id: "1",
+            type: "stroke",
+            result: "12% risk factor",
+            date: new Date(Date.now() - 86400000 * 14), // 14 days ago
+            risk: "low"
+          },
+          {
+            id: "2",
+            type: "alzheimers",
+            result: "Mild cognitive decline detected",
+            date: new Date(Date.now() - 86400000 * 45), // 45 days ago
+            risk: "moderate"
+          }
+        ];
+        
+        setAssessments(mockAssessments);
       } catch (error) {
         console.error('Error fetching assessments:', error);
         toast({
@@ -102,15 +147,47 @@ export function UserProfile({ user }: UserProfileProps) {
 
   // No user, show sign-in prompt
   if (!user) {
-    return <div className="p-8 text-center">Please sign in to view your profile</div>;
+    return (
+      <Card className="w-full animate-in fade-in duration-500">
+        <CardContent className="p-6 flex flex-col items-center justify-center min-h-[300px]">
+          <User className="w-16 h-16 text-muted-foreground/50 mb-4" />
+          <h3 className="text-xl font-medium mb-2">Account Required</h3>
+          <p className="text-muted-foreground text-center mb-6">Please sign in to view your profile and health data</p>
+          <Button size="lg" className="interactive micro-bounce">Sign In</Button>
+        </CardContent>
+      </Card>
+    );
   }
   
+  // Function to render risk badge with appropriate color
+  const getRiskBadge = (risk: "low" | "moderate" | "high") => {
+    const classes = {
+      low: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+      moderate: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
+      high: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+    };
+    
+    const icons = {
+      low: <CheckCircle className="w-3 h-3 mr-1" />,
+      moderate: <AlertTriangle className="w-3 h-3 mr-1" />,
+      high: <AlertTriangle className="w-3 h-3 mr-1" />
+    };
+    
+    return (
+      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${classes[risk]}`}>
+        {icons[risk]}
+        {risk.charAt(0).toUpperCase() + risk.slice(1)} Risk
+      </span>
+    );
+  };
+  
   return (
-    <div className="space-y-8">
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col items-center gap-4 md:flex-row">
-            <div className="relative h-24 w-24 overflow-hidden rounded-full">
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <Card className="overflow-hidden border shadow-sm">
+        <div className="h-32 bg-gradient-to-r from-blue-600 to-indigo-600"></div>
+        <CardContent className="relative p-6">
+          <div className="flex flex-col items-center gap-4 md:flex-row md:items-end">
+            <div className="relative -mt-20 h-28 w-28 overflow-hidden rounded-full border-4 border-background bg-background">
               {user.image ? (
                 <Image
                   src={user.image}
@@ -119,7 +196,7 @@ export function UserProfile({ user }: UserProfileProps) {
                   className="object-cover"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center bg-muted text-4xl font-semibold uppercase text-muted-foreground">
+                <div className="flex h-full w-full items-center justify-center bg-primary/10 text-4xl font-semibold uppercase text-primary">
                   {user.name.charAt(0)}
                 </div>
               )}
@@ -129,46 +206,260 @@ export function UserProfile({ user }: UserProfileProps) {
               <p className="text-muted-foreground">{user.email}</p>
               <div className="flex flex-wrap justify-center gap-2 md:justify-start">
                 <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                  <Calendar className="mr-1 h-3 w-3" />
                   Member since {user.createdAt.toLocaleDateString()}
                 </span>
                 <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                  <User className="mr-1 h-3 w-3" />
                   {user.role === "user" ? "Patient" : user.role}
                 </span>
               </div>
             </div>
             <div className="flex flex-col gap-2 sm:flex-row">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="interactive micro-bounce">
+                <FileText className="mr-1 h-4 w-4" />
                 Edit Profile
               </Button>
-              <Button size="sm">Contact Doctor</Button>
+              <Button size="sm" className="interactive micro-bounce">
+                Contact Doctor
+              </Button>
             </div>
           </div>
         </CardContent>
       </Card>
       
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="assessments">Assessments</TabsTrigger>
-          <TabsTrigger value="metrics">Health Metrics</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 mb-8">
+          <TabsTrigger value="overview" className="interactive">Overview</TabsTrigger>
+          <TabsTrigger value="assessments" className="interactive">Assessments</TabsTrigger>
+          <TabsTrigger value="metrics" className="interactive">Health Metrics</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="overview" className="space-y-4 pt-4">
-          <div className="text-center p-8">
-            <p>Loading overview data...</p>
+        <TabsContent value="overview" className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <h3 className="text-lg font-medium flex items-center">
+                  <ActivitySquare className="mr-2 h-5 w-5 text-primary" />
+                  Recent Activity
+                </h3>
+              </CardHeader>
+              <CardContent>
+                {isLoading.assessments || isLoading.metrics ? (
+                  <div className="space-y-4">
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-start space-x-4 border-b pb-4">
+                      <div className="rounded-full bg-primary/10 p-2">
+                        <ActivitySquare className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium">Completed Stroke Risk Assessment</p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(Date.now() - 86400000 * 14).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-4 border-b pb-4">
+                      <div className="rounded-full bg-primary/10 p-2">
+                        <Clock className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium">Updated Health Metrics</p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(Date.now() - 86400000 * 2).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-4">
+                      <div className="rounded-full bg-primary/10 p-2">
+                        <Award className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium">Completed Cognitive Assessment</p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(Date.now() - 86400000 * 7).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <h3 className="text-lg font-medium flex items-center">
+                  <FileText className="mr-2 h-5 w-5 text-primary" />
+                  Health Summary
+                </h3>
+              </CardHeader>
+              <CardContent>
+                {isLoading.assessments ? (
+                  <div className="space-y-4">
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <p className="font-medium">Cognitive Health</p>
+                        <span className="inline-flex items-center rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
+                          Moderate
+                        </span>
+                      </div>
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                        <div className="h-full w-[65%] rounded-full bg-yellow-500"></div>
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <p className="font-medium">Stroke Risk</p>
+                        <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-300">
+                          Low
+                        </span>
+                      </div>
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                        <div className="h-full w-[12%] rounded-full bg-green-500"></div>
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <p className="font-medium">Overall Health</p>
+                        <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                          Good
+                        </span>
+                      </div>
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                        <div className="h-full w-[78%] rounded-full bg-blue-500"></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
         
-        <TabsContent value="assessments" className="space-y-4 pt-4">
-          <div className="text-center p-8">
-            <p>{isLoading.assessments ? "Loading assessment data..." : `${assessments.length} assessments found`}</p>
+        <TabsContent value="assessments" className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <Card>
+            <CardContent className="p-6">
+              {isLoading.assessments ? (
+                <div className="space-y-6">
+                  {Array.from({ length: 3 }).map((_, index) => (
+                    <div key={index} className="flex flex-col space-y-3">
+                      <Skeleton className="h-6 w-1/3" />
+                      <Skeleton className="h-12 w-full" />
+                    </div>
+                  ))}
+                </div>
+              ) : assessments.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <FileText className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                  <h3 className="text-xl font-medium mb-2">No Assessments Yet</h3>
+                  <p className="text-muted-foreground mb-6 max-w-md">
+                    Complete a health assessment to track your brain health over time
+                  </p>
+                  <Button className="interactive micro-bounce">
+                    Start an Assessment
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {assessments.map((assessment) => (
+                    <div key={assessment.id} className="rounded-lg border p-4 transition-all hover:bg-muted/50">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-medium capitalize">
+                          {assessment.type} Assessment
+                        </h3>
+                        {getRiskBadge(assessment.risk)}
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        {assessment.result}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground flex items-center">
+                          <Calendar className="mr-1 h-3 w-3" />
+                          {assessment.date.toLocaleDateString()}
+                        </span>
+                        <Button variant="ghost" size="sm" className="h-8 text-xs">
+                          View Details
+                          <ArrowUpRight className="ml-1 h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
           </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
         
-        <TabsContent value="metrics" className="space-y-4 pt-4">
-          <div className="text-center p-8">
-            <p>{isLoading.metrics ? "Loading health metrics..." : `${healthMetrics.length} metrics found`}</p>
+        <TabsContent value="metrics" className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <Card>
+            <CardContent className="p-6">
+              {isLoading.metrics ? (
+                <div className="space-y-6">
+                  {Array.from({ length: 3 }).map((_, index) => (
+                    <div key={index} className="flex flex-col space-y-3">
+                      <Skeleton className="h-6 w-1/3" />
+                      <Skeleton className="h-12 w-full" />
+                    </div>
+                  ))}
+                </div>
+              ) : healthMetrics.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <ActivitySquare className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                  <h3 className="text-xl font-medium mb-2">No Health Metrics Yet</h3>
+                  <p className="text-muted-foreground mb-6 max-w-md">
+                    Add your health metrics to monitor your health status over time
+                  </p>
+                  <Button className="interactive micro-bounce">
+                    Add Health Metrics
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {healthMetrics.map((metric) => (
+                    <div key={metric.id} className="rounded-lg border p-4 transition-all hover:bg-muted/50">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-medium">
+                          {metric.name}
+                        </h3>
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          metric.status === "normal" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" :
+                          metric.status === "warning" ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300" :
+                          "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                        }`}>
+                          {metric.status.charAt(0).toUpperCase() + metric.status.slice(1)}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-2 mb-4">
+                        <span className="text-2xl font-semibold">{metric.value}</span>
+                        <span className="text-sm text-muted-foreground">{metric.unit}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground flex items-center">
+                          <Clock className="mr-1 h-3 w-3" />
+                          {metric.date.toLocaleDateString()}
+                        </span>
+                        <Button variant="ghost" size="sm" className="h-8 text-xs">
+                          Update
+                          <ArrowUpRight className="ml-1 h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
           </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
