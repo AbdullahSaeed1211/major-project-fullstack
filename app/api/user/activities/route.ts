@@ -24,6 +24,10 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
     
     // Get total count of activities for this user
+    if (!mongoose.connection.db) {
+      throw new Error("Database connection not established");
+    }
+    
     const totalCount = await mongoose.connection.db.collection("activities")
       .countDocuments({ userId });
     
