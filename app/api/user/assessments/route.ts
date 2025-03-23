@@ -1,35 +1,40 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withAuth, createErrorResponse } from "@/lib/auth";
-import db from "@/lib/mongodb";
+import { withAuth } from "@/lib/auth";
 import Assessment from "@/lib/models/Assessment";
+import db from "@/lib/mongodb";
 
-export const GET = withAuth(async (request: NextRequest, userId: string) => {
+export interface AssessmentQuery {
+  userId: string;
+  type?: string;
+}
+
+export const GET = withAuth(async (req: NextRequest, userId: string) => {
   try {
+    const { searchParams } = new URL(req.url);
+    const type = searchParams.get("type") || undefined;
+    const limit = parseInt(searchParams.get("limit") || "20", 10);
+    
     await db.connect();
     
-    // Get query parameters
-    const url = new URL(request.url);
-    const type = url.searchParams.get("type"); // Optional filter by type
-    
-    // Build query
-    interface AssessmentQuery {
-      userId: string;
-      type?: string;
-    }
-    
     const query: AssessmentQuery = { userId };
+    
     if (type) {
       query.type = type;
     }
     
     const assessments = await Assessment.find(query)
       .sort({ date: -1 })
-      .limit(20);
+      .limit(limit);
     
-    return NextResponse.json({ assessments });
-    
+    return NextResponse.json({
+      status: "success",
+      data: assessments
+    });
   } catch (error) {
-    console.error("Error retrieving assessments:", error);
-    return createErrorResponse("Failed to retrieve assessments", 500);
+    console.error("Error fetching assessments:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch assessments" },
+      { status: 500 }
+    );
   }
 }); 

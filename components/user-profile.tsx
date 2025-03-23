@@ -55,38 +55,39 @@ export function UserProfile({ user }: UserProfileProps) {
     
     async function fetchHealthMetrics() {
       try {
-        // Simulate API call with timeout
-        await new Promise(resolve => setTimeout(resolve, 1200));
+        setIsLoading(prev => ({ ...prev, metrics: true }));
         
-        // Mock data
-        const mockMetrics: HealthMetric[] = [
-          {
-            id: "1",
-            name: "Blood Pressure",
-            value: 120,
-            unit: "mmHg",
-            date: new Date(Date.now() - 86400000 * 2), // 2 days ago
-            status: "normal"
-          },
-          {
-            id: "2",
-            name: "Blood Glucose",
-            value: 95,
-            unit: "mg/dL",
-            date: new Date(Date.now() - 86400000 * 4), // 4 days ago
-            status: "normal"
-          },
-          {
-            id: "3",
-            name: "Cholesterol",
-            value: 210,
-            unit: "mg/dL",
-            date: new Date(Date.now() - 86400000 * 30), // 30 days ago
-            status: "warning"
-          }
-        ];
+        // Call the API endpoint to fetch real data
+        const response = await fetch(`/api/user/health-metrics?limit=10`);
         
-        setHealthMetrics(mockMetrics);
+        if (!response.ok) {
+          throw new Error('Failed to fetch health metrics');
+        }
+        
+        const data = await response.json();
+        
+        if (data.status === "success" && Array.isArray(data.data)) {
+          // Transform the data to match the expected format
+          const metrics: HealthMetric[] = data.data.map((item: {
+            _id: string;
+            name: string;
+            value: number;
+            unit: string;
+            date: string;
+            status: "normal" | "warning" | "critical";
+          }) => ({
+            id: item._id,
+            name: item.name,
+            value: item.value,
+            unit: item.unit,
+            date: new Date(item.date),
+            status: item.status
+          }));
+          
+          setHealthMetrics(metrics);
+        } else {
+          throw new Error('Invalid response format');
+        }
       } catch (error) {
         console.error('Error fetching health metrics:', error);
         toast({
@@ -108,28 +109,37 @@ export function UserProfile({ user }: UserProfileProps) {
     
     async function fetchAssessments() {
       try {
-        // Simulate API call with timeout
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        setIsLoading(prev => ({ ...prev, assessments: true }));
         
-        // Mock data
-        const mockAssessments: Assessment[] = [
-          {
-            id: "1",
-            type: "stroke",
-            result: "12% risk factor",
-            date: new Date(Date.now() - 86400000 * 14), // 14 days ago
-            risk: "low"
-          },
-          {
-            id: "2",
-            type: "alzheimers",
-            result: "Mild cognitive decline detected",
-            date: new Date(Date.now() - 86400000 * 45), // 45 days ago
-            risk: "moderate"
-          }
-        ];
+        // Call the API endpoint to fetch real assessment data
+        const response = await fetch(`/api/user/assessments?limit=10`);
         
-        setAssessments(mockAssessments);
+        if (!response.ok) {
+          throw new Error('Failed to fetch assessments');
+        }
+        
+        const data = await response.json();
+        
+        if (data.status === "success" && Array.isArray(data.data)) {
+          // Transform the data to match the expected format
+          const assessments: Assessment[] = data.data.map((item: {
+            _id: string;
+            type: "stroke" | "tumor" | "alzheimers";
+            result: string;
+            date: string;
+            risk: "low" | "moderate" | "high";
+          }) => ({
+            id: item._id,
+            type: item.type,
+            result: item.result,
+            date: new Date(item.date),
+            risk: item.risk
+          }));
+          
+          setAssessments(assessments);
+        } else {
+          throw new Error('Invalid response format');
+        }
       } catch (error) {
         console.error('Error fetching assessments:', error);
         toast({
@@ -395,7 +405,7 @@ export function UserProfile({ user }: UserProfileProps) {
                       </div>
                     </div>
                   ))}
-          </div>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -456,7 +466,7 @@ export function UserProfile({ user }: UserProfileProps) {
                       </div>
                     </div>
                   ))}
-          </div>
+                </div>
               )}
             </CardContent>
           </Card>

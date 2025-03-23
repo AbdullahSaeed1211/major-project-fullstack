@@ -47,7 +47,7 @@ interface CognitiveScoreQuery {
 // GET /api/user/cognitive-scores - Get the current user's cognitive scores
 export async function GET(req: NextRequest) {
   try {
-    const userId = getCurrentUserId();
+    const userId = await getCurrentUserId();
     if (!userId) {
       return unauthorizedResponse("You must be logged in to access your cognitive scores");
     }
@@ -102,7 +102,7 @@ export async function GET(req: NextRequest) {
 // POST /api/user/cognitive-scores - Create a new cognitive score
 export async function POST(req: NextRequest) {
   try {
-    const userId = getCurrentUserId();
+    const userId = await getCurrentUserId();
     if (!userId) {
       return unauthorizedResponse("You must be logged in to save cognitive scores");
     }

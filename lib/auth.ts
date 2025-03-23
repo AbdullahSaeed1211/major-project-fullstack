@@ -89,8 +89,14 @@ const getUserModel = async () => {
 
 // Get the current user ID from Clerk
 export async function getCurrentUserId(): Promise<string | null> {
-  const session = await auth();
-  return session.userId || null;
+  try {
+    // Rename the variable to avoid collision with the imported auth function
+    const authData = await auth();
+    return authData?.userId || null;
+  } catch (error) {
+    console.error("Error getting current user:", error);
+    return null;
+  }
 }
 
 // Get the current user from the database

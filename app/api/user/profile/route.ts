@@ -25,7 +25,7 @@ const getUserModel = async () => {
 // GET /api/user/profile - Get the current user's profile
 export async function GET() {
   try {
-    const userId = getCurrentUserId();
+    const userId = await getCurrentUserId();
     if (!userId) {
       return unauthorizedResponse("You must be logged in to access your profile");
     }
@@ -50,7 +50,7 @@ export async function GET() {
 // PATCH /api/user/profile - Update the current user's profile
 export async function PATCH(req: NextRequest) {
   try {
-    const userId = getCurrentUserId();
+    const userId = await getCurrentUserId();
     if (!userId) {
       return unauthorizedResponse("You must be logged in to update your profile");
     }

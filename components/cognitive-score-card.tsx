@@ -7,6 +7,7 @@ import { ArrowUpIcon, ArrowDownIcon, MinusIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import type { CognitiveScore } from "@/lib/types";
 import { useAuth } from "@clerk/nextjs";
+import Link from "next/link";
 
 // Define a more complete cognitive score type to use internally
 interface ExtendedCognitiveScore {
@@ -33,6 +34,7 @@ export function useCognitiveScores() {
   const [cognitiveScores, setCognitiveScores] = useState<ExtendedCognitiveScore[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isUsingMockData, setIsUsingMockData] = useState(false);
 
   // Fetch scores on component mount
   useEffect(() => {
@@ -50,18 +52,25 @@ export function useCognitiveScores() {
           try {
             // Try to fetch from server first
             console.log('Fetching cognitive scores from server for user:', userId);
+            // Add a timeout to the fetch to prevent long hanging
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            
             const response = await fetch('/api/user/cognitive-scores', {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
               },
               credentials: 'include', // Include credentials for auth
+              signal: controller.signal
             });
             
+            clearTimeout(timeoutId);
+            
+            // Handle error responses
             if (!response.ok) {
-              const errorText = await response.text();
-              console.error('Server response not OK:', response.status, errorText);
-              throw new Error(`Failed to fetch from server: ${response.status} ${response.statusText}`);
+              // Fall back to demo data immediately
+              throw new Error(`Server responded with ${response.status}`);
             }
             
             const data = await response.json();
@@ -79,10 +88,21 @@ export function useCognitiveScores() {
                 previousScore: item.previousScore,
                 lastUpdated: item.assessmentDate
               }));
+              setIsUsingMockData(false);
+            } else {
+              // Empty results, use demo data
+              console.log('No cognitive scores found, using demo data');
+              setIsUsingMockData(true);
+              scoresData = [
+                { userId: userId, domain: "Memory", score: 78, previousScore: 72, lastUpdated: new Date().toISOString() },
+                { userId: userId, domain: "Attention", score: 82, previousScore: 85, lastUpdated: new Date().toISOString() },
+                { userId: userId, domain: "Processing", score: 65, previousScore: 65, lastUpdated: new Date().toISOString() }
+              ];
             }
           } catch (err) {
             // Log the detailed error for debugging
-            console.error('Server fetch failed, using local storage as fallback', err);
+            console.error('Server fetch failed, using demo data', err);
+            setIsUsingMockData(true);
             
             // Fall back to local storage if server fetch fails
             const localScores = localStorage.getItem('cognitiveScores');
@@ -95,43 +115,46 @@ export function useCognitiveScores() {
                 }
               } catch (parseError) {
                 console.error('Error parsing localStorage cognitive scores:', parseError);
+                scoresData = [
+                  { userId: userId || "guest", domain: "Memory", score: 78, previousScore: 72, lastUpdated: new Date().toISOString() },
+                  { userId: userId || "guest", domain: "Attention", score: 82, previousScore: 85, lastUpdated: new Date().toISOString() },
+                  { userId: userId || "guest", domain: "Processing", score: 65, previousScore: 65, lastUpdated: new Date().toISOString() }
+                ];
               }
+            } else {
+              // No local storage data, use default demo data
+              scoresData = [
+                { userId: userId || "guest", domain: "Memory", score: 78, previousScore: 72, lastUpdated: new Date().toISOString() },
+                { userId: userId || "guest", domain: "Attention", score: 82, previousScore: 85, lastUpdated: new Date().toISOString() },
+                { userId: userId || "guest", domain: "Processing", score: 65, previousScore: 65, lastUpdated: new Date().toISOString() }
+              ];
             }
           }
         } 
         // For non-signed in users, fetch from localStorage
         else {
-          console.log('User not signed in, using localStorage for cognitive scores');
-          const localScores = localStorage.getItem('cognitiveScores');
-          if (localScores) {
-            try {
-              const parsedScores = JSON.parse(localScores);
-              if (Array.isArray(parsedScores)) {
-                scoresData = parsedScores;
-              }
-            } catch (parseError) {
-              console.error('Error parsing localStorage cognitive scores:', parseError);
-            }
-          }
-        }
-        
-        // If we don't have any scores or can't parse them, use some defaults
-        if (scoresData.length === 0) {
+          console.log('User not signed in, using demo data');
+          setIsUsingMockData(true);
           scoresData = [
-            { userId: userId || "guest", domain: "Memory", score: 78, previousScore: 72, lastUpdated: new Date().toISOString() },
-            { userId: userId || "guest", domain: "Attention", score: 82, previousScore: 85, lastUpdated: new Date().toISOString() },
-            { userId: userId || "guest", domain: "Processing", score: 65, previousScore: 65, lastUpdated: new Date().toISOString() }
+            { userId: "guest", domain: "Memory", score: 78, previousScore: 72, lastUpdated: new Date().toISOString() },
+            { userId: "guest", domain: "Attention", score: 82, previousScore: 85, lastUpdated: new Date().toISOString() },
+            { userId: "guest", domain: "Processing", score: 65, previousScore: 65, lastUpdated: new Date().toISOString() }
           ];
-          
-          // Save these defaults to localStorage so they persist
-          localStorage.setItem('cognitiveScores', JSON.stringify(scoresData));
         }
         
         setCognitiveScores(scoresData);
       } catch (err) {
         console.error('Error in fetchScores:', err);
-        setError('Failed to load cognitive scores. Please try again later.');
-        setCognitiveScores([]);
+        setError('Failed to load cognitive scores. Using demo data instead.');
+        setIsUsingMockData(true);
+        // Always provide demo data on error
+        const demoScores = [
+          { userId: userId || "guest", domain: "Memory", score: 78, previousScore: 72, lastUpdated: new Date().toISOString() },
+          { userId: userId || "guest", domain: "Attention", score: 82, previousScore: 85, lastUpdated: new Date().toISOString() },
+          { userId: userId || "guest", domain: "Processing", score: 65, previousScore: 65, lastUpdated: new Date().toISOString() }
+        ];
+        
+        setCognitiveScores(demoScores);
       } finally {
         setIsLoading(false);
       }
@@ -222,13 +245,15 @@ export function useCognitiveScores() {
     cognitiveScores,
     isLoading,
     error,
+    isUsingMockData,
     saveCognitiveScore
   };
 }
 
 export function CognitiveScoreCard() {
   // Use our custom hook to fetch cognitive scores
-  const { cognitiveScores, isLoading } = useCognitiveScores();
+  const { cognitiveScores, isLoading, isUsingMockData } = useCognitiveScores();
+  const { isSignedIn } = useAuth();
 
   // Process and sort the scores
   const processedScores: DomainScore[] = useMemo(() => {
@@ -344,6 +369,28 @@ export function CognitiveScoreCard() {
               </div>
             ))}
           </div>
+          
+          {isUsingMockData && (
+            <div className="rounded-md bg-amber-50 dark:bg-amber-950 p-3 text-sm border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300">
+              <div className="font-medium mb-1">Sample Data Displayed</div>
+              <p className="text-xs mb-2">
+                {isSignedIn 
+                  ? "This is sample data because you haven't completed any cognitive assessments yet." 
+                  : "This is sample data because you're not signed in."}
+              </p>
+              <div className="text-xs">
+                {isSignedIn ? (
+                  <Link href="/tools/cognitive-assessment" className="font-medium underline">
+                    Take an assessment to see your real scores
+                  </Link>
+                ) : (
+                  <Link href="/sign-in" className="font-medium underline">
+                    Sign in to track your real scores
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
           
           <div className="text-xs text-muted-foreground">
             <p>Based on your performance in cognitive games. Play more games to increase accuracy.</p>

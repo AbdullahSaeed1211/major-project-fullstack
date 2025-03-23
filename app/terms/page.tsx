@@ -1,123 +1,78 @@
+import React from "react";
 import Link from "next/link";
 import { Metadata } from "next";
-import { ChevronLeft, Shield, AlertTriangle, FileText, ExternalLink } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata: Metadata = {
   title: "Terms of Service | Brainwise",
-  description: "Terms of service for Brainwise.",
+  description: "Terms and conditions for using the Brainwise platform",
 };
 
 export default function TermsPage() {
   return (
-    <div className="container max-w-4xl py-16 space-y-8 animate-in fade-in duration-300">
-      <div className="flex items-center mb-12">
-        <Button variant="ghost" size="sm" className="interactive flex items-center mr-4" asChild>
-          <Link href="/">
-            <ChevronLeft className="mr-1 h-4 w-4" />
-            Back to Home
-          </Link>
-        </Button>
-        <h1 className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 pb-1">Terms of Service</h1>
-      </div>
-
-      <Card className="border shadow-sm">
-        <CardContent className="p-6 sm:p-8">
-          <div className="flex items-center gap-3 p-4 mb-6 rounded-lg bg-blue-50 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
-            <Shield className="h-6 w-6 flex-shrink-0" />
-            <p className="text-sm">
-              These Terms of Service govern your use of our web application and services. By using Brainwise, you agree to these terms.
-            </p>
-          </div>
-          
-          <div className="prose dark:prose-invert max-w-none">
-            <div className="space-y-6">
-              <section>
-                <h2 className="text-2xl font-semibold flex items-center border-b pb-2">
-                  <FileText className="mr-2 h-5 w-5 text-primary" />
-                  Services
-                </h2>
-                <p className="mt-4">
-                  Brainwise provides tools for stroke prediction, tumor detection, and health information through an AI chatbot. These services are provided for educational and informational purposes only.
-                </p>
-                <div className="flex items-center gap-3 p-4 mt-4 rounded-lg bg-yellow-50 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-300">
-                  <AlertTriangle className="h-5 w-5 flex-shrink-0" />
-                  <p className="text-sm font-medium">
-                    <strong>Not Medical Advice:</strong> Brainwise is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition.
-                  </p>
-                </div>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-semibold flex items-center border-b pb-2">
-                  <FileText className="mr-2 h-5 w-5 text-primary" />
-                  User Responsibilities
-                </h2>
-                <p className="mt-4">
-                  As a user of Brainwise, you agree to:
-                </p>
-                <ul className="list-disc pl-6 space-y-2 mt-2">
-                  <li>Provide accurate information when using our services</li>
-                  <li>Not use our services for any illegal purpose</li>
-                  <li>Not attempt to reverse engineer or compromise the security of our application</li>
-                  <li>Not use our services to harm others</li>
-                </ul>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-semibold flex items-center border-b pb-2">
-                  <FileText className="mr-2 h-5 w-5 text-primary" />
-                  Intellectual Property
-                </h2>
-                <p className="mt-4">
-                  All content, features, and functionality of Brainwise, including but not limited to text, graphics, logos, icons, and software, are the exclusive property of Brainwise and are protected by copyright, trademark, and other intellectual property laws.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-semibold flex items-center border-b pb-2">
-                  <FileText className="mr-2 h-5 w-5 text-primary" />
-                  Limitation of Liability
-                </h2>
-                <p className="mt-4">
-                  Brainwise and its creators shall not be liable for any direct, indirect, incidental, special, consequential, or punitive damages resulting from your use of or inability to use our services.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-semibold flex items-center border-b pb-2">
-                  <FileText className="mr-2 h-5 w-5 text-primary" />
-                  Changes to Terms
-                </h2>
-                <p className="mt-4">
-                  We may update our Terms of Service from time to time. We will notify you of any changes by posting the new Terms on this page.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-semibold flex items-center border-b pb-2">
-                  <FileText className="mr-2 h-5 w-5 text-primary" />
-                  Contact Us
-                </h2>
-                <p className="mt-4">
-                  If you have any questions about these Terms, please contact us at <a href="mailto:terms@brainwise.example.com" className="text-primary hover:underline inline-flex items-center">terms@brainwise.example.com <ExternalLink className="h-3 w-3 ml-1" /></a>.
-                </p>
-              </section>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="flex justify-center pt-6">
-        <div className="space-x-4">
-          <Button className="interactive micro-bounce" asChild>
-            <Link href="/privacy">View Privacy Policy</Link>
-          </Button>
-          <Button variant="outline" className="interactive micro-bounce" asChild>
-            <Link href="/">Back to Home</Link>
-          </Button>
-        </div>
+    <div className="container max-w-4xl py-12 px-4">
+      <h1 className="text-3xl font-bold mb-8">Terms of Service</h1>
+      
+      <div className="prose dark:prose-invert max-w-none">
+        <p className="text-muted-foreground mb-8">
+          Last updated: {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+        </p>
+        
+        <h2 className="text-2xl font-semibold mt-8 mb-4">1. Introduction</h2>
+        <p>
+          Welcome to Brainwise (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;). By accessing or using our website, mobile application, and services (collectively, the &quot;Services&quot;), you agree to be bound by these Terms of Service (&quot;Terms&quot;). Please read these Terms carefully.
+        </p>
+        
+        <h2 className="text-2xl font-semibold mt-8 mb-4">2. Acceptance of Terms</h2>
+        <p>
+          By accessing or using the Services, you represent that you have read, understood, and agree to be bound by these Terms. If you do not agree to these Terms, please do not use our Services.
+        </p>
+        
+        <h2 className="text-2xl font-semibold mt-8 mb-4">3. Description of Services</h2>
+        <p>
+          Brainwise provides cognitive assessment, training, and brain health monitoring tools designed to help users understand and improve their cognitive function and reduce their risk of stroke and other neurological conditions. Our Services include but are not limited to:
+        </p>
+        <ul className="list-disc pl-6 space-y-2 my-4">
+          <li>Cognitive assessments and brain health surveys</li>
+          <li>Brain training games and exercises</li>
+          <li>Educational resources on brain health</li>
+          <li>Tracking of health metrics relevant to brain health</li>
+          <li>Personalized recommendations based on user data</li>
+        </ul>
+        
+        <h2 className="text-2xl font-semibold mt-8 mb-4">4. Medical Disclaimer</h2>
+        <p>
+          Brainwise is not a healthcare provider, and our Services do not constitute medical advice, diagnosis, or treatment. The information provided through our Services is for informational and educational purposes only. Always consult with qualified healthcare professionals regarding any health concerns or before making any health-related decisions.
+        </p>
+        
+        <h2 className="text-2xl font-semibold mt-8 mb-4">5. User Accounts</h2>
+        <p>
+          To access certain features of our Services, you may need to create an account. You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You agree to provide accurate and complete information when creating your account and to update your information as necessary.
+        </p>
+        
+        <h2 className="text-2xl font-semibold mt-8 mb-4">6. Privacy</h2>
+        <p>
+          Your privacy is important to us. Our <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link> explains how we collect, use, and protect your personal information. By using our Services, you consent to our collection and use of your information as described in our Privacy Policy.
+        </p>
+        
+        <h2 className="text-2xl font-semibold mt-8 mb-4">7. Intellectual Property</h2>
+        <p>
+          All content, features, and functionality of our Services, including but not limited to text, graphics, logos, icons, images, audio clips, digital downloads, data compilations, software, and the compilation thereof, are owned by Brainwise, our licensors, or other providers of such material and are protected by copyright, trademark, and other intellectual property laws.
+        </p>
+        
+        <h2 className="text-2xl font-semibold mt-8 mb-4">8. Limitation of Liability</h2>
+        <p>
+          To the maximum extent permitted by law, Brainwise shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, data, use, or other intangible losses, resulting from your access to or use of or inability to access or use the Services.
+        </p>
+        
+        <h2 className="text-2xl font-semibold mt-8 mb-4">9. Changes to Terms</h2>
+        <p>
+          We may revise these Terms at any time by updating this page. By continuing to access or use our Services after any revisions become effective, you agree to be bound by the revised Terms.
+        </p>
+        
+        <h2 className="text-2xl font-semibold mt-8 mb-4">10. Contact Us</h2>
+        <p>
+          If you have any questions about these Terms, please contact us at <a href="mailto:support@brainwise.app" className="text-primary hover:underline">support@brainwise.app</a>.
+        </p>
       </div>
     </div>
   );

@@ -236,6 +236,21 @@ export default function AssessmentReportPage() {
                       </div>
                     </div>
                   </div>
+
+                  <div className="bg-muted rounded-lg p-4 space-y-2">
+                    <div className="flex items-start gap-2">
+                      <Activity className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                      <div>
+                        <h3 className="font-medium">Health Metrics Monitoring</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Track key health indicators like blood pressure, glucose levels, and sleep patterns which significantly impact brain health.
+                        </p>
+                        <Link href="/health-metrics" className="text-xs text-primary hover:underline inline-block mt-2">
+                          Monitor your health metrics
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>

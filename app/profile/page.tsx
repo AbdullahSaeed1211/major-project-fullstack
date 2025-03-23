@@ -1,7 +1,14 @@
 import { Metadata } from "next";
-import { currentUser } from "@clerk/nextjs/server";
-import { UserProfile } from "@/components/user-profile";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
+
+import { UserProfile } from "@/components/user-profile";
+import { UserSettings } from "@/components/user-settings";
+import { ActivityHeatmap } from "@/components/activity-heatmap";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "User Profile | Brainwise",
@@ -9,34 +16,52 @@ export const metadata: Metadata = {
 };
 
 export default async function ProfilePage() {
+  const { userId } = await auth();
   const user = await currentUser();
-  
-  if (!user) {
+
+  if (!userId || !user) {
     redirect("/sign-in");
   }
-  
+
   return (
-    <div className="flex flex-col">
-      <section className="magic-section relative overflow-hidden">
-        <div className="absolute inset-0 -z-10 bg-[length:20px_20px] bg-center [background-image:linear-gradient(rgba(var(--magic-primary),0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(var(--magic-primary),0.1)_1px,transparent_1px)]"></div>
-        <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-gradient-to-br from-[rgba(var(--magic-primary),0.3)] to-[rgba(var(--magic-accent),0.3)] blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-gradient-to-br from-[rgba(var(--magic-secondary),0.3)] to-[rgba(var(--magic-primary),0.3)] blur-3xl"></div>
+    <div className="container mx-auto py-6 space-y-8">
+      <div className="flex items-center gap-2">
+        <Link href="/dashboard">
+          <Button variant="ghost" size="icon" className="h-8 w-8">
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+        </Link>
+        <h1 className="text-3xl font-bold">Profile</h1>
+      </div>
+
+      <Tabs defaultValue="profile" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsTrigger value="activity">Activity</TabsTrigger>
+        </TabsList>
         
-        <div className="magic-container relative">
-          <div className="mx-auto max-w-5xl">
-            <UserProfile 
-              user={{
-                id: user.id,
-                name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User',
-                email: user.emailAddresses[0]?.emailAddress || '',
-                image: user.imageUrl,
-                role: "user",
-                createdAt: new Date(user.createdAt),
-              }}
-            />
-          </div>
-        </div>
-      </section>
+        <TabsContent value="profile" className="space-y-4">
+          <UserProfile 
+            user={{
+              id: userId,
+              name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User',
+              email: user.emailAddresses[0]?.emailAddress || '',
+              image: user.imageUrl,
+              role: (user.publicMetadata.role as "user" | "doctor" | "admin") || "user",
+              createdAt: new Date(user.createdAt),
+            }}
+          />
+        </TabsContent>
+        
+        <TabsContent value="settings" className="space-y-4">
+          <UserSettings userId={userId} />
+        </TabsContent>
+        
+        <TabsContent value="activity" className="space-y-4">
+          <ActivityHeatmap userId={userId} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 } 

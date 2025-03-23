@@ -1,130 +1,115 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 import db from "@/lib/mongodb";
 import { getCurrentUserId } from "@/lib/auth";
-import {
-  notFoundResponse,
-  serverErrorResponse,
-  successResponse,
-  unauthorizedResponse,
-} from "@/lib/api-utils";
-
-// Helper to get the Activity model dynamically
-const getActivityModel = async () => {
-  await db.connect();
-  try {
-    return mongoose.model('Activity');
-  } catch {
-    // If model doesn't exist yet, this will import it
-    const { default: ActivityModel } = await import("@/lib/models/Activity");
-    return ActivityModel;
-  }
-};
-
-// Helper to get the User model dynamically
-const getUserModel = async () => {
-  await db.connect();
-  try {
-    return mongoose.model('User');
-  } catch {
-    // If model doesn't exist yet, this will import it
-    const { default: UserModel } = await import("@/lib/models/User");
-    return UserModel;
-  }
-};
-
-// Define type for query object
-interface ActivityQuery {
-  user: mongoose.Types.ObjectId;
-  activityType?: string;
-  completedAt?: {
-    $gte?: Date;
-    $lte?: Date;
-  };
-}
 
 // GET /api/user/activity - Get the current user's activity history
-export async function GET(req: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const userId = getCurrentUserId();
+    const userId = await getCurrentUserId();
+    
     if (!userId) {
-      return unauthorizedResponse("You must be logged in to access your activity history");
+      return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
     }
-
-    // Connect to the database
+    
+    // Connect to MongoDB
     await db.connect();
-    const User = await getUserModel();
-    const Activity = await getActivityModel();
-
-    // Find the user in the database
-    const user = await User.findOne({ clerkId: userId });
-    if (!user) {
-      return notFoundResponse("User not found");
+    
+    if (!mongoose.connection || !mongoose.connection.db) {
+      throw new Error("Database connection not established");
     }
-
-    // Parse query parameters
-    const searchParams = req.nextUrl.searchParams;
-    const activityType = searchParams.get("activityType");
-    const startDate = searchParams.get("startDate");
-    const endDate = searchParams.get("endDate");
-    const limit = parseInt(searchParams.get("limit") || "20", 10);
-    const page = parseInt(searchParams.get("page") || "1", 10);
+    
+    // Extract query parameters for pagination
+    const searchParams = request.nextUrl.searchParams;
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "10");
     const skip = (page - 1) * limit;
-
-    // Build query
-    const query: ActivityQuery = { user: user._id };
     
-    // Add activity type filter if provided
-    if (activityType) {
-      query.activityType = activityType;
-    }
+    // Get total count of activities for this user
+    const totalCount = await mongoose.connection.db.collection("activities")
+      .countDocuments({ userId });
     
-    // Add date range filters if provided
-    if (startDate || endDate) {
-      query.completedAt = {};
-      
-      if (startDate) {
-        query.completedAt.$gte = new Date(startDate);
-      }
-      
-      if (endDate) {
-        query.completedAt.$lte = new Date(endDate);
-      }
-    }
-
-    // Get total count for pagination
-    const total = await Activity.countDocuments(query);
-
-    // Get results with pagination
-    const activities = await Activity.find(query)
+    // Get paginated activities
+    const activities = await mongoose.connection.db.collection("activities")
+      .find({ userId })
       .sort({ completedAt: -1 })
       .skip(skip)
       .limit(limit)
-      .lean();
-
-    // Group activities by date for better presentation
-    const groupedActivities = activities.reduce((acc, activity) => {
-      const date = new Date(activity.completedAt).toISOString().split('T')[0];
-      
-      if (!acc[date]) {
-        acc[date] = [];
-      }
-      
-      acc[date].push(activity);
-      return acc;
-    }, {} as Record<string, typeof activities>);
-
-    return successResponse({
-      activities: groupedActivities,
+      .toArray();
+    
+    const totalPages = Math.ceil(totalCount / limit);
+    
+    return NextResponse.json({
+      activities,
       pagination: {
-        total,
-        page,
-        limit,
-        pages: Math.ceil(total / limit),
-      },
+        currentPage: page,
+        totalPages,
+        totalItems: totalCount,
+        itemsPerPage: limit,
+      }
     });
   } catch (error) {
-    console.error("Error getting activity history:", error);
-    return serverErrorResponse("Failed to fetch activity history");
+    console.error("Error fetching user activities:", error);
+    return new NextResponse(JSON.stringify({ error: "Failed to fetch activities" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const userId = await getCurrentUserId();
+    
+    if (!userId) {
+      return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    
+    // Connect to MongoDB
+    await db.connect();
+    
+    if (!mongoose.connection || !mongoose.connection.db) {
+      throw new Error("Database connection not established");
+    }
+    
+    const data = await request.json();
+    
+    if (!data.type || !data.name) {
+      return new NextResponse(JSON.stringify({ error: "Missing required fields" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    
+    const activity = {
+      userId,
+      type: data.type,         // e.g., "assessment", "training", "article"
+      name: data.name,         // e.g., "Memory Assessment", "Attention Training"
+      details: data.details || {},
+      completedAt: data.completedAt || new Date(),
+      score: data.score,       // Optional score if applicable
+      duration: data.duration, // Optional duration in seconds/minutes
+      createdAt: new Date(),
+    };
+    
+    const result = await mongoose.connection.db.collection("activities").insertOne(activity);
+    
+    return NextResponse.json({
+      success: true,
+      activityId: result.insertedId,
+      activity
+    });
+  } catch (error) {
+    console.error("Error creating activity:", error);
+    return new NextResponse(JSON.stringify({ error: "Failed to create activity" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 } 

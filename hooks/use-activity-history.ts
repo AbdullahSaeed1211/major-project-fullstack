@@ -21,7 +21,7 @@ interface ActivityHistoryItem {
 }
 
 interface PaginatedResponse {
-  results: ActivityHistoryItem[];
+  activities: Record<string, ActivityHistoryItem[]>;
   pagination: {
     total: number;
     page: number;
@@ -68,8 +68,13 @@ export function useActivityHistory() {
 
       const data: PaginatedResponse = await response.json();
       
+      // Process the grouped activities into a flat array
+      const flattenedActivities = Object.entries(data.activities)
+        .flatMap(([date, dayActivities]) => dayActivities)
+        .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
+      
       // Set activities and pagination
-      setActivities(data.results);
+      setActivities(flattenedActivities);
       setPagination(data.pagination);
     } catch (err) {
       console.error('Error fetching activity history:', err);
