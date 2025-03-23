@@ -16,12 +16,13 @@
 - [x] Implement streak tracking in daily challenges
 - [x] Create proper API error states and loading indicators
 - [ ] Create visualization for health risk predictions
+- [x] Implement activity heatmap for visualizing user engagement
 
 ## Authentication & User Management
 - [x] Complete Clerk authentication integration with proper redirects
-- [ ] Implement user profile page with settings and preferences
-- [ ] Add user data export functionality for GDPR compliance
-- [ ] Create account deletion process
+- [x] Implement user profile page with settings and preferences
+- [x] Add user data export functionality for GDPR compliance
+- [x] Create account deletion process
 
 ## Testing & Quality Assurance
 - [ ] Implement end-to-end tests for critical user flows
@@ -57,7 +58,7 @@
 - [ ] Add analytics for email open rates and click-through
 
 ## Additional Features
-- [ ] User data export functionality
+- [x] User data export functionality
 - [ ] Enhanced visualization of cognitive trends
 - [ ] Integration with wearable devices for health metrics
 - [ ] Mobile app version using React Native
@@ -73,7 +74,7 @@
 - [ ] Implement model caching and CDN for faster loading
 
 ## Documentation
-- [ ] Create user guide documentation
+- [x] Create user guide documentation
 - [ ] Add API documentation for developers
 - [ ] Document data models and schemas
 - [ ] Create developer onboarding guide 

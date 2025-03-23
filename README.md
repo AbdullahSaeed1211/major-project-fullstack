@@ -12,6 +12,8 @@ A comprehensive application for brain health assessment, cognitive training, and
 - **Responsive Design**: Optimized for both desktop and mobile
 - **Dark/Light Mode**: Theme support for different preferences
 - **ML-Powered Assessment**: TensorFlow.js models for health risk prediction
+- **Activity Tracking**: Visual heatmap of user activities and engagement
+- **User Settings**: Comprehensive settings for notifications, privacy, and data management
 
 ## Current Status
 
@@ -26,6 +28,8 @@ A comprehensive application for brain health assessment, cognitive training, and
 - ✅ Responsive UI with Tailwind CSS
 - ✅ Assessment Report API with comprehensive analysis
 - ✅ ML infrastructure for model loading and caching
+- ✅ User profile with activity history and settings management
+- ✅ Activity heatmap visualization for tracking engagement
 
 ### In Progress
 - 🔄 ML model integration with Google Cloud Storage
@@ -120,6 +124,12 @@ Models are hosted on Google Cloud Storage for production and loaded dynamically 
 - **Concentration Game**: Enhance focus and sustained attention
 - **Sequence Memory**: Test and improve working memory capacity
 - **Pattern Recognition**: Enhance pattern recognition abilities (in development)
+
+### User Profile & Settings
+- **Activity Heatmap**: GitHub-style visualization of user activity over time
+- **Notification Preferences**: Control email and in-app notifications
+- **Privacy Settings**: Manage data sharing and research participation
+- **Data Management**: Export or clear personal data with secure confirmation dialogs
 
 ### Data Persistence
 - Authenticated users: Data stored in MongoDB

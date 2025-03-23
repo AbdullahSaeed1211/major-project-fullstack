@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -91,26 +91,8 @@ export function WordMemoryTest() {
     });
   };
 
-  // Timer effect
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- startRecallPhase is defined below, adding to deps would cause error
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    
-    if (gameState === "memorize" && timeLeft > 0) {
-      timer = setTimeout(() => {
-        setTimeLeft(timeLeft - 1);
-      }, 1000);
-    } else if (gameState === "memorize" && timeLeft === 0) {
-      startRecallPhase();
-    }
-    
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [gameState, timeLeft]);
-
-  // Prepare the recall phase
-  const startRecallPhase = () => {
+  // Prepare the recall phase - wrapped in useCallback to prevent recreation on every render
+  const startRecallPhase = useCallback(() => {
     const config = difficultyConfig[difficulty];
     const memorizedWords = [...wordList];
     
@@ -130,7 +112,24 @@ export function WordMemoryTest() {
     setTestWords(allTestWords);
     setCurrentWordIndex(0);
     setGameState("recall");
-  };
+  }, [difficulty, wordList]);
+
+  // Timer effect
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    
+    if (gameState === "memorize" && timeLeft > 0) {
+      timer = setTimeout(() => {
+        setTimeLeft(timeLeft - 1);
+      }, 1000);
+    } else if (gameState === "memorize" && timeLeft === 0) {
+      startRecallPhase();
+    }
+    
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [gameState, timeLeft, startRecallPhase]);
 
   // Handle user's answer (yes/no) during recall phase
   const handleAnswer = (remembered: boolean) => {
