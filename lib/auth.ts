@@ -6,6 +6,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import db from "@/lib/mongodb";
 import mongoose from "mongoose";
 
+// This type defines a Next.js API route handler that requires authentication
+export type AuthenticatedHandler = (
+  request: NextRequest,
+  userId: string
+) => Promise<NextResponse>;
+
 /**
  * Handles authentication for route handlers in App Router
  * @returns The authenticated userId or throws a 401 response
@@ -37,8 +43,27 @@ export async function protectApiRoute(handler: (userId: string) => Promise<NextR
   }
 }
 
-// Add compatibility function for existing code using withAuth pattern
-export function withAuth(handler: (request: NextRequest, userId: string) => Promise<NextResponse>) {
+/**
+ * Higher-order function that wraps an API route handler with authentication
+ */
+export function withAuth(handler: AuthenticatedHandler) {
+  // For development without Clerk, use this mock implementation
+  if (process.env.NEXT_PUBLIC_MOCK_AUTH === 'true') {
+    return async (request: NextRequest) => {
+      try {
+        // Mock user ID for demo purposes
+        const userId = "user-123456";
+        
+        // Call the handler with the authenticated user ID
+        return handler(request, userId);
+      } catch (error) {
+        console.error("Authentication error:", error instanceof Error ? error.message : "Unknown error");
+        return createErrorResponse("Unauthorized", 401);
+      }
+    };
+  }
+  
+  // Production implementation using Clerk
   return async (request: NextRequest) => {
     return protectApiRoute((userId) => handler(request, userId));
   };
@@ -50,7 +75,9 @@ interface ErrorOptions {
   details?: unknown;
 }
 
-// Enhanced createErrorResponse that handles both formats
+/**
+ * Enhanced createErrorResponse that handles both formats
+ */
 export function createErrorResponse(
   message: string,
   statusOrOptions: number | ErrorOptions = 500
@@ -74,8 +101,10 @@ export function createErrorResponse(
   }
 }
 
-// Import User model dynamically to avoid circular dependencies
-// and fix the import error
+/**
+ * Import User model dynamically to avoid circular dependencies
+ * and fix the import error
+ */
 const getUserModel = async () => {
   await db.connect();
   try {
@@ -87,8 +116,15 @@ const getUserModel = async () => {
   }
 };
 
-// Get the current user ID from Clerk
+/**
+ * Get the current user ID from Clerk
+ */
 export async function getCurrentUserId(): Promise<string | null> {
+  // For development without Clerk, return a mock user ID
+  if (process.env.NEXT_PUBLIC_MOCK_AUTH === 'true') {
+    return "user-123456";
+  }
+  
   try {
     // Rename the variable to avoid collision with the imported auth function
     const authData = await auth();
@@ -99,7 +135,9 @@ export async function getCurrentUserId(): Promise<string | null> {
   }
 }
 
-// Get the current user from the database
+/**
+ * Get the current user from the database
+ */
 export async function getCurrentUser() {
   const userId = await getCurrentUserId();
   
@@ -120,7 +158,9 @@ export async function getCurrentUser() {
   }
 }
 
-// Create a user in the database if it doesn't exist
+/**
+ * Create a user in the database if it doesn't exist
+ */
 export async function createUserIfNotExists(clerkUser: {
   id: string;
   email: string;
@@ -154,11 +194,4 @@ export async function createUserIfNotExists(clerkUser: {
     console.error("Error creating user:", error);
     throw error;
   }
-}
-
-// Keep the existing middleware code
-export function withClerkMiddleware(
-  // ... existing code ...
-) {
-  // ... existing code ...
 } 

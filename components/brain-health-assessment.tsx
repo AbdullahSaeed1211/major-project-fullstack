@@ -8,6 +8,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Brain, CheckCircle, ArrowRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
+import { ExportButton } from "@/components/export-button";
 
 interface Question {
   id: number;
@@ -318,6 +320,15 @@ export function BrainHealthAssessment() {
     const { strengths, weaknesses } = getStrengthsAndWeaknesses(scores);
     const recommendations = getRecommendations(strengths, weaknesses);
     
+    // Create export data
+    const exportData = [
+      ...Object.keys(scores).map(domain => ({
+        domain: domainLabels[domain],
+        score: scores[domain],
+        category: strengths.includes(domain) ? "Strength" : weaknesses.includes(domain) ? "Needs Improvement" : "Average"
+      }))
+    ];
+    
     return (
       <div className="space-y-6">
         <div className="text-center">
@@ -397,8 +408,20 @@ export function BrainHealthAssessment() {
               ))}
             </ul>
           </CardContent>
-          <CardFooter>
-            <Button className="w-full">Start Recommended Activities</Button>
+          <CardFooter className="flex justify-between">
+            <ExportButton 
+              data={exportData}
+              filename="brain-health-assessment"
+              label="Export Results"
+            />
+            <Button asChild>
+              <Link href={{
+                pathname: "/tools",
+                query: { recommendations: recommendations.map(r => encodeURIComponent(r)).join(",") }
+              }}>
+                Start Recommended Activities
+              </Link>
+            </Button>
           </CardFooter>
         </Card>
       </div>

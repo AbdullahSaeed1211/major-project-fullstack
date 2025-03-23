@@ -1,23 +1,22 @@
-import React from "react";
+import { HealthMetricTracker } from "@/components/health-metric-tracker";
 import { Metadata } from "next";
-import HealthMetricsClient from "./health-metrics-client";
 
 export const metadata: Metadata = {
-  title: "Health Metrics | Brainwise",
-  description: "Track your health metrics and lifestyle factors that impact brain health",
-  keywords: "brain health tracking, health metrics, cognitive health, lifestyle tracking, stroke prevention",
+  title: "Health Metrics | BrainWise",
+  description: "Track your health metrics and see how they correlate with your cognitive progress",
 };
 
 export default function HealthMetricsPage() {
   return (
-    <div className="container py-8">
-      <h1 className="text-3xl font-bold mb-6">Health Metrics</h1>
-      <p className="text-muted-foreground mb-8 max-w-3xl">
-        Track health metrics that impact your brain health. Regular monitoring of these factors can help
-        you make lifestyle adjustments to reduce risk of cognitive decline and stroke.
-      </p>
+    <div className="container mx-auto py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">Health Metrics</h1>
+        <p className="text-muted-foreground">
+          Track important health indicators that may influence your cognitive recovery
+        </p>
+      </div>
       
-      <HealthMetricsClient />
+      <HealthMetricTracker />
     </div>
   );
 } 

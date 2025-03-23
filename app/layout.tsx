@@ -7,6 +7,7 @@ import { Inter } from "next/font/google";
 import Link from "next/link";
 import { Brain, Github, Twitter, Linkedin } from "lucide-react";
 import { dark } from '@clerk/themes';
+import { Toaster } from 'sonner';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -154,6 +155,7 @@ export default function RootLayout({
               </footer>
             </div>
           </ThemeProvider>
+          <Toaster position="bottom-right" />
         </body>
       </html>
     </ClerkProvider>

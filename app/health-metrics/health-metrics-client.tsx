@@ -25,9 +25,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { HealthMetricsForm } from "@/components/health-metrics-form";
 
 export default function HealthMetricsClient() {
   const [timeRange, setTimeRange] = useState("30d");
+  const [showAddMetricForm, setShowAddMetricForm] = useState(false);
   
   return (
     <div className="space-y-8">
@@ -52,7 +55,7 @@ export default function HealthMetricsClient() {
             </SelectContent>
           </Select>
         </div>
-        <Button className="flex items-center gap-2">
+        <Button className="flex items-center gap-2" onClick={() => setShowAddMetricForm(true)}>
           <Plus className="h-4 w-4" />
           <span>Add Measurement</span>
         </Button>
@@ -66,7 +69,7 @@ export default function HealthMetricsClient() {
                 <Heart className="h-5 w-5 text-red-500" />
                 <CardTitle className="text-base">Blood Pressure</CardTitle>
               </div>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShowAddMetricForm(true)}>
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
@@ -74,8 +77,9 @@ export default function HealthMetricsClient() {
           <CardContent className="text-center py-6">
             <div className="flex flex-col items-center justify-center space-y-2">
               <PlusCircle className="h-10 w-10 text-muted-foreground/40" />
-              <p className="text-sm text-muted-foreground">No measurements yet</p>
-              <Button variant="outline" size="sm" className="mt-2">Add Data</Button>
+              <p className="text-sm text-muted-foreground">No blood pressure data yet</p>
+              <p className="text-xs text-muted-foreground">Add your first measurement to see your data here</p>
+              <Button variant="outline" size="sm" className="mt-2" onClick={() => setShowAddMetricForm(true)}>Add Data</Button>
             </div>
           </CardContent>
         </Card>
@@ -87,7 +91,7 @@ export default function HealthMetricsClient() {
                 <Droplet className="h-5 w-5 text-blue-500" />
                 <CardTitle className="text-base">Glucose</CardTitle>
               </div>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShowAddMetricForm(true)}>
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
@@ -95,8 +99,9 @@ export default function HealthMetricsClient() {
           <CardContent className="text-center py-6">
             <div className="flex flex-col items-center justify-center space-y-2">
               <PlusCircle className="h-10 w-10 text-muted-foreground/40" />
-              <p className="text-sm text-muted-foreground">No measurements yet</p>
-              <Button variant="outline" size="sm" className="mt-2">Add Data</Button>
+              <p className="text-sm text-muted-foreground">No glucose measurements yet</p>
+              <p className="text-xs text-muted-foreground">Track your glucose levels to monitor their impact on brain health</p>
+              <Button variant="outline" size="sm" className="mt-2" onClick={() => setShowAddMetricForm(true)}>Add Data</Button>
             </div>
           </CardContent>
         </Card>
@@ -108,7 +113,7 @@ export default function HealthMetricsClient() {
                 <Dumbbell className="h-5 w-5 text-purple-500" />
                 <CardTitle className="text-base">Physical Activity</CardTitle>
               </div>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShowAddMetricForm(true)}>
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
@@ -117,7 +122,8 @@ export default function HealthMetricsClient() {
             <div className="flex flex-col items-center justify-center space-y-2">
               <PlusCircle className="h-10 w-10 text-muted-foreground/40" />
               <p className="text-sm text-muted-foreground">No activity data yet</p>
-              <Button variant="outline" size="sm" className="mt-2">Track Activity</Button>
+              <p className="text-xs text-muted-foreground">Record your exercise to see how it affects your cognitive health</p>
+              <Button variant="outline" size="sm" className="mt-2" onClick={() => setShowAddMetricForm(true)}>Track Activity</Button>
             </div>
           </CardContent>
         </Card>
@@ -129,7 +135,7 @@ export default function HealthMetricsClient() {
                 <Moon className="h-5 w-5 text-indigo-400" />
                 <CardTitle className="text-base">Sleep</CardTitle>
               </div>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShowAddMetricForm(true)}>
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
@@ -138,7 +144,8 @@ export default function HealthMetricsClient() {
             <div className="flex flex-col items-center justify-center space-y-2">
               <PlusCircle className="h-10 w-10 text-muted-foreground/40" />
               <p className="text-sm text-muted-foreground">No sleep data yet</p>
-              <Button variant="outline" size="sm" className="mt-2">Log Sleep</Button>
+              <p className="text-xs text-muted-foreground">Track your sleep patterns to improve brain recovery</p>
+              <Button variant="outline" size="sm" className="mt-2" onClick={() => setShowAddMetricForm(true)}>Log Sleep</Button>
             </div>
           </CardContent>
         </Card>
@@ -165,14 +172,20 @@ export default function HealthMetricsClient() {
               <div className="text-center py-6">
                 <Activity className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
                 <h3 className="text-lg font-medium mb-2">No Health Data Available Yet</h3>
-                <p className="text-sm text-muted-foreground max-w-md mx-auto mb-4">
-                  Start tracking your health metrics to see how they impact your brain health. Add measurements 
-                  like blood pressure, activity, sleep, and more to get personalized insights.
-                </p>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Your First Measurement
-                </Button>
+                <div className="space-y-6">
+                  <p className="text-sm text-muted-foreground max-w-md mx-auto mb-4">
+                    Start tracking your health metrics to see how they impact your brain health. Add measurements 
+                    manually or connect your health devices for automatic tracking.
+                  </p>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    Note: This is a demo version. In a production environment, you would be able to connect your 
+                    fitness devices and medical equipment for automatic data import.
+                  </p>
+                  <Button onClick={() => setShowAddMetricForm(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Your First Measurement
+                  </Button>
+                </div>
               </div>
             </CardContent>
             <CardFooter className="flex flex-wrap gap-3 justify-between">
@@ -290,6 +303,18 @@ export default function HealthMetricsClient() {
           </Button>
         </div>
       </div>
+
+      <Dialog open={showAddMetricForm} onOpenChange={setShowAddMetricForm}>
+        <DialogContent className="max-w-lg">
+          <HealthMetricsForm 
+            onClose={() => setShowAddMetricForm(false)}
+            onSuccess={() => {
+              setShowAddMetricForm(false);
+              // In a real app, you'd fetch updated metrics here
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 } 
