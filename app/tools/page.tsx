@@ -251,18 +251,20 @@ export default function ToolsPage() {
                             <Clock className="h-4 w-4" />
                             <span>{tool.duration}</span>
                           </div>
-                          <ul className="list-disc list-inside text-sm space-y-1">
+                          <div className="flex flex-wrap gap-2">
                             {tool.benefits.map((benefit, index) => (
-                              <li key={index}>{benefit}</li>
+                              <Badge key={index} variant="secondary" className="text-xs">
+                                {benefit}
+                              </Badge>
                             ))}
-                          </ul>
+                          </div>
                         </div>
                       </CardContent>
-                      <CardFooter>
+                      <CardFooter className="flex justify-between items-center">
                         {tool.comingSoon ? (
-                          <Badge variant="secondary">Coming Soon</Badge>
+                          <Badge variant="outline">Coming Soon</Badge>
                         ) : (
-                          <Button className="w-full">Start</Button>
+                          <Button>Start</Button>
                         )}
                       </CardFooter>
                     </Card>
@@ -289,18 +291,20 @@ export default function ToolsPage() {
                             <Clock className="h-4 w-4" />
                             <span>{tool.duration}</span>
                           </div>
-                          <ul className="list-disc list-inside text-sm space-y-1">
+                          <div className="flex flex-wrap gap-2">
                             {tool.benefits.map((benefit, index) => (
-                              <li key={index}>{benefit}</li>
+                              <Badge key={index} variant="secondary" className="text-xs">
+                                {benefit}
+                              </Badge>
                             ))}
-                          </ul>
+                          </div>
                         </div>
                       </CardContent>
-                      <CardFooter>
+                      <CardFooter className="flex justify-between items-center">
                         {tool.comingSoon ? (
-                          <Badge variant="secondary">Coming Soon</Badge>
+                          <Badge variant="outline">Coming Soon</Badge>
                         ) : (
-                          <Button className="w-full">Start</Button>
+                          <Button>Start</Button>
                         )}
                       </CardFooter>
                     </Card>
@@ -327,18 +331,20 @@ export default function ToolsPage() {
                             <Clock className="h-4 w-4" />
                             <span>{tool.duration}</span>
                           </div>
-                          <ul className="list-disc list-inside text-sm space-y-1">
+                          <div className="flex flex-wrap gap-2">
                             {tool.benefits.map((benefit, index) => (
-                              <li key={index}>{benefit}</li>
+                              <Badge key={index} variant="secondary" className="text-xs">
+                                {benefit}
+                              </Badge>
                             ))}
-                          </ul>
+                          </div>
                         </div>
                       </CardContent>
-                      <CardFooter>
+                      <CardFooter className="flex justify-between items-center">
                         {tool.comingSoon ? (
-                          <Badge variant="secondary">Coming Soon</Badge>
+                          <Badge variant="outline">Coming Soon</Badge>
                         ) : (
-                          <Button className="w-full">Start</Button>
+                          <Button>Start</Button>
                         )}
                       </CardFooter>
                     </Card>
@@ -365,18 +371,20 @@ export default function ToolsPage() {
                             <Clock className="h-4 w-4" />
                             <span>{tool.duration}</span>
                           </div>
-                          <ul className="list-disc list-inside text-sm space-y-1">
+                          <div className="flex flex-wrap gap-2">
                             {tool.benefits.map((benefit, index) => (
-                              <li key={index}>{benefit}</li>
+                              <Badge key={index} variant="secondary" className="text-xs">
+                                {benefit}
+                              </Badge>
                             ))}
-                          </ul>
+                          </div>
                         </div>
                       </CardContent>
-                      <CardFooter>
+                      <CardFooter className="flex justify-between items-center">
                         {tool.comingSoon ? (
-                          <Badge variant="secondary">Coming Soon</Badge>
+                          <Badge variant="outline">Coming Soon</Badge>
                         ) : (
-                          <Button className="w-full">Start</Button>
+                          <Button>Start</Button>
                         )}
                       </CardFooter>
                     </Card>
