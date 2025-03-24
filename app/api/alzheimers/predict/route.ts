@@ -6,15 +6,15 @@ import Assessment from "@/lib/models/Assessment";
 import { predictAlzheimers } from "@/lib/ml/alzheimers-model";
 import { preloadModels } from "@/lib/ml/model-loader";
 
-// Preload alzheimers model to avoid cold starts if possible
-try {
-  preloadModels();
-} catch (error) {
-  console.warn('Failed to preload alzheimer\'s model:', error);
-}
-
 export const POST = withAuth(async (request: NextRequest, userId: string) => {
   try {
+    // Preload alzheimers model to avoid cold starts if possible
+    try {
+      await preloadModels(['alzheimers']);
+    } catch (error) {
+      console.warn('Failed to preload alzheimer\'s model:', error);
+    }
+
     // Parse request body
     const body = await request.json();
     

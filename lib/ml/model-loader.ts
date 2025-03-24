@@ -36,6 +36,7 @@ const MODEL_CONFIG = {
 
 // Get the current environment
 const isProduction = process.env.NODE_ENV === 'production';
+const isBuild = process.env.NEXT_PHASE === 'build';
 const config = isProduction ? MODEL_CONFIG.production : MODEL_CONFIG.development;
 
 /**
@@ -50,6 +51,12 @@ export function getModelUrl(modelType: ModelType, version?: string): string {
  * Load model metadata
  */
 export async function loadModelMetadata(modelType: ModelType, version?: string): Promise<ModelMetadata | null> {
+  // Skip model loading during build
+  if (isBuild) {
+    console.log(`Skipping metadata load for ${modelType} model during build`);
+    return null;
+  }
+
   try {
     const modelUrl = getModelUrl(modelType, version);
     const response = await fetch(`${modelUrl}/metadata.json`);
@@ -76,6 +83,12 @@ export async function loadModel(
     forceRefresh?: boolean;
   } = {}
 ): Promise<tf.GraphModel | tf.LayersModel | null> {
+  // Skip model loading during build
+  if (isBuild) {
+    console.log(`Skipping model load for ${modelType} during build`);
+    return null;
+  }
+
   const { version, forceRefresh = false } = options;
   const cacheKey = `${modelType}${version ? `-${version}` : ''}`;
   
@@ -116,6 +129,12 @@ export async function loadModel(
  * Preload models to avoid cold starts
  */
 export async function preloadModels(modelTypes?: ModelType[]): Promise<void> {
+  // Skip model preloading during build
+  if (isBuild) {
+    console.log('Skipping model preloading during build');
+    return;
+  }
+
   if (!modelTypes || modelTypes.length === 0) {
     // If no specific models provided, preload all available models
     modelTypes = ['stroke', 'alzheimers', 'tumor'];

@@ -3,16 +3,16 @@ import { protectApiRoute } from '@/lib/auth';
 import { predictStroke, StrokeRiskInput } from '@/lib/ml/stroke-model';
 import { preloadModels } from '@/lib/ml/model-loader';
 
-// Preload stroke model to avoid cold starts if possible
-try {
-  preloadModels();
-} catch (error) {
-  console.warn('Failed to preload stroke model:', error);
-}
-
 export async function POST(req: NextRequest) {
   return protectApiRoute(async () => {
     try {
+      // Preload stroke model to avoid cold starts if possible
+      try {
+        await preloadModels(['stroke']);
+      } catch (error) {
+        console.warn('Failed to preload stroke model:', error);
+      }
+
       // Parse request body
       const body = await req.json();
       
