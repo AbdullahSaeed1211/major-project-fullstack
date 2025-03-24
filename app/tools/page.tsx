@@ -38,7 +38,7 @@ type Tool = {
 
 export default function ToolsPage() {
   const [activeTool, setActiveTool] = useState<string | null>(null);
-  const [activeCategory, setActiveCategory] = useState<string>("featured");
+  const [activeCategory, setActiveCategory] = useState<string>("training");
 
   const toolsData: Tool[] = [
     {
@@ -202,434 +202,311 @@ export default function ToolsPage() {
 
   // Function to get category title
   const getCategoryTitle = (category: string) => {
-    switch(category) {
-      case "all": return "All Tools";
-      case "featured": return "Featured Tools";
-      case "training": return "Training Tools";
-      case "assessment": return "Assessment Tools";
-      case "tracking": return "Tracking Tools";
+    switch (category) {
+      case "training": return "Brain Training Tools";
+      case "assessment": return "Cognitive Assessment Tools";
+      case "tracking": return "Health Tracking Tools";
       case "education": return "Educational Resources";
       default: return "All Tools";
     }
   };
 
   return (
-    <div className="container max-w-7xl py-8 sm:py-12 px-4 sm:px-6">
-      {activeTool ? (
-        <div className="space-y-6">
-          <Button 
-            variant="ghost" 
-            onClick={handleBackToTools}
-            className="mb-4 flex items-center gap-2"
-          >
-            <ChevronLeft className="h-4 w-4" /> Back to Tools
-          </Button>
-          
-          {toolsData.find(tool => tool.id === activeTool)?.component}
-        </div>
-      ) : (
-        <div className="space-y-8 sm:space-y-10">
-          <div className="text-center space-y-4 sm:space-y-5 max-w-3xl mx-auto">
-            <div className="flex justify-center mb-2">
-              <div className="py-1 px-4 rounded-full bg-primary/10 text-primary text-sm font-medium inline-flex items-center gap-2">
-                <Brain className="h-4 w-4" /> Interactive Tools
-              </div>
+    <div className="container py-8 md:py-12">
+      <div className="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0">
+        <aside className="lg:w-1/4">
+          <div className="sticky top-24 space-y-6">
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold tracking-tight">Cognitive Tools</h2>
+              <p className="text-muted-foreground">
+                Explore a variety of tools designed to help you improve your cognitive abilities.
+              </p>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Brain Health Toolkit</h1>
-            <p className="text-muted-foreground text-base sm:text-lg">
-              Scientifically designed exercises to assess and improve your cognitive function.
-            </p>
-            <div className="w-24 h-1 mx-auto mt-2 rounded-full bg-primary/50"></div>
-          </div>
-          
-          <Tabs defaultValue="featured" value={activeCategory} onValueChange={setActiveCategory}>
-            <div className="flex justify-center overflow-x-auto pb-2 scrollbar-hide">
-              <TabsList className="mb-8">
-                <TabsTrigger value="featured" className="text-sm sm:text-base px-3 sm:px-4">Featured</TabsTrigger>
-                <TabsTrigger value="all" className="text-sm sm:text-base px-3 sm:px-4">All Tools</TabsTrigger>
+
+            <Tabs defaultValue="training" value={activeCategory} onValueChange={setActiveCategory}>
+              <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
                 <TabsTrigger value="training" className="text-sm sm:text-base px-3 sm:px-4">Training</TabsTrigger>
                 <TabsTrigger value="assessment" className="text-sm sm:text-base px-3 sm:px-4">Assessment</TabsTrigger>
                 <TabsTrigger value="tracking" className="text-sm sm:text-base px-3 sm:px-4">Tracking</TabsTrigger>
-                <TabsTrigger value="education" className="text-sm sm:text-base px-3 sm:px-4">Education</TabsTrigger>
+                <TabsTrigger value="education" className="text-sm sm:text-base px-3 sm:px-4">Learning</TabsTrigger>
               </TabsList>
+            </Tabs>
+          </div>
+        </aside>
+
+        <div className="flex-1 lg:max-w-3xl">
+          {activeTool ? (
+            <div className="space-y-6">
+              <Button 
+                variant="ghost" 
+                onClick={handleBackToTools}
+                className="mb-4 flex items-center gap-2"
+              >
+                <ChevronLeft className="h-4 w-4" /> Back to Tools
+              </Button>
+              
+              {toolsData.find(tool => tool.id === activeTool)?.component}
             </div>
-            
-            <TabsContent value="featured" className="mt-0">
-              <div className="mb-12 max-w-4xl mx-auto">
-                <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-2xl font-semibold text-primary">{getCategoryTitle("featured")}</h2>
-                  <div className="w-32 h-px bg-primary/30 rounded-full"></div>
+          ) : (
+            <div className="space-y-6">
+              <TabsContent value="training" className="mt-0">
+                <div className="space-y-6">
+                  <h2 className="text-2xl font-semibold text-primary">{getCategoryTitle("training")}</h2>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    {filteredTools.map((tool) => (
+                      <Card 
+                        key={tool.id} 
+                        className={`overflow-hidden transition-all hover:shadow-sm ${
+                          tool.comingSoon 
+                            ? 'border-dashed border-muted-foreground/30' 
+                            : 'border'
+                        }`}
+                      >
+                        <CardHeader className="pb-3">
+                          <div className="flex items-start justify-between">
+                            <div className="bg-primary/10 text-primary p-3 rounded-md">
+                              {tool.icon}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {tool.comingSoon && (
+                                <span className="text-xs font-medium text-amber-500 bg-amber-500/10 px-2 py-1 rounded-md">
+                                  Under Development
+                                </span>
+                              )}
+                              <div className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-md">
+                                {tool.duration}
+                              </div>
+                            </div>
+                          </div>
+                          <CardTitle className="text-xl mt-4">{tool.title}</CardTitle>
+                          <CardDescription>{tool.description}</CardDescription>
+                        </CardHeader>
+                        <CardContent className="pb-3">
+                          <div className="space-y-1.5">
+                            <p className="text-sm font-medium text-primary">Benefits:</p>
+                            <ul className="text-sm text-muted-foreground space-y-1">
+                              {tool.benefits.map((benefit, index) => (
+                                <li key={index} className="flex items-start gap-2">
+                                  <div className="rounded-full bg-primary/10 p-1 mt-0.5">
+                                    <Brain className="h-3 w-3 text-primary" />
+                                  </div>
+                                  <span>{benefit}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </CardContent>
+                        <CardFooter>
+                          <Button 
+                            className="w-full" 
+                            onClick={() => handleToolSelect(tool.id)}
+                            variant={tool.comingSoon ? "outline" : "default"}
+                            disabled={tool.comingSoon}
+                          >
+                            {tool.comingSoon ? "Coming Soon" : `Start ${tool.title}`}
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {toolsData.filter(t => !t.comingSoon).slice(0, 4).map((tool) => (
+              </TabsContent>
+              
+              <TabsContent value="assessment" className="mt-0">
+                <div className="flex items-center mb-8">
+                  <h2 className="text-2xl font-semibold text-primary">{getCategoryTitle("assessment")}</h2>
+                  <div className="ml-4 flex-grow h-px bg-primary/30 rounded-full max-w-[200px]"></div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredTools.map((tool) => (
                     <Card 
                       key={tool.id} 
-                      className="overflow-hidden border hover:border-primary/20 transition-all hover:shadow-md"
-                      onClick={() => handleToolSelect(tool.id)}
+                      className={`overflow-hidden transition-all hover:shadow-sm ${
+                        tool.comingSoon 
+                          ? 'border-dashed border-muted-foreground/30' 
+                          : 'border'
+                      }`}
                     >
                       <CardHeader className="pb-3">
-                        <div className="bg-primary/10 w-14 h-14 rounded-lg flex items-center justify-center mb-2 transition-colors">
-                          <div className="text-primary">{tool.icon}</div>
+                        <div className="flex items-start justify-between">
+                          <div className="bg-primary/10 text-primary p-3 rounded-md">
+                            {tool.icon}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {tool.comingSoon && (
+                              <span className="text-xs font-medium text-amber-500 bg-amber-500/10 px-2 py-1 rounded-md">
+                                Under Development
+                              </span>
+                            )}
+                            <div className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-md">
+                              {tool.duration}
+                            </div>
+                          </div>
                         </div>
-                        <CardTitle className="text-lg">{tool.title}</CardTitle>
-                        <CardDescription className="line-clamp-2">{tool.description}</CardDescription>
+                        <CardTitle className="text-xl mt-4">{tool.title}</CardTitle>
+                        <CardDescription>{tool.description}</CardDescription>
                       </CardHeader>
                       <CardContent className="pb-3">
-                        <div className="flex gap-2">
-                          <div className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-md">
-                            {tool.duration}
-                          </div>
-                          <div className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-md">
-                            {tool.category.charAt(0).toUpperCase() + tool.category.slice(1)}
-                          </div>
+                        <div className="space-y-1.5">
+                          <p className="text-sm font-medium text-primary">Benefits:</p>
+                          <ul className="text-sm text-muted-foreground space-y-1">
+                            {tool.benefits.map((benefit, index) => (
+                              <li key={index} className="flex items-start gap-2">
+                                <div className="rounded-full bg-primary/10 p-1 mt-0.5">
+                                  <Brain className="h-3 w-3 text-primary" />
+                                </div>
+                                <span>{benefit}</span>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
                       </CardContent>
                       <CardFooter>
                         <Button 
                           className="w-full" 
                           onClick={() => handleToolSelect(tool.id)}
+                          variant={tool.comingSoon ? "outline" : "default"}
+                          disabled={tool.comingSoon}
                         >
-                          Start {tool.title}
+                          {tool.comingSoon ? "Coming Soon" : `Start ${tool.title}`}
                         </Button>
                       </CardFooter>
                     </Card>
                   ))}
                 </div>
-                
-                <div className="flex justify-center mt-10">
-                  <Button 
-                    onClick={() => setActiveCategory("all")}
-                    variant="outline"
-                    className="px-6"
-                  >
-                    View All Tools
-                  </Button>
+              </TabsContent>
+              
+              <TabsContent value="tracking" className="mt-0">
+                <div className="flex items-center mb-8">
+                  <h2 className="text-2xl font-semibold text-primary">{getCategoryTitle("tracking")}</h2>
+                  <div className="ml-4 flex-grow h-px bg-primary/30 rounded-full max-w-[200px]"></div>
                 </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="all" className="mt-0">
-              <div className="flex items-center mb-8">
-                <h2 className="text-2xl font-semibold text-primary">{getCategoryTitle("all")}</h2>
-                <div className="ml-4 flex-grow h-px bg-primary/30 rounded-full max-w-[200px]"></div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredTools.map((tool) => (
-                  <Card 
-                    key={tool.id} 
-                    className={`overflow-hidden transition-all hover:shadow-sm ${
-                      tool.comingSoon 
-                        ? 'border-dashed border-muted-foreground/30' 
-                        : 'border'
-                    }`}
-                  >
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="bg-primary/10 text-primary p-3 rounded-md">
-                          {tool.icon}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {tool.comingSoon && (
-                            <span className="text-xs font-medium text-amber-500 bg-amber-500/10 px-2 py-1 rounded-md">
-                              Under Development
-                            </span>
-                          )}
-                          <div className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-md">
-                            {tool.duration}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredTools.map((tool) => (
+                    <Card 
+                      key={tool.id} 
+                      className={`overflow-hidden transition-all hover:shadow-sm ${
+                        tool.comingSoon 
+                          ? 'border-dashed border-muted-foreground/30' 
+                          : 'border'
+                      }`}
+                    >
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                          <div className="bg-primary/10 text-primary p-3 rounded-md">
+                            {tool.icon}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {tool.comingSoon && (
+                              <span className="text-xs font-medium text-amber-500 bg-amber-500/10 px-2 py-1 rounded-md">
+                                Under Development
+                              </span>
+                            )}
+                            <div className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-md">
+                              {tool.duration}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <CardTitle className="text-xl mt-4">{tool.title}</CardTitle>
-                      <CardDescription>{tool.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="pb-3">
-                      <div className="space-y-1.5">
-                        <p className="text-sm font-medium text-primary">Benefits:</p>
-                        <ul className="text-sm text-muted-foreground space-y-1">
-                          {tool.benefits.map((benefit, index) => (
-                            <li key={index} className="flex items-start gap-2">
-                              <div className="rounded-full bg-primary/10 p-1 mt-0.5">
-                                <Brain className="h-3 w-3 text-primary" />
-                              </div>
-                              <span>{benefit}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </CardContent>
-                    <CardFooter>
-                      <Button 
-                        className="w-full" 
-                        onClick={() => handleToolSelect(tool.id)}
-                        variant={tool.comingSoon ? "outline" : "default"}
-                        disabled={tool.comingSoon}
-                      >
-                        {tool.comingSoon ? "Coming Soon" : `Start ${tool.title}`}
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="training" className="mt-0">
-              <div className="flex items-center mb-8">
-                <h2 className="text-2xl font-semibold text-primary">{getCategoryTitle("training")}</h2>
-                <div className="ml-4 flex-grow h-px bg-primary/30 rounded-full max-w-[200px]"></div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredTools.map((tool) => (
-                  <Card 
-                    key={tool.id} 
-                    className={`overflow-hidden transition-all hover:shadow-sm ${
-                      tool.comingSoon 
-                        ? 'border-dashed border-muted-foreground/30' 
-                        : 'border'
-                    }`}
-                  >
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="bg-primary/10 text-primary p-3 rounded-md">
-                          {tool.icon}
+                        <CardTitle className="text-xl mt-4">{tool.title}</CardTitle>
+                        <CardDescription>{tool.description}</CardDescription>
+                      </CardHeader>
+                      <CardContent className="pb-3">
+                        <div className="space-y-1.5">
+                          <p className="text-sm font-medium text-primary">Benefits:</p>
+                          <ul className="text-sm text-muted-foreground space-y-1">
+                            {tool.benefits.map((benefit, index) => (
+                              <li key={index} className="flex items-start gap-2">
+                                <div className="rounded-full bg-primary/10 p-1 mt-0.5">
+                                  <Brain className="h-3 w-3 text-primary" />
+                                </div>
+                                <span>{benefit}</span>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
-                        <div className="flex items-center gap-2">
-                          {tool.comingSoon && (
-                            <span className="text-xs font-medium text-amber-500 bg-amber-500/10 px-2 py-1 rounded-md">
-                              Under Development
-                            </span>
-                          )}
-                          <div className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-md">
-                            {tool.duration}
+                      </CardContent>
+                      <CardFooter>
+                        <Button 
+                          className="w-full" 
+                          onClick={() => handleToolSelect(tool.id)}
+                          variant={tool.comingSoon ? "outline" : "default"}
+                          disabled={tool.comingSoon}
+                        >
+                          {tool.comingSoon ? "Coming Soon" : `Start ${tool.title}`}
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="education" className="mt-0">
+                <div className="flex items-center mb-8">
+                  <h2 className="text-2xl font-semibold text-primary">{getCategoryTitle("education")}</h2>
+                  <div className="ml-4 flex-grow h-px bg-primary/30 rounded-full max-w-[200px]"></div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredTools.map((tool) => (
+                    <Card 
+                      key={tool.id} 
+                      className={`overflow-hidden transition-all hover:shadow-sm ${
+                        tool.comingSoon 
+                          ? 'border-dashed border-muted-foreground/30' 
+                          : 'border'
+                      }`}
+                    >
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                          <div className="bg-primary/10 text-primary p-3 rounded-md">
+                            {tool.icon}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {tool.comingSoon && (
+                              <span className="text-xs font-medium text-amber-500 bg-amber-500/10 px-2 py-1 rounded-md">
+                                Under Development
+                              </span>
+                            )}
+                            <div className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-md">
+                              {tool.duration}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <CardTitle className="text-xl mt-4">{tool.title}</CardTitle>
-                      <CardDescription>{tool.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="pb-3">
-                      <div className="space-y-1.5">
-                        <p className="text-sm font-medium text-primary">Benefits:</p>
-                        <ul className="text-sm text-muted-foreground space-y-1">
-                          {tool.benefits.map((benefit, index) => (
-                            <li key={index} className="flex items-start gap-2">
-                              <div className="rounded-full bg-primary/10 p-1 mt-0.5">
-                                <Brain className="h-3 w-3 text-primary" />
-                              </div>
-                              <span>{benefit}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </CardContent>
-                    <CardFooter>
-                      <Button 
-                        className="w-full" 
-                        onClick={() => handleToolSelect(tool.id)}
-                        variant={tool.comingSoon ? "outline" : "default"}
-                        disabled={tool.comingSoon}
-                      >
-                        {tool.comingSoon ? "Coming Soon" : `Start ${tool.title}`}
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="assessment" className="mt-0">
-              <div className="flex items-center mb-8">
-                <h2 className="text-2xl font-semibold text-primary">{getCategoryTitle("assessment")}</h2>
-                <div className="ml-4 flex-grow h-px bg-primary/30 rounded-full max-w-[200px]"></div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredTools.map((tool) => (
-                  <Card 
-                    key={tool.id} 
-                    className={`overflow-hidden transition-all hover:shadow-sm ${
-                      tool.comingSoon 
-                        ? 'border-dashed border-muted-foreground/30' 
-                        : 'border'
-                    }`}
-                  >
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="bg-primary/10 text-primary p-3 rounded-md">
-                          {tool.icon}
+                        <CardTitle className="text-xl mt-4">{tool.title}</CardTitle>
+                        <CardDescription>{tool.description}</CardDescription>
+                      </CardHeader>
+                      <CardContent className="pb-3">
+                        <div className="space-y-1.5">
+                          <p className="text-sm font-medium text-primary">Benefits:</p>
+                          <ul className="text-sm text-muted-foreground space-y-1">
+                            {tool.benefits.map((benefit, index) => (
+                              <li key={index} className="flex items-start gap-2">
+                                <div className="rounded-full bg-primary/10 p-1 mt-0.5">
+                                  <Brain className="h-3 w-3 text-primary" />
+                                </div>
+                                <span>{benefit}</span>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
-                        <div className="flex items-center gap-2">
-                          {tool.comingSoon && (
-                            <span className="text-xs font-medium text-amber-500 bg-amber-500/10 px-2 py-1 rounded-md">
-                              Under Development
-                            </span>
-                          )}
-                          <div className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-md">
-                            {tool.duration}
-                          </div>
-                        </div>
-                      </div>
-                      <CardTitle className="text-xl mt-4">{tool.title}</CardTitle>
-                      <CardDescription>{tool.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="pb-3">
-                      <div className="space-y-1.5">
-                        <p className="text-sm font-medium text-primary">Benefits:</p>
-                        <ul className="text-sm text-muted-foreground space-y-1">
-                          {tool.benefits.map((benefit, index) => (
-                            <li key={index} className="flex items-start gap-2">
-                              <div className="rounded-full bg-primary/10 p-1 mt-0.5">
-                                <Brain className="h-3 w-3 text-primary" />
-                              </div>
-                              <span>{benefit}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </CardContent>
-                    <CardFooter>
-                      <Button 
-                        className="w-full" 
-                        onClick={() => handleToolSelect(tool.id)}
-                        variant={tool.comingSoon ? "outline" : "default"}
-                        disabled={tool.comingSoon}
-                      >
-                        {tool.comingSoon ? "Coming Soon" : `Start ${tool.title}`}
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="tracking" className="mt-0">
-              <div className="flex items-center mb-8">
-                <h2 className="text-2xl font-semibold text-primary">{getCategoryTitle("tracking")}</h2>
-                <div className="ml-4 flex-grow h-px bg-primary/30 rounded-full max-w-[200px]"></div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredTools.map((tool) => (
-                  <Card 
-                    key={tool.id} 
-                    className={`overflow-hidden transition-all hover:shadow-sm ${
-                      tool.comingSoon 
-                        ? 'border-dashed border-muted-foreground/30' 
-                        : 'border'
-                    }`}
-                  >
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="bg-primary/10 text-primary p-3 rounded-md">
-                          {tool.icon}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {tool.comingSoon && (
-                            <span className="text-xs font-medium text-amber-500 bg-amber-500/10 px-2 py-1 rounded-md">
-                              Under Development
-                            </span>
-                          )}
-                          <div className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-md">
-                            {tool.duration}
-                          </div>
-                        </div>
-                      </div>
-                      <CardTitle className="text-xl mt-4">{tool.title}</CardTitle>
-                      <CardDescription>{tool.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="pb-3">
-                      <div className="space-y-1.5">
-                        <p className="text-sm font-medium text-primary">Benefits:</p>
-                        <ul className="text-sm text-muted-foreground space-y-1">
-                          {tool.benefits.map((benefit, index) => (
-                            <li key={index} className="flex items-start gap-2">
-                              <div className="rounded-full bg-primary/10 p-1 mt-0.5">
-                                <Brain className="h-3 w-3 text-primary" />
-                              </div>
-                              <span>{benefit}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </CardContent>
-                    <CardFooter>
-                      <Button 
-                        className="w-full" 
-                        onClick={() => handleToolSelect(tool.id)}
-                        variant={tool.comingSoon ? "outline" : "default"}
-                        disabled={tool.comingSoon}
-                      >
-                        {tool.comingSoon ? "Coming Soon" : `Start ${tool.title}`}
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="education" className="mt-0">
-              <div className="flex items-center mb-8">
-                <h2 className="text-2xl font-semibold text-primary">{getCategoryTitle("education")}</h2>
-                <div className="ml-4 flex-grow h-px bg-primary/30 rounded-full max-w-[200px]"></div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredTools.map((tool) => (
-                  <Card 
-                    key={tool.id} 
-                    className={`overflow-hidden transition-all hover:shadow-sm ${
-                      tool.comingSoon 
-                        ? 'border-dashed border-muted-foreground/30' 
-                        : 'border'
-                    }`}
-                  >
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="bg-primary/10 text-primary p-3 rounded-md">
-                          {tool.icon}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {tool.comingSoon && (
-                            <span className="text-xs font-medium text-amber-500 bg-amber-500/10 px-2 py-1 rounded-md">
-                              Under Development
-                            </span>
-                          )}
-                        <div className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-md">
-                          {tool.duration}
-                          </div>
-                        </div>
-                      </div>
-                      <CardTitle className="text-xl mt-4">{tool.title}</CardTitle>
-                      <CardDescription>{tool.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="pb-3">
-                      <div className="space-y-1.5">
-                        <p className="text-sm font-medium text-primary">Benefits:</p>
-                        <ul className="text-sm text-muted-foreground space-y-1">
-                          {tool.benefits.map((benefit, index) => (
-                            <li key={index} className="flex items-start gap-2">
-                              <div className="rounded-full bg-primary/10 p-1 mt-0.5">
-                                <Brain className="h-3 w-3 text-primary" />
-                              </div>
-                              <span>{benefit}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </CardContent>
-                    <CardFooter>
-                      <Button 
-                        className="w-full" 
-                        onClick={() => handleToolSelect(tool.id)}
-                        variant={tool.comingSoon ? "outline" : "default"}
-                        disabled={tool.comingSoon}
-                      >
-                        {tool.comingSoon ? "Coming Soon" : `Start ${tool.title}`}
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
-          </Tabs>
+                      </CardContent>
+                      <CardFooter>
+                        <Button 
+                          className="w-full" 
+                          onClick={() => handleToolSelect(tool.id)}
+                          variant={tool.comingSoon ? "outline" : "default"}
+                          disabled={tool.comingSoon}
+                        >
+                          {tool.comingSoon ? "Coming Soon" : `Start ${tool.title}`}
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 } 

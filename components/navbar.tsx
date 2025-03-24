@@ -51,7 +51,6 @@ const mainNavItems = [
   { name: "Home", href: "/" },
   { name: "Dashboard", href: "/dashboard" },
   { name: "Profile", href: "/profile" }, 
-  { name: "Settings", href: "/settings" },
 ];
 
 // Group related tools in dropdown
@@ -70,10 +69,10 @@ const toolItems = [
 const insightItems = [
   { name: "Assessment Report", href: "/assessment-report", icon: <FileText className="h-4 w-4 mr-2" /> },
   { name: "Progress Tracker", href: "/progress", icon: <LineChart className="h-4 w-4 mr-2" /> },
+  { name: "Goals", href: "/progress/goals", icon: <Target className="h-4 w-4 mr-2" /> },
   { name: "Brain Health Library", href: "/brain-health", icon: <Library className="h-4 w-4 mr-2" /> },
   { name: "Research", href: "/research", icon: <ScrollText className="h-4 w-4 mr-2" /> },
   { name: "Stroke Prevention", href: "/stroke-prevention", icon: <Heart className="h-4 w-4 mr-2" /> },
-  { name: "Stroke Prediction", href: "/tools/stroke-prediction", icon: <Heart className="h-4 w-4 mr-2" /> },
   { name: "Health Metrics", href: "/health-metrics", icon: <BarChart3 className="h-4 w-4 mr-2" /> },
 ];
 
@@ -166,8 +165,7 @@ export function Navbar() {
                   "flex items-center gap-1 px-2",
                   pathname.startsWith("/assessment-report") || pathname.startsWith("/progress") || 
                   pathname.startsWith("/brain-health") || pathname.startsWith("/research") || 
-                  pathname.startsWith("/stroke-prevention") || pathname.startsWith("/tools/stroke-prediction") ||
-                  pathname.startsWith("/health-metrics")
+                  pathname.startsWith("/stroke-prevention") || pathname.startsWith("/health-metrics")
                   ? "text-primary" : "text-muted-foreground"
                 )}
               >

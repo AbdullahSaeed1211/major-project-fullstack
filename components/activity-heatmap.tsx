@@ -16,9 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar } from "lucide-react";
 
 interface Activity {
   id: string;
@@ -131,12 +130,12 @@ export function ActivityHeatmap({ userId }: ActivityHeatmapProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
           <Calendar className="h-5 w-5" /> Activity History
         </CardTitle>
         <div className="flex items-center gap-2">
           <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[120px] sm:w-[140px]">
               <SelectValue placeholder="Select period" />
             </SelectTrigger>
             <SelectContent>
@@ -145,83 +144,92 @@ export function ActivityHeatmap({ userId }: ActivityHeatmapProps) {
               <SelectItem value="12">Last year</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="icon" onClick={() => console.log("Export data")}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="icon" onClick={() => console.log("Export data")}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="text-xs text-muted-foreground ml-8 mb-1 grid grid-cols-[repeat(auto-fit,20px)] gap-[3px]">
-          {months.map((month, i) => (
-            <div 
-              key={i} 
-              className="col-span-4"
-              style={{
-                gridColumn: `${i * 4 + 1} / span 4`
-              }}
-            >
-              {format(month, 'MMM')}
-            </div>
-          ))}
-        </div>
-        
-        <div className="flex">
-          <div className="text-xs text-muted-foreground flex flex-col gap-[3px] mt-[23px] mr-2">
-            <div>Mon</div>
-            <div>Wed</div>
-            <div>Fri</div>
+      <CardContent className="overflow-x-auto pb-6">
+        <div className="min-w-[600px] relative"> {/* Ensure minimum width for mobile scrolling */}
+          <div className="text-xs text-muted-foreground ml-8 mb-1 grid grid-cols-[repeat(auto-fit,20px)] gap-[3px]">
+            {months.map((month, i) => (
+              <div 
+                key={i} 
+                className="col-span-4"
+                style={{
+                  gridColumn: `${i * 4 + 1} / span 4`
+                }}
+              >
+                {format(month, 'MMM')}
+              </div>
+            ))}
           </div>
           
-          <div className="grid grid-cols-[repeat(auto-fill,20px)] grid-rows-7 gap-[3px]">
-            {days.map((day, i) => {
-              const dateStr = format(day, 'yyyy-MM-dd');
-              const count = activityMap[dateStr] || 0;
-              const level = getActivityLevel(count);
-              
-              return (
-                <TooltipProvider key={i}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div
-                        className={`
-                          w-[18px] h-[18px] rounded-sm
-                          ${level === 0 ? 'bg-gray-100 dark:bg-gray-800' : ''}
-                          ${level === 1 ? 'bg-emerald-100 dark:bg-emerald-900' : ''}
-                          ${level === 2 ? 'bg-emerald-200 dark:bg-emerald-800' : ''}
-                          ${level === 3 ? 'bg-emerald-300 dark:bg-emerald-700' : ''}
-                          ${level === 4 ? 'bg-emerald-400 dark:bg-emerald-600' : ''}
-                          hover:ring-2 hover:ring-offset-2 hover:ring-black/5 dark:hover:ring-white/5
-                        `}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <div className="text-sm font-medium">
-                        {format(day, 'MMMM d, yyyy')}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {count === 0 
-                          ? 'No activities' 
-                          : `${count} activit${count === 1 ? 'y' : 'ies'}`}
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              );
-            })}
+          <div className="flex">
+            <div className="text-xs text-muted-foreground flex flex-col gap-[3px] mt-[23px] mr-2">
+              <div>Mon</div>
+              <div>Wed</div>
+              <div>Fri</div>
+            </div>
+            
+            <div className="grid grid-cols-[repeat(auto-fill,20px)] grid-rows-7 gap-[3px]">
+              {days.map((day, i) => {
+                const dateStr = format(day, 'yyyy-MM-dd');
+                const count = activityMap[dateStr] || 0;
+                const level = getActivityLevel(count);
+                
+                return (
+                  <TooltipProvider key={i}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div
+                          className={`
+                            w-[18px] h-[18px] rounded-sm transition-colors
+                            ${level === 0 ? 'bg-gray-100 dark:bg-gray-800' : ''}
+                            ${level === 1 ? 'bg-emerald-100 dark:bg-emerald-900' : ''}
+                            ${level === 2 ? 'bg-emerald-200 dark:bg-emerald-800' : ''}
+                            ${level === 3 ? 'bg-emerald-300 dark:bg-emerald-700' : ''}
+                            ${level === 4 ? 'bg-emerald-400 dark:bg-emerald-600' : ''}
+                            hover:ring-2 hover:ring-offset-1 hover:ring-black/5 dark:hover:ring-white/5
+                          `}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="text-sm font-medium">
+                          {format(day, 'MMMM d, yyyy')}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {count === 0 
+                            ? 'No activities' 
+                            : `${count} activit${count === 1 ? 'y' : 'ies'}`}
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                );
+              })}
+            </div>
           </div>
         </div>
         
-        <div className="flex items-center justify-end mt-4 gap-2 text-xs text-muted-foreground">
-          <span>Less</span>
-          <div className="w-[18px] h-[18px] rounded-sm bg-gray-100 dark:bg-gray-800" />
-          <div className="w-[18px] h-[18px] rounded-sm bg-emerald-100 dark:bg-emerald-900" />
-          <div className="w-[18px] h-[18px] rounded-sm bg-emerald-200 dark:bg-emerald-800" />
-          <div className="w-[18px] h-[18px] rounded-sm bg-emerald-300 dark:bg-emerald-700" />
-          <div className="w-[18px] h-[18px] rounded-sm bg-emerald-400 dark:bg-emerald-600" />
-          <span>More</span>
+        <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground order-last md:order-first w-full md:w-auto justify-center md:justify-start">
+            <div className="flex items-center">
+              <span className="mr-1">Less</span>
+              <div className="w-[18px] h-[18px] rounded-sm bg-gray-100 dark:bg-gray-800" />
+              <div className="w-[18px] h-[18px] rounded-sm bg-emerald-100 dark:bg-emerald-900" />
+              <div className="w-[18px] h-[18px] rounded-sm bg-emerald-200 dark:bg-emerald-800" />
+              <div className="w-[18px] h-[18px] rounded-sm bg-emerald-300 dark:bg-emerald-700" />
+              <div className="w-[18px] h-[18px] rounded-sm bg-emerald-400 dark:bg-emerald-600" />
+              <span className="ml-1">More</span>
+            </div>
+          </div>
+          
+          <div className="text-xs text-muted-foreground flex items-center justify-center w-full md:w-auto md:justify-end gap-1 border border-dashed border-gray-200 dark:border-gray-800 rounded-md px-2 py-1 mb-2 md:mb-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 animate-pulse">
+              <path d="M17 8l4 4-4 4"></path>
+              <path d="M7 8l-4 4 4 4"></path>
+              <path d="M14 4l-4 16-4-16"></path>
+            </svg>
+            <span>Scroll horizontally to view more</span>
+          </div>
         </div>
       </CardContent>
     </Card>

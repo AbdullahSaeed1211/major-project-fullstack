@@ -1,160 +1,128 @@
-# Brainwise: Brain Health & Cognitive Training Platform
+# BrainWise
 
-A comprehensive application for brain health assessment, cognitive training, and stroke risk prediction.
+BrainWise is a comprehensive web application designed to help users with brain recovery and cognitive improvement through health tracking, personalized goals, and cognitive training games.
 
-## Core Features
+## 🧠 Features
 
-- **Cognitive Training Games**: Interactive games to improve memory, attention, and reaction time
-- **Stroke Risk Prediction**: Analyze health factors to estimate stroke risk
-- **Cognitive Score Tracking**: Monitor progress across different cognitive domains
-- **User Authentication**: Secure account management with Clerk
-- **Persistent Data Storage**: MongoDB integration for user data
-- **Responsive Design**: Optimized for both desktop and mobile
-- **Dark/Light Mode**: Theme support for different preferences
-- **ML-Powered Assessment**: TensorFlow.js models for health risk prediction
-- **Activity Tracking**: Visual heatmap of user activities and engagement
-- **User Settings**: Comprehensive settings for notifications, privacy, and data management
+- **Health Metrics Tracking**: Monitor vital signs and health indicators that affect brain health
+- **Cognitive Training Games**: Play games that target specific cognitive domains
+- **Goal Setting & Progress Tracking**: Set personalized brain health goals and track progress
+- **AI-Powered Insights**: Get personalized recommendations based on your health data
+- **Data Visualization**: View your progress through interactive charts and visualizations
 
-## Current Status
-
-### Working Features
-- ✅ Multiple cognitive training games (Memory Game, Reaction Time Test, Sequence Memory)
-- ✅ Dashboard with cognitive score tracking visualization
-- ✅ Daily challenges system with streaks
-- ✅ User authentication with Clerk
-- ✅ Game results tracking and storage (both local and server-side)
-- ✅ Dark/light mode toggle
-- ✅ Analytics dashboard for cognitive progress
-- ✅ Responsive UI with Tailwind CSS
-- ✅ Assessment Report API with comprehensive analysis
-- ✅ ML infrastructure for model loading and caching
-- ✅ User profile with activity history and settings management
-- ✅ Activity heatmap visualization for tracking engagement
-
-### In Progress
-- 🔄 ML model integration with Google Cloud Storage
-- 🔄 Additional cognitive games (Pattern Recognition, Visual Attention)
-- 🔄 MongoDB integration for data persistence
-- 🔄 Daily challenges progress tracking
-- 🔄 Achievement system
-
-### Planned Features
-- 📋 Brain scan analysis
-- 📋 Newsletter functionality
-- 📋 Mobile app version
-
-## Architecture
-
-- **Frontend**: Next.js App Router, React, Tailwind CSS, Shadcn UI
-- **Backend**: Next.js API Routes with MongoDB
-- **Authentication**: Clerk for user management
-- **Database**: MongoDB with Mongoose ODM
-- **UI Framework**: Shadcn UI components
-- **Machine Learning**: TensorFlow.js with Google Cloud Storage for model hosting
-
-## Setup
+## 🚀 Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ and npm/yarn
-- MongoDB database (Atlas recommended)
-- Clerk account for authentication
-- Google Cloud Storage account (for ML model hosting)
-
-### Environment Variables
-
-Create a `.env.local` file with the following:
-
-```
-# MongoDB Connection
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/brainwise?retryWrites=true&w=majority
-
-# Clerk Authentication
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your-clerk-publishable-key
-CLERK_SECRET_KEY=your-clerk-secret-key
-CLERK_WEBHOOK_SECRET=your-clerk-webhook-secret
-
-# Google Cloud Storage
-GOOGLE_CLOUD_PROJECT_ID=your-project-id
-GOOGLE_CLOUD_BUCKET_NAME=your-ml-models-bucket
-
-# Application Settings
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-NODE_ENV=development
-```
+- Node.js 18+ 
+- npm or yarn
+- MongoDB instance (local or Atlas)
+- Google Cloud Storage account (for ML models)
 
 ### Installation
 
-1. Clone the repository:
+1. Clone the repository
+   ```bash
+   git clone https://github.com/yourusername/brain-ai.git
+   cd brain-ai
+   ```
 
-```bash
-git clone https://github.com/yourusername/brainwise.git
-cd brainwise
+2. Install dependencies
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+3. Set up environment variables
+   ```
+   # Create a .env.local file with the following variables
+   MONGODB_URI=your_mongodb_connection_string
+   GOOGLE_CLOUD_PROJECT_ID=your_gcp_project_id
+   GOOGLE_CLOUD_BUCKET_NAME=your_bucket_name
+   ```
+
+4. Run the development server
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
+
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+## 📚 Documentation
+
+Detailed documentation can be found in the `/docs` directory:
+
+- [Architecture Overview](docs/architecture-overview.md)
+- [Authentication System](docs/authentication-system.md)
+- [Health Metrics System](docs/health-metrics-system.md)
+- [ML & Google Cloud Integration](docs/ml-google-cloud-integration.md)
+- [Data Visualization](docs/data-visualization.md)
+- [Newsletter Implementation](docs/newsletter-implementation.md)
+
+## 🧩 Project Structure
+
+```
+brain-ai/
+├── app/                  # Next.js 14 App Router pages & API routes
+├── components/           # React components
+├── lib/                  # Utility functions and shared logic
+├── public/               # Static assets
+├── types/                # TypeScript type definitions
+├── docs/                 # Documentation
+└── ...
 ```
 
-2. Install dependencies:
+## 🔧 Technology Stack
 
-```bash
-npm install
-```
+- **Frontend**: Next.js 14, React, TypeScript, Tailwind CSS, Shadcn UI
+- **Backend**: Next.js API Routes, MongoDB
+- **Machine Learning**: TensorFlow.js, Google Cloud Storage
+- **Visualization**: Recharts, Framer Motion
+- **Authentication**: Custom auth (with plans to migrate to Clerk)
 
-3. Run the development server:
+## 🌱 Development Roadmap
 
-```bash
-npm run dev
-```
+- [x] Health metrics tracking system
+- [x] Cognitive training games (basic implementation)
+- [x] Goal setting and progress tracking
+- [ ] Machine learning model integration
+- [ ] Advanced data analytics dashboard
+- [ ] Newsletter system
+- [ ] Mobile optimization
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+## 🔒 Security & Privacy
 
-## Machine Learning Models
+BrainWise prioritizes the security and privacy of health data:
 
-The application uses TensorFlow.js models for health risk predictions:
+- All health data is associated with user IDs
+- Authentication required for all sensitive operations
+- No third-party access to health information
+- HIPAA-informed practices for handling sensitive data
 
-- **Stroke Risk Model**: Predicts stroke risk based on health metrics and demographics
-- **Alzheimer's Risk Model**: Assesses cognitive decline risk based on various factors
-- **Brain Tumor Detection Model**: Analyzes brain scan images for abnormalities (planned)
+## 🤝 Contributing
 
-Models are hosted on Google Cloud Storage for production and loaded dynamically as needed, with fallback to simpler models when TensorFlow.js models are not available.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-## Features
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-### Brain Training Games
-- **Memory Game**: Test and improve your visual memory with card matching
-- **Reaction Game**: Improve your reaction time and processing speed
-- **Concentration Game**: Enhance focus and sustained attention
-- **Sequence Memory**: Test and improve working memory capacity
-- **Pattern Recognition**: Enhance pattern recognition abilities (in development)
+## 📄 License
 
-### User Profile & Settings
-- **Activity Heatmap**: GitHub-style visualization of user activity over time
-- **Notification Preferences**: Control email and in-app notifications
-- **Privacy Settings**: Manage data sharing and research participation
-- **Data Management**: Export or clear personal data with secure confirmation dialogs
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-### Data Persistence
-- Authenticated users: Data stored in MongoDB
-- Anonymous users: Data stored in browser localStorage
+## 📱 Contact
 
-### API Endpoints
-- User profile management
-- Game results storage and retrieval
-- Cognitive score tracking
-- Activity history
-- Newsletter subscriptions
-- ML-powered health risk assessments
-- Comprehensive cognitive assessment reports
+Project Link: [https://github.com/yourusername/brain-ai](https://github.com/yourusername/brain-ai)
 
-## Deployment
+## 🙏 Acknowledgements
 
-This application can be deployed to any platform that supports Next.js applications, such as Vercel, Netlify, or a custom server.
-
-## Implementation Notes
-
-The current implementation uses a hybrid approach:
-- For authenticated users, data is stored both in MongoDB and localStorage as a fallback
-- For anonymous users, data is stored only in localStorage
-- The UI is implemented with Shadcn UI components and Tailwind CSS for styling
-- Cognitive games follow a consistent pattern for result tracking and scoring
-- ML models use a model-loader architecture that supports caching and versioning
-
-See the [TODO.md](./TODO.md) file for upcoming tasks and implementation priorities.
+- [Next.js](https://nextjs.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Shadcn UI](https://ui.shadcn.com/)
+- [Recharts](https://recharts.org/)
