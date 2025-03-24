@@ -409,7 +409,7 @@ export default function ToolsPage() {
               {toolsData.find(tool => tool.id === activeTool)?.component}
             </div>
           ) : (
-            <div className="space-y-6">
+            <Tabs defaultValue="training" value={activeCategory} onValueChange={setActiveCategory}>
               <TabsContent value="training" className="mt-0">
                 <div className="space-y-6">
                   <h2 className="text-2xl font-semibold text-primary">{getCategoryTitle("training")}</h2>
@@ -664,7 +664,7 @@ export default function ToolsPage() {
                   ))}
                 </div>
               </TabsContent>
-            </div>
+            </Tabs>
           )}
         </div>
       </div>
