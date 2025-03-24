@@ -20,6 +20,7 @@ import {
   Microscope,
   Calculator
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 import { MemoryGame } from "@/components/memory-game";
 import ReactionTest from "@/components/reaction-test";
@@ -230,6 +231,158 @@ export default function ToolsPage() {
                 <TabsTrigger value="tracking" className="text-sm sm:text-base px-3 sm:px-4">Tracking</TabsTrigger>
                 <TabsTrigger value="education" className="text-sm sm:text-base px-3 sm:px-4">Learning</TabsTrigger>
               </TabsList>
+
+              <TabsContent value="training" className="mt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {filteredTools.map((tool) => (
+                    <Card key={tool.id} className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => handleToolSelect(tool.id)}>
+                      <CardHeader>
+                        <div className="flex items-center gap-4">
+                          {tool.icon}
+                          <div>
+                            <CardTitle className="text-xl">{tool.title}</CardTitle>
+                            <CardDescription>{tool.description}</CardDescription>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Clock className="h-4 w-4" />
+                            <span>{tool.duration}</span>
+                          </div>
+                          <ul className="list-disc list-inside text-sm space-y-1">
+                            {tool.benefits.map((benefit, index) => (
+                              <li key={index}>{benefit}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </CardContent>
+                      <CardFooter>
+                        {tool.comingSoon ? (
+                          <Badge variant="secondary">Coming Soon</Badge>
+                        ) : (
+                          <Button className="w-full">Start</Button>
+                        )}
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="assessment" className="mt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {filteredTools.map((tool) => (
+                    <Card key={tool.id} className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => handleToolSelect(tool.id)}>
+                      <CardHeader>
+                        <div className="flex items-center gap-4">
+                          {tool.icon}
+                          <div>
+                            <CardTitle className="text-xl">{tool.title}</CardTitle>
+                            <CardDescription>{tool.description}</CardDescription>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Clock className="h-4 w-4" />
+                            <span>{tool.duration}</span>
+                          </div>
+                          <ul className="list-disc list-inside text-sm space-y-1">
+                            {tool.benefits.map((benefit, index) => (
+                              <li key={index}>{benefit}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </CardContent>
+                      <CardFooter>
+                        {tool.comingSoon ? (
+                          <Badge variant="secondary">Coming Soon</Badge>
+                        ) : (
+                          <Button className="w-full">Start</Button>
+                        )}
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="tracking" className="mt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {filteredTools.map((tool) => (
+                    <Card key={tool.id} className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => handleToolSelect(tool.id)}>
+                      <CardHeader>
+                        <div className="flex items-center gap-4">
+                          {tool.icon}
+                          <div>
+                            <CardTitle className="text-xl">{tool.title}</CardTitle>
+                            <CardDescription>{tool.description}</CardDescription>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Clock className="h-4 w-4" />
+                            <span>{tool.duration}</span>
+                          </div>
+                          <ul className="list-disc list-inside text-sm space-y-1">
+                            {tool.benefits.map((benefit, index) => (
+                              <li key={index}>{benefit}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </CardContent>
+                      <CardFooter>
+                        {tool.comingSoon ? (
+                          <Badge variant="secondary">Coming Soon</Badge>
+                        ) : (
+                          <Button className="w-full">Start</Button>
+                        )}
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="education" className="mt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {filteredTools.map((tool) => (
+                    <Card key={tool.id} className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => handleToolSelect(tool.id)}>
+                      <CardHeader>
+                        <div className="flex items-center gap-4">
+                          {tool.icon}
+                          <div>
+                            <CardTitle className="text-xl">{tool.title}</CardTitle>
+                            <CardDescription>{tool.description}</CardDescription>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Clock className="h-4 w-4" />
+                            <span>{tool.duration}</span>
+                          </div>
+                          <ul className="list-disc list-inside text-sm space-y-1">
+                            {tool.benefits.map((benefit, index) => (
+                              <li key={index}>{benefit}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </CardContent>
+                      <CardFooter>
+                        {tool.comingSoon ? (
+                          <Badge variant="secondary">Coming Soon</Badge>
+                        ) : (
+                          <Button className="w-full">Start</Button>
+                        )}
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
             </Tabs>
           </div>
         </aside>
