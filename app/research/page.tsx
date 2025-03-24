@@ -249,88 +249,74 @@ export default function ResearchPage() {
                             )}
                           </div>
                         </CardContent>
-                        <CardFooter className="flex justify-between">
-                          <Button variant="outline" size="sm">Read Abstract</Button>
-                          {paper.openAccessPdf?.url && (
-                            <Button variant="link" size="sm" className="flex items-center gap-1" asChild>
-                              <a href={paper.openAccessPdf.url} target="_blank" rel="noopener noreferrer">
-                                View Full Paper <ArrowUpRight className="h-3 w-3" />
-                              </a>
-                            </Button>
-                          )}
-                        </CardFooter>
-                      </Card>
-                    ))
-                  ) : (
-                    showNoResults && (
-                      <div className="text-center py-10 bg-muted/30 rounded-lg">
-                        <p>No research papers found matching your search. Try different keywords.</p>
-                      </div>
-                    )
-                  )
-                ) : (
-                  sortedPapers.length > 0 ? (
-                    sortedPapers.map((paper) => (
-                      <Card key={paper.paperId}>
-                        <CardHeader>
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <CardTitle className="text-xl">{paper.title}</CardTitle>
-                              <CardDescription>
-                                {paper.venue ? `Published in ${paper.venue}` : ""}
-                                {paper.year ? `, ${paper.year}` : ""}
-                              </CardDescription>
-                            </div>
-                            <Badge>Research</Badge>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="text-sm">
-                            {paper.abstract ? paper.abstract.substring(0, 300) + (paper.abstract.length > 300 ? "..." : "") : 
-                             paper.tldr?.text ? paper.tldr.text : "No abstract available."}
-                          </p>
-                          <div className="mt-4 space-y-2">
-                            {paper.authors && paper.authors.length > 0 && (
-                              <div className="flex items-center gap-2 text-sm">
-                                <span className="font-medium">Authors:</span>
-                                <span className="text-muted-foreground">
-                                  {paper.authors.map(a => a.name).join(", ")}
-                                </span>
-                              </div>
+                        <CardFooter className="flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            {paper.openAccessPdf && (
+                              <Button variant="outline" size="sm" className="flex items-center gap-1">
+                                <Download className="h-4 w-4" />
+                                <span>PDF</span>
+                              </Button>
                             )}
                           </div>
-                        </CardContent>
-                        <CardFooter className="flex justify-between">
-                          <Button variant="outline" size="sm">Read Abstract</Button>
-                          {paper.openAccessPdf?.url && (
-                            <Button variant="link" size="sm" className="flex items-center gap-1" asChild>
-                              <a href={paper.openAccessPdf.url} target="_blank" rel="noopener noreferrer">
-                                View Full Paper <ArrowUpRight className="h-3 w-3" />
-                              </a>
-                            </Button>
-                          )}
+                          <Button variant="ghost" size="sm" className="flex items-center gap-1">
+                            <ArrowUpRight className="h-4 w-4" />
+                            <span>Read More</span>
+                          </Button>
                         </CardFooter>
                       </Card>
                     ))
-                  ) : (
-                    <div className="text-center py-10 bg-muted/30 rounded-lg">
-                      <p className="text-lg font-medium mb-2">No Research Papers Loaded</p>
-                      <p className="text-muted-foreground">Click the button below to load research papers.</p>
-                      <Button
-                        variant="outline"
-                        className="mt-4"
-                        onClick={loadMorePapers}
-                        disabled={isLoading}
-                      >
-                        {isLoading ? "Loading..." : "Load Research Papers"}
-                      </Button>
-                    </div>
-                  )
+                  ) : null
+                ) : (
+                  sortedPapers.map((paper) => (
+                    <Card key={paper.paperId}>
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <CardTitle className="text-xl">{paper.title}</CardTitle>
+                            <CardDescription>
+                              {paper.venue ? `Published in ${paper.venue}` : ""}
+                              {paper.year ? `, ${paper.year}` : ""}
+                            </CardDescription>
+                          </div>
+                          <Badge>Research</Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm">
+                          {paper.abstract ? paper.abstract.substring(0, 300) + (paper.abstract.length > 300 ? "..." : "") : 
+                           paper.tldr?.text ? paper.tldr.text : "No abstract available."}
+                        </p>
+                        <div className="mt-4 space-y-2">
+                          {paper.authors && paper.authors.length > 0 && (
+                            <div className="flex items-center gap-2 text-sm">
+                              <span className="font-medium">Authors:</span>
+                              <span className="text-muted-foreground">
+                                {paper.authors.map(a => a.name).join(", ")}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                      <CardFooter className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          {paper.openAccessPdf && (
+                            <Button variant="outline" size="sm" className="flex items-center gap-1">
+                              <Download className="h-4 w-4" />
+                              <span>PDF</span>
+                            </Button>
+                          )}
+                        </div>
+                        <Button variant="ghost" size="sm" className="flex items-center gap-1">
+                          <ArrowUpRight className="h-4 w-4" />
+                          <span>Read More</span>
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  ))
                 )}
               </div>
             )}
 
-            {/* Add a Load More button when we have papers and we're not in search mode */}
             {!searchQuery && sortedPapers.length > 0 && (
               <div className="text-center pt-6">
                 <Button
@@ -348,14 +334,11 @@ export default function ResearchPage() {
           <TabsContent value="brain" className="space-y-6 mt-6">
             <div className="text-center py-10 bg-muted/30 rounded-lg">
               <p className="text-lg font-medium mb-2">Loading Brain Health Research</p>
-              <p className="text-muted-foreground text-base">Please use the search function above to find specific brain health research papers.</p>
+              <p className="text-muted-foreground">Please wait while we fetch the latest brain health research.</p>
               <Button
                 variant="outline"
-                className="mt-4 text-base"
-                onClick={() => {
-                  setSearchQuery("brain health cognitive function neuroplasticity");
-                  searchPapers();
-                }}
+                className="mt-4"
+                onClick={() => setSearchQuery("brain health cognitive function")}
                 disabled={isLoading}
               >
                 {isLoading ? "Loading..." : "Load Brain Health Research"}
@@ -366,14 +349,11 @@ export default function ResearchPage() {
           <TabsContent value="stroke" className="space-y-6 mt-6">
             <div className="text-center py-10 bg-muted/30 rounded-lg">
               <p className="text-lg font-medium mb-2">Loading Stroke Research</p>
-              <p className="text-muted-foreground text-base">Please use the search function above to find specific stroke research papers.</p>
+              <p className="text-muted-foreground">Please wait while we fetch the latest stroke research.</p>
               <Button
                 variant="outline"
-                className="mt-4 text-base"
-                onClick={() => {
-                  setSearchQuery("stroke prevention treatment recovery");
-                  searchPapers();
-                }}
+                className="mt-4"
+                onClick={() => setSearchQuery("stroke prevention treatment")}
                 disabled={isLoading}
               >
                 {isLoading ? "Loading..." : "Load Stroke Research"}
@@ -382,149 +362,59 @@ export default function ResearchPage() {
           </TabsContent>
 
           <TabsContent value="resources" className="space-y-6 mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-2xl">Educational Resources</CardTitle>
-                <CardDescription className="text-base">Access curated educational materials on brain health and stroke prevention</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Card className="border border-muted">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <FileText className="h-4 w-4" />
-                        Patient Guides
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2 pt-0">
-                      <p className="text-base">Downloadable guides and factsheets about brain health and stroke prevention.</p>
-                      <ul className="list-none space-y-2">
-                        <li>
-                          <a 
-                            href="https://www.stroke.org/-/media/stroke-files/stroke-resource-center/lets-talk-about-stroke/lets-talk-about-stroke-prevention.pdf" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 text-base text-primary hover:underline"
-                          >
-                            <Download className="h-4 w-4" />
-                            Stroke Prevention Guide
-                          </a>
-                        </li>
-                        <li>
-                          <a 
-                            href="https://www.cdc.gov/stroke/docs/consumer_education_stroke.pdf" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 text-base text-primary hover:underline"
-                          >
-                            <Download className="h-4 w-4" />
-                            CDC Stroke Fact Sheet
-                          </a>
-                        </li>
-                        <li>
-                          <a 
-                            href="https://www.nia.nih.gov/health/cognitive-health-and-older-adults" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 text-base text-primary hover:underline"
-                          >
-                            <Download className="h-4 w-4" />
-                            Cognitive Health Guide
-                          </a>
-                        </li>
-                      </ul>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card className="border border-muted">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Video className="h-4 w-4" />
-                        Video Resources
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2 pt-0">
-                      <p className="text-base">Expert-led video content on brain health and stroke prevention.</p>
-                      <ul className="list-none space-y-2">
-                        <li>
-                          <a 
-                            href="https://www.youtube.com/watch?v=wH8k7kavcSc" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 text-base text-primary hover:underline"
-                          >
-                            <Video className="h-4 w-4" />
-                            Understanding Stroke Risk Factors
-                          </a>
-                        </li>
-                        <li>
-                          <a 
-                            href="https://www.youtube.com/watch?v=9W3Jf3l9eAo" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 text-base text-primary hover:underline"
-                          >
-                            <Video className="h-4 w-4" />
-                            Brain Health Tips
-                          </a>
-                        </li>
-                        <li>
-                          <a 
-                            href="https://www.youtube.com/watch?v=1nBwfZZvjKo" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 text-base text-primary hover:underline"
-                          >
-                            <Video className="h-4 w-4" />
-                            Exercise for Brain Health
-                          </a>
-                        </li>
-                      </ul>
-                    </CardContent>
-                  </Card>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-2xl">Interactive Tools</CardTitle>
-                <CardDescription className="text-base">Use these tools to assess and improve your brain health</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Card className="border border-muted">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Brain className="h-4 w-4" />
-                        Brain Health Assessment
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2 pt-0">
-                      <p className="text-base">Take our comprehensive brain health assessment to understand your cognitive status.</p>
-                      <Button className="w-full mt-2 text-base" asChild>
-                        <a href="/assessment">Start Assessment</a>
-                      </Button>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card className="border border-muted">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Heart className="h-4 w-4" />
-                        Stroke Risk Calculator
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2 pt-0">
-                      <p className="text-base">Calculate your stroke risk and get personalized prevention recommendations.</p>
-                      <Button className="w-full mt-2 text-base" asChild>
-                        <a href="/tools/stroke-risk">Calculate Risk</a>
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Patient Guides
+                  </CardTitle>
+                  <CardDescription>Downloadable PDF guides from trusted sources</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <Button variant="outline" className="w-full justify-start gap-2">
+                      <Download className="h-4 w-4" />
+                      Stroke Prevention Guide
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start gap-2">
+                      <Download className="h-4 w-4" />
+                      Brain Health Handbook
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start gap-2">
+                      <Download className="h-4 w-4" />
+                      Cognitive Enhancement Guide
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    <Video className="h-5 w-5" />
+                    Video Resources
+                  </CardTitle>
+                  <CardDescription>Expert-led video content on brain health</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <Button variant="outline" className="w-full justify-start gap-2">
+                      <Video className="h-4 w-4" />
+                      Understanding Stroke Risk
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start gap-2">
+                      <Video className="h-4 w-4" />
+                      Brain Health Tips
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start gap-2">
+                      <Video className="h-4 w-4" />
+                      Cognitive Training Methods
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
