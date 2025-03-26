@@ -1,13 +1,14 @@
 # BrainWise
 
-BrainWise is a comprehensive web application designed to help users with brain recovery and cognitive improvement through health tracking, personalized goals, and cognitive training games.
+BrainWise is a comprehensive web application designed to help users with brain health monitoring, stroke prediction, and cognitive enhancement through health tracking, personalized goals, and educational resources.
 
 ## 🧠 Features
 
 - **Health Metrics Tracking**: Monitor vital signs and health indicators that affect brain health
-- **Cognitive Training Games**: Play games that target specific cognitive domains
-- **Goal Setting & Progress Tracking**: Set personalized brain health goals and track progress
-- **AI-Powered Insights**: Get personalized recommendations based on your health data
+- **Stroke Risk Prediction**: AI-powered stroke risk assessment using machine learning models
+- **Research & Studies**: Access to latest peer-reviewed research on brain health and stroke prevention
+- **Educational Resources**: Curated guides and video content from trusted sources
+- **Cognitive Training Tools**: Interactive exercises for brain health improvement
 - **Data Visualization**: View your progress through interactive charts and visualizations
 
 ## 🚀 Getting Started
@@ -23,8 +24,8 @@ BrainWise is a comprehensive web application designed to help users with brain r
 
 1. Clone the repository
    ```bash
-   git clone https://github.com/yourusername/brain-ai.git
-   cd brain-ai
+   git clone https://github.com/AbdullahSaeed1211/brainwise.git
+   cd brainwise
    ```
 
 2. Install dependencies
@@ -40,6 +41,7 @@ BrainWise is a comprehensive web application designed to help users with brain r
    MONGODB_URI=your_mongodb_connection_string
    GOOGLE_CLOUD_PROJECT_ID=your_gcp_project_id
    GOOGLE_CLOUD_BUCKET_NAME=your_bucket_name
+   SEMANTIC_SCHOLAR_API_KEY=your_api_key
    ```
 
 4. Run the development server
@@ -60,19 +62,25 @@ Detailed documentation can be found in the `/docs` directory:
 - [Health Metrics System](docs/health-metrics-system.md)
 - [ML & Google Cloud Integration](docs/ml-google-cloud-integration.md)
 - [Data Visualization](docs/data-visualization.md)
-- [Newsletter Implementation](docs/newsletter-implementation.md)
+- [Research Integration](docs/research-integration.md)
 
 ## 🧩 Project Structure
 
 ```
-brain-ai/
+brainwise/
 ├── app/                  # Next.js 14 App Router pages & API routes
-├── components/           # React components
-├── lib/                  # Utility functions and shared logic
-├── public/               # Static assets
-├── types/                # TypeScript type definitions
-├── docs/                 # Documentation
-└── ...
+│   ├── api/             # API routes for ML models and data
+│   ├── research/        # Research papers and studies
+│   ├── tools/           # Brain health tools and assessments
+│   └── dashboard/       # User dashboard and metrics
+├── components/          # React components
+│   ├── ui/             # Shadcn UI components
+│   ├── charts/         # Data visualization components
+│   └── forms/          # Form components
+├── lib/                 # Utility functions and shared logic
+├── public/              # Static assets
+├── types/               # TypeScript type definitions
+└── docs/                # Documentation
 ```
 
 ## 🔧 Technology Stack
@@ -80,18 +88,20 @@ brain-ai/
 - **Frontend**: Next.js 14, React, TypeScript, Tailwind CSS, Shadcn UI
 - **Backend**: Next.js API Routes, MongoDB
 - **Machine Learning**: TensorFlow.js, Google Cloud Storage
+- **Research API**: Semantic Scholar API
 - **Visualization**: Recharts, Framer Motion
 - **Authentication**: Custom auth (with plans to migrate to Clerk)
 
 ## 🌱 Development Roadmap
 
 - [x] Health metrics tracking system
-- [x] Cognitive training games (basic implementation)
-- [x] Goal setting and progress tracking
-- [ ] Machine learning model integration
+- [x] Stroke risk prediction model
+- [x] Research paper integration
+- [x] Educational resources
+- [x] Cognitive training tools
 - [ ] Advanced data analytics dashboard
-- [ ] Newsletter system
 - [ ] Mobile optimization
+- [ ] Newsletter system
 
 ## 🔒 Security & Privacy
 
@@ -101,6 +111,7 @@ BrainWise prioritizes the security and privacy of health data:
 - Authentication required for all sensitive operations
 - No third-party access to health information
 - HIPAA-informed practices for handling sensitive data
+- Secure API key management
 
 ## 🤝 Contributing
 
@@ -118,7 +129,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 📱 Contact
 
-Project Link: [https://github.com/yourusername/brain-ai](https://github.com/yourusername/brain-ai)
+Project Link: [https://github.com/AbdullahSaeed1211/brainwise](https://github.com/AbdullahSaeed1211/brainwise)
 
 ## 🙏 Acknowledgements
 
@@ -126,3 +137,5 @@ Project Link: [https://github.com/yourusername/brain-ai](https://github.com/your
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Shadcn UI](https://ui.shadcn.com/)
 - [Recharts](https://recharts.org/)
+- [Semantic Scholar](https://www.semanticscholar.org/)
+- [TensorFlow.js](https://www.tensorflow.org/js)

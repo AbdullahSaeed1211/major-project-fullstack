@@ -53,7 +53,7 @@ export function HeroSection() {
           <div className="relative h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px]">
             <div className="absolute inset-0 bg-background/50 backdrop-blur-sm rounded-xl overflow-hidden border shadow-xl hover:shadow-2xl transition-all duration-500">
               <Image
-                src="/herotest.webp"
+                src="/brain-hero.png"
                 alt="Brain health visualization"
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"
